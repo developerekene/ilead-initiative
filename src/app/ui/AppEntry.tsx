@@ -10,6 +10,7 @@ import JoinCommunity from "./components/JoinCommunity";
 import Navbar from "./components/Navbar";
 import HomeView from "./pages/HomeView";
 import ScrollToTop from "./components/others/ScrollToTop";
+import Dashboard from "./pages/Dashboard";
 
 const RootLayout = () => {
   return (
@@ -55,6 +56,10 @@ const router = createBrowserRouter([
         element: <JoinCommunity />,
       },
     ],
+  },
+  {
+    path: "dashboard",
+    element: <Dashboard />,
   },
 ]);
 
