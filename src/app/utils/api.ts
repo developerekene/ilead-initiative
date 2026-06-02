@@ -1,5 +1,6 @@
 // 1. Define the Base URL for your backend API
-const BASE_URL = process.env.REACT_APP_API_URL || 'https://api.ileadinitiative.com/v1';
+const BASE_URL =
+  process.env.REACT_APP_API_URL || "https://api.ileadinitiative.com/v1";
 
 // 2. Define TypeScript Interfaces for your data shapes
 // This enforces strict type-checking so you always know exactly what your data looks like!
@@ -19,7 +20,9 @@ export interface ApiResponse<T> {
 async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    throw new Error(
+      errorData.message || `HTTP error! status: ${response.status}`,
+    );
   }
   return response.json();
 }
@@ -29,11 +32,13 @@ export const apiService = {
   /**
    * Submits a new user application/registration to the iLEAD platform
    */
-  registerUser: async (userData: UserRegistrationData): Promise<ApiResponse<{ userId: string }>> => {
+  registerUser: async (
+    userData: UserRegistrationData,
+  ): Promise<ApiResponse<{ userId: string }>> => {
     const response = await fetch(`${BASE_URL}/users/register`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(userData),
     });
@@ -43,13 +48,17 @@ export const apiService = {
   /**
    * Fetches data or configuration settings needed for the platform
    */
-  getPlatformStats: async (): Promise<ApiResponse<{ membersCount: number; coursesCount: number }>> => {
+  getPlatformStats: async (): Promise<
+    ApiResponse<{ membersCount: number; coursesCount: number }>
+  > => {
     const response = await fetch(`${BASE_URL}/platform/stats`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
-    return handleResponse<{ membersCount: number; coursesCount: number }>(response);
+    return handleResponse<{ membersCount: number; coursesCount: number }>(
+      response,
+    );
   },
 };
