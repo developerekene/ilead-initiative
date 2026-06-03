@@ -11,13 +11,14 @@ import Navbar from "./components/Navbar";
 import HomeView from "./pages/HomeView";
 import ScrollToTop from "./components/others/ScrollToTop";
 import Dashboard from "./pages/Dashboard";
+import IShareView from "./pages/IShareView";
+import ITrainView from "./pages/ITrainView";
 
 const RootLayout = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <ScrollToTop />
       <Navbar />
-      {/* Added a top padding of pt-20 to prevent the fixed navbar from overlapping your layout content */}
       <main className="flex-1 pt-20">
         <Outlet />
       </main>
@@ -55,6 +56,14 @@ const router = createBrowserRouter([
         path: "join-our-community",
         element: <JoinCommunity />,
       },
+      {
+        path: "iShare",
+        element: <IShareView />
+      },
+      {
+        path: "iTrain",
+        element: <ITrainView />
+      }
     ],
   },
   {

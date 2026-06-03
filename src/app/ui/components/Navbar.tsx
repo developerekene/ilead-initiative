@@ -83,13 +83,13 @@ const Navbar: React.FC = () => {
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-10">
           <Link
-            to="/features"
+            to="/iShare"
             className="text-sm font-semibold text-purple-950/60 hover:text-purple-900 transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-orange-500 hover:after:w-full after:transition-all"
           >
             iShare
           </Link>
           <Link
-            to="/features"
+            to="/iTrain"
             className="text-sm font-semibold text-purple-950/60 hover:text-purple-900 transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-orange-500 hover:after:w-full after:transition-all"
           >
             iTrain
