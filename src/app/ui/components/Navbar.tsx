@@ -7,6 +7,7 @@ import {
   logoutUser,
 } from "../../redux/slices/Userslice";
 import type { AppDispatch } from "../../redux/store";
+import NotificationCenter from "./NotificationCenter";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -304,6 +305,8 @@ const Navbar: React.FC = () => {
               </div>
             )}
           </div>
+
+          <NotificationCenter />
 
           {/* Mobile Hamburger */}
           <button
