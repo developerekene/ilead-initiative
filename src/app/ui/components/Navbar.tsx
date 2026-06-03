@@ -336,14 +336,14 @@ const Navbar: React.FC = () => {
           className="md:hidden w-full bg-white border-b border-orange-100 px-6 py-6 flex flex-col gap-4 shadow-xl shadow-purple-950/5"
         >
           <Link
-            to="/features"
+            to="/iShare"
             onClick={closeAllMenus}
             className="text-base font-bold text-purple-950/80 hover:text-purple-900 hover:bg-orange-50/50 px-4 py-2.5 rounded-xl transition-colors"
           >
             iShare
           </Link>
           <Link
-            to="/features"
+            to="/iTrain"
             onClick={closeAllMenus}
             className="text-base font-bold text-purple-950/80 hover:text-purple-900 hover:bg-orange-50/50 px-4 py-2.5 rounded-xl transition-colors"
           >
