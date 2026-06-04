@@ -13,6 +13,8 @@ import ScrollToTop from "./components/others/ScrollToTop";
 import Dashboard from "./pages/Dashboard";
 import Login from "./components/Login";
 import ForgotPassword from "./components/ForgotPassword";
+import IShareView from "./pages/IShareView";
+import ITrainView from "./pages/ITrainView";
 
 // Full layout — Navbar + Footer (used by all public pages)
 const RootLayout = () => {
@@ -78,6 +80,14 @@ const router = createBrowserRouter([
       {
         path: "forgot-password",
         element: <ForgotPassword />,
+      },
+      {
+        path: "iShare",
+        element: <IShareView />,
+      },
+      {
+        path: "iTrain",
+        element: <ITrainView />,
       },
     ],
   },

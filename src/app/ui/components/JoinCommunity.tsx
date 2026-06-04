@@ -237,7 +237,7 @@ const JoinCommunity: React.FC = () => {
                   required
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  placeholder="Okonkwo"
+                  placeholder="Okoli"
                   className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
                 />
               </div>

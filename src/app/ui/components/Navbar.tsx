@@ -7,6 +7,7 @@ import {
   logoutUser,
 } from "../../redux/slices/Userslice";
 import type { AppDispatch } from "../../redux/store";
+import NotificationCenter from "./NotificationCenter";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -83,13 +84,13 @@ const Navbar: React.FC = () => {
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-10">
           <Link
-            to="/features"
+            to="/iShare"
             className="text-sm font-semibold text-purple-950/60 hover:text-purple-900 transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-orange-500 hover:after:w-full after:transition-all"
           >
             iShare
           </Link>
           <Link
-            to="/features"
+            to="/iTrain"
             className="text-sm font-semibold text-purple-950/60 hover:text-purple-900 transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-orange-500 hover:after:w-full after:transition-all"
           >
             iTrain
@@ -309,6 +310,8 @@ const Navbar: React.FC = () => {
             </div>
           )}
 
+          <NotificationCenter />
+
           {/* Mobile Hamburger */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -337,14 +340,14 @@ const Navbar: React.FC = () => {
           className="md:hidden w-full bg-white border-b border-orange-100 px-6 py-6 flex flex-col gap-4 shadow-xl shadow-purple-950/5"
         >
           <Link
-            to="/features"
+            to="/iShare"
             onClick={closeAllMenus}
             className="text-base font-bold text-purple-950/80 hover:text-purple-900 hover:bg-orange-50/50 px-4 py-2.5 rounded-xl transition-colors"
           >
             iShare
           </Link>
           <Link
-            to="/features"
+            to="/iTrain"
             onClick={closeAllMenus}
             className="text-base font-bold text-purple-950/80 hover:text-purple-900 hover:bg-orange-50/50 px-4 py-2.5 rounded-xl transition-colors"
           >
