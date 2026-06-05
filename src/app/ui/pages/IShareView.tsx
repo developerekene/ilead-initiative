@@ -7,13 +7,6 @@ import IShareFeed from "../components/ishare/Isharefeed";
 import CommunityAssistMeter from "../components/ishare/Communityassistmeter";
 import IGiveModal from "../components/ishare/Igivemodal";
 import INeedModal from "../components/ishare/Ineedmodal";
-// import IShareFeed from "./IShareFeed";
-// import IGiveModal from "./IGiveModal";
-// import INeedModal from "./INeedModal";
-// import IShareVitalStats from "./IShareVitalStats";
-// import DonorsVolunteerMeter from "./DonorsVolunteerMeter";
-// import TopDonorsCarousel from "./TopDonorsCarousel";
-// import CommunityAssistMeter from "./CommunityAssistMeter";
 
 const ISharePage: React.FC = () => {
   const [iGiveOpen, setIGiveOpen] = useState(false);
@@ -71,13 +64,13 @@ const ISharePage: React.FC = () => {
       {/* ── Donors / Volunteer Meter ── */}
       <DonorsVolunteerMeter />
 
-      {/* ── Main Feed ── */}
+      {/* Main Feed  */}
       <IShareFeed onCreatePost={handleCreatePost} />
 
-      {/* ── Community Assist Meter (personal dashboard) ── */}
+      {/* Community Assist Meter (personal dashboard)  */}
       <CommunityAssistMeter />
 
-      {/* ── Modals ── */}
+      {/* Modals */}
       <IGiveModal isOpen={iGiveOpen} onClose={() => setIGiveOpen(false)} />
       <INeedModal isOpen={iNeedOpen} onClose={() => setINeedOpen(false)} />
     </div>
