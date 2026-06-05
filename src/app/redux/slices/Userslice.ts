@@ -6,6 +6,7 @@ import {
   GoogleAuthProvider,
   signOut,
   updateProfile,
+  sendPasswordResetEmail,
   User,
 } from "firebase/auth";
 import { auth } from "../../firebase";
@@ -33,7 +34,7 @@ const serializeUser = (user: User): SerializedUser => ({
   emailVerified: user.emailVerified,
 });
 
-// Async Thunks
+// ── Async Thunks ──────────────────────────────────────────────────────────────
 
 export const loginWithEmail = createAsyncThunk(
   "user/loginWithEmail",
@@ -110,7 +111,18 @@ export const logoutUser = createAsyncThunk(
   },
 );
 
-//  Initial State
+export const sendPasswordReset = createAsyncThunk(
+  "user/sendPasswordReset",
+  async ({ email }: { email: string }, { rejectWithValue }) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error: any) {
+      return rejectWithValue(error.message as string);
+    }
+  },
+);
+
+// ── Initial State ─────────────────────────────────────────────────────────────
 
 const initialState: UserState = {
   user: null,
@@ -189,6 +201,20 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // ── sendPasswordReset ──
+    builder
+      .addCase(sendPasswordReset.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(sendPasswordReset.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(sendPasswordReset.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

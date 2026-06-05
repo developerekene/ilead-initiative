@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Button from "./Button";
+import Button from "../Button";
 
 // In-file typed dataset mirroring iLEAD's active giving, tech mentorship, and business strategy tracks
 interface Campaign {

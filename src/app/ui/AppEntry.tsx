@@ -11,9 +11,12 @@ import Navbar from "./components/Navbar";
 import HomeView from "./pages/HomeView";
 import ScrollToTop from "./components/others/ScrollToTop";
 import Dashboard from "./pages/Dashboard";
+import Login from "./components/Login";
+import ForgotPassword from "./components/ForgotPassword";
 import IShareView from "./pages/IShareView";
 import ITrainView from "./pages/ITrainView";
 
+// Full layout — Navbar + Footer (used by all public pages)
 const RootLayout = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -23,6 +26,19 @@ const RootLayout = () => {
         <Outlet />
       </main>
       <Footer />
+    </div>
+  );
+};
+
+// App layout — Navbar only, no Footer (used by authenticated/app pages)
+const AppLayout = () => {
+  return (
+    <div className="min-h-screen bg-white flex flex-col">
+      <ScrollToTop />
+      <Navbar />
+      <main className="flex-1 pt-20">
+        <Outlet />
+      </main>
     </div>
   );
 };
@@ -43,6 +59,7 @@ const NotFoundView = () => (
 );
 
 const router = createBrowserRouter([
+  // Public pages — with Footer
   {
     path: "/",
     element: <RootLayout />,
@@ -57,18 +74,33 @@ const router = createBrowserRouter([
         element: <JoinCommunity />,
       },
       {
+        path: "sign-in",
+        element: <Login />,
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPassword />,
+      },
+      {
         path: "iShare",
-        element: <IShareView />
+        element: <IShareView />,
       },
       {
         path: "iTrain",
-        element: <ITrainView />
-      }
+        element: <ITrainView />,
+      },
     ],
   },
+  // App pages — no Footer
   {
-    path: "dashboard",
-    element: <Dashboard />,
+    path: "/",
+    element: <AppLayout />,
+    children: [
+      {
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+    ],
   },
 ]);
 
