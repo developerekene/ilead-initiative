@@ -1,63 +1,13 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, Link } from "react-router-dom";
-import {
-  registerWithEmail,
-  loginWithGoogle,
-  selectUserLoading,
-  selectUserError,
-  clearError,
-} from "../../redux/slices/Userslice";
-import type { AppDispatch } from "../../redux/store";
-
-// Eye icons as inline SVG components
-const EyeOpenIcon = () => (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    strokeWidth={2}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-    />
-  </svg>
-);
-
-const EyeClosedIcon = () => (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    strokeWidth={2}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
-    />
-  </svg>
-);
+import { useNavigate } from "react-router-dom";
 
 const JoinCommunity: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-
-  const isLoading = useSelector(selectUserLoading);
-  const authError = useSelector(selectUserError);
 
   const [accountType, setAccountType] = useState<"contributor" | "individual">(
     "individual",
   );
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -65,63 +15,60 @@ const JoinCommunity: React.FC = () => {
     password: "",
     confirmPassword: "",
   });
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [localError, setLocalError] = useState<string | null>(null);
 
-  // Password visibility states
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setLocalError(null);
-    dispatch(clearError());
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error on change
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.firstName.trim()) newErrors.firstName = "Required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Required";
+    if (!formData.email.trim()) newErrors.email = "Required";
+    if (formData.password.length < 8) newErrors.password = "Min 8 characters";
+    if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match";
+    if (!acceptTerms) newErrors.terms = "You must accept the terms";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLocalError(null);
-
-    if (!acceptTerms) {
-      setLocalError("Please accept the terms and conditions to continue.");
-      return;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      setLocalError("Passwords do not match.");
-      return;
-    }
-    if (formData.password.length < 6) {
-      setLocalError("Password must be at least 6 characters.");
-      return;
-    }
-
-    const result = await dispatch(
-      registerWithEmail({
-        email: formData.email,
-        password: formData.password,
+    if (!validate()) return;
+    // Persist account type so CompleteProfile can read it
+    sessionStorage.setItem("ilead_account_type", accountType);
+    sessionStorage.setItem(
+      "ilead_reg_data",
+      JSON.stringify({
         firstName: formData.firstName,
         lastName: formData.lastName,
+        email: formData.email,
       }),
     );
-
-    if (registerWithEmail.fulfilled.match(result)) {
-      navigate("/dashboard");
-    }
+    navigate("/complete-profile");
   };
 
-  const handleGoogleSignUp = async () => {
-    setLocalError(null);
-    dispatch(clearError());
-
-    const result = await dispatch(loginWithGoogle());
-
-    if (loginWithGoogle.fulfilled.match(result)) {
-      navigate("/dashboard");
-    }
+  const handleGoogleSignUp = () => {
+    sessionStorage.setItem("ilead_account_type", accountType);
+    console.log("Initiating Google OAuth flow for:", accountType);
+    // After OAuth resolves, navigate to /complete-profile
   };
 
-  const displayError = localError || authError;
+  const inputClass = (field: string) =>
+    `w-full bg-slate-50 border rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:bg-white transition-all ${
+      errors[field]
+        ? "border-red-400 focus:border-red-400"
+        : "border-purple-950/10 focus:border-orange-500"
+    }`;
 
   return (
     <section className="w-full min-h-screen bg-slate-50/50 flex items-center justify-center py-20 px-4 sm:px-6 lg:px-12">
@@ -130,6 +77,7 @@ const JoinCommunity: React.FC = () => {
         <div className="lg:col-span-5 bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 p-10 md:p-12 flex flex-col justify-between text-white relative overflow-hidden">
           <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -top-20 -right-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+
           <div>
             <span className="font-black text-xl tracking-tight text-white mb-8 block">
               iLEAD
@@ -145,11 +93,12 @@ const JoinCommunity: React.FC = () => {
               network.
             </p>
           </div>
+
           <div className="my-8 flex justify-center items-center relative z-10 w-full">
             <figure className="text-center">
               <img
                 src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80"
-                alt="Cross-functional collaboration"
+                alt="Cross-functional collaboration illustration"
                 className="max-w-full h-auto rounded-2xl mx-auto object-cover"
               />
               <figcaption className="mt-3 text-xs text-purple-300/60 font-medium tracking-wide">
@@ -157,12 +106,13 @@ const JoinCommunity: React.FC = () => {
               </figcaption>
             </figure>
           </div>
+
           <div className="text-xs text-purple-300/60 font-medium">
-            "I am because We are" - Stronger Together
+            "I am because We are" — Stronger Together
           </div>
         </div>
 
-        {/* Right Panel — Form */}
+        {/* Right Panel */}
         <div className="lg:col-span-7 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
           <div className="mb-8">
             <h3 className="text-2xl font-black text-purple-950 tracking-tight">
@@ -173,7 +123,7 @@ const JoinCommunity: React.FC = () => {
             </p>
           </div>
 
-          {/* Account Type Toggle */}
+          {/* Workflow Track Toggle */}
           <div className="mb-8">
             <label className="text-xs font-black uppercase tracking-widest text-purple-950/40 block mb-3">
               Select Workflow Track
@@ -202,16 +152,17 @@ const JoinCommunity: React.FC = () => {
                 Join as Contributor
               </button>
             </div>
+
+            {/* Track context hint */}
+            <p className="text-xs text-purple-950/40 font-medium mt-2 pl-1">
+              {accountType === "individual"
+                ? "For builders, learners, and creators looking to grow within the ecosystem."
+                : "For mentors, industry professionals, and founders ready to give back."}
+            </p>
           </div>
 
-          {/* Error Banner */}
-          {displayError && (
-            <div className="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-sm font-semibold text-red-600">
-              {displayError}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            {/* Name row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-1">
@@ -220,12 +171,16 @@ const JoinCommunity: React.FC = () => {
                 <input
                   type="text"
                   name="firstName"
-                  required
                   value={formData.firstName}
                   onChange={handleInputChange}
                   placeholder="Ekene"
-                  className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+                  className={inputClass("firstName")}
                 />
+                {errors.firstName && (
+                  <p className="text-xs text-red-500 mt-1 pl-1">
+                    {errors.firstName}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-1">
@@ -234,15 +189,20 @@ const JoinCommunity: React.FC = () => {
                 <input
                   type="text"
                   name="lastName"
-                  required
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  placeholder="Okoli"
-                  className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+                  placeholder="Okonkwo"
+                  className={inputClass("lastName")}
                 />
+                {errors.lastName && (
+                  <p className="text-xs text-red-500 mt-1 pl-1">
+                    {errors.lastName}
+                  </p>
+                )}
               </div>
             </div>
 
+            {/* Email */}
             <div>
               <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-1">
                 Email Address
@@ -250,15 +210,17 @@ const JoinCommunity: React.FC = () => {
               <input
                 type="email"
                 name="email"
-                required
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="developer@ilead.com"
-                className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+                className={inputClass("email")}
               />
+              {errors.email && (
+                <p className="text-xs text-red-500 mt-1 pl-1">{errors.email}</p>
+              )}
             </div>
 
-            {/* Password fields with eye toggle */}
+            {/* Passwords */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-1">
@@ -268,23 +230,59 @@ const JoinCommunity: React.FC = () => {
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
-                    required
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="••••••••"
-                    className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 pr-11 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+                    className={inputClass("password") + " pr-10"}
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-950/30 hover:text-orange-500 transition-colors duration-200 focus:outline-none"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
+                    onClick={() => setShowPassword((p) => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-950/30 hover:text-purple-950/60 transition-colors"
+                    aria-label="Toggle password visibility"
                   >
-                    {showPassword ? <EyeClosedIcon /> : <EyeOpenIcon />}
+                    {showPassword ? (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
+                      </svg>
+                    )}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-xs text-red-500 mt-1 pl-1">
+                    {errors.password}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-1">
@@ -294,95 +292,113 @@ const JoinCommunity: React.FC = () => {
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
-                    required
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     placeholder="••••••••"
-                    className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 pr-11 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+                    className={inputClass("confirmPassword") + " pr-10"}
                   />
                   <button
                     type="button"
-                    onClick={() => setShowConfirmPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-950/30 hover:text-orange-500 transition-colors duration-200 focus:outline-none"
-                    aria-label={
-                      showConfirmPassword
-                        ? "Hide confirm password"
-                        : "Show confirm password"
-                    }
+                    onClick={() => setShowConfirmPassword((p) => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-950/30 hover:text-purple-950/60 transition-colors"
+                    aria-label="Toggle confirm password visibility"
                   >
-                    {showConfirmPassword ? <EyeClosedIcon /> : <EyeOpenIcon />}
+                    {showConfirmPassword ? (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
+                      </svg>
+                    )}
                   </button>
                 </div>
+                {errors.confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1 pl-1">
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* Terms Toggle */}
-            <div className="pt-2 flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-purple-950/[0.02]">
-              <span className="text-xs sm:text-sm font-semibold text-purple-950/70 pl-1">
-                Accept our{" "}
-                <Link
-                  to="/terms-and-conditions"
-                  className="text-purple-900 underline hover:text-orange-500 font-bold transition-colors"
-                >
-                  terms and conditions
-                </Link>
-              </span>
-              <button
-                type="button"
-                onClick={() => setAcceptTerms(!acceptTerms)}
-                className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 focus:outline-none cursor-pointer ${
-                  acceptTerms ? "bg-orange-500" : "bg-slate-300"
-                }`}
-                aria-label="Toggle acceptance of terms"
+            {/* Terms toggle */}
+            <div className="pt-2">
+              <div
+                className={`flex items-center justify-between bg-slate-50 p-4 rounded-xl border transition-colors ${errors.terms ? "border-red-300 bg-red-50/30" : "border-purple-950/[0.02]"}`}
               >
-                <div
-                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
-                    acceptTerms ? "translate-x-5" : "translate-x-0"
+                <span className="text-xs sm:text-sm font-semibold text-purple-950/70 pl-1">
+                  Accept our{" "}
+                  <a
+                    href="/terms"
+                    className="text-purple-900 underline hover:text-orange-500 font-bold transition-colors"
+                  >
+                    terms and conditions
+                  </a>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAcceptTerms((prev) => !prev);
+                    if (errors.terms)
+                      setErrors((prev) => ({ ...prev, terms: "" }));
+                  }}
+                  className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 focus:outline-none cursor-pointer flex-shrink-0 ml-4 ${
+                    acceptTerms ? "bg-orange-500" : "bg-slate-300"
                   }`}
-                />
-              </button>
+                  aria-label="Toggle acceptance of terms"
+                >
+                  <div
+                    className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                      acceptTerms ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+              {errors.terms && (
+                <p className="text-xs text-red-500 mt-1 pl-1">{errors.terms}</p>
+              )}
             </div>
 
-            {/* Action Buttons */}
+            {/* Actions */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
               <button
                 type="submit"
-                disabled={isLoading}
-                className="w-full bg-orange-500 hover:bg-purple-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-4 px-6 rounded-xl text-sm tracking-wide shadow-lg shadow-orange-500/10 hover:shadow-purple-900/10 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full bg-orange-500 hover:bg-purple-900 text-white font-black py-4 px-6 rounded-xl text-sm tracking-wide shadow-lg shadow-orange-500/10 hover:shadow-purple-900/10 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
               >
-                {isLoading ? (
-                  <>
-                    <svg
-                      className="animate-spin w-4 h-4"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v8z"
-                      />
-                    </svg>
-                    Creating Account...
-                  </>
-                ) : (
-                  "Join Community"
-                )}
+                Join Community
               </button>
 
               <button
                 type="button"
                 onClick={handleGoogleSignUp}
-                disabled={isLoading}
-                className="w-full bg-white hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed border-2 border-purple-950/10 text-purple-950 font-black py-4 px-6 rounded-xl text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer"
+                className="w-full bg-white hover:bg-slate-50 border-2 border-purple-950/10 text-purple-950 font-black py-4 px-6 rounded-xl text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                   <path
@@ -393,17 +409,6 @@ const JoinCommunity: React.FC = () => {
                 Continue with Google
               </button>
             </div>
-
-            {/* Sign in redirect */}
-            <p className="text-center text-xs text-purple-950/40 font-medium pt-2">
-              Already have an account?{" "}
-              <Link
-                to="/sign-in"
-                className="text-orange-500 font-bold hover:text-purple-900 transition-colors"
-              >
-                Sign in
-              </Link>
-            </p>
           </form>
         </div>
       </div>
@@ -425,6 +430,44 @@ export default JoinCommunity;
 // } from "../../redux/slices/Userslice";
 // import type { AppDispatch } from "../../redux/store";
 
+// // Eye icons as inline SVG components
+// const EyeOpenIcon = () => (
+//   <svg
+//     className="w-4 h-4"
+//     fill="none"
+//     stroke="currentColor"
+//     viewBox="0 0 24 24"
+//     strokeWidth={2}
+//   >
+//     <path
+//       strokeLinecap="round"
+//       strokeLinejoin="round"
+//       d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+//     />
+//     <path
+//       strokeLinecap="round"
+//       strokeLinejoin="round"
+//       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+//     />
+//   </svg>
+// );
+
+// const EyeClosedIcon = () => (
+//   <svg
+//     className="w-4 h-4"
+//     fill="none"
+//     stroke="currentColor"
+//     viewBox="0 0 24 24"
+//     strokeWidth={2}
+//   >
+//     <path
+//       strokeLinecap="round"
+//       strokeLinejoin="round"
+//       d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
+//     />
+//   </svg>
+// );
+
 // const JoinCommunity: React.FC = () => {
 //   const dispatch = useDispatch<AppDispatch>();
 //   const navigate = useNavigate();
@@ -444,6 +487,10 @@ export default JoinCommunity;
 //   });
 //   const [acceptTerms, setAcceptTerms] = useState(false);
 //   const [localError, setLocalError] = useState<string | null>(null);
+
+//   // Password visibility states
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 //   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 //     const { name, value } = e.target;
@@ -499,7 +546,7 @@ export default JoinCommunity;
 //   return (
 //     <section className="w-full min-h-screen bg-slate-50/50 flex items-center justify-center py-20 px-4 sm:px-6 lg:px-12">
 //       <div className="bg-white w-full max-w-6xl rounded-[2.5rem] shadow-xl shadow-purple-950/5 border border-purple-950/5 overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[750px]">
-//         {/* Left Panel — unchanged */}
+//         {/* Left Panel */}
 //         <div className="lg:col-span-5 bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 p-10 md:p-12 flex flex-col justify-between text-white relative overflow-hidden">
 //           <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
 //           <div className="absolute -top-20 -right-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -610,7 +657,7 @@ export default JoinCommunity;
 //                   required
 //                   value={formData.lastName}
 //                   onChange={handleInputChange}
-//                   placeholder="Okonkwo"
+//                   placeholder="Okoli"
 //                   className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
 //                 />
 //               </div>
@@ -631,34 +678,61 @@ export default JoinCommunity;
 //               />
 //             </div>
 
+//             {/* Password fields with eye toggle */}
 //             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 //               <div>
 //                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-1">
 //                   Password
 //                 </label>
-//                 <input
-//                   type="password"
-//                   name="password"
-//                   required
-//                   value={formData.password}
-//                   onChange={handleInputChange}
-//                   placeholder="••••••••"
-//                   className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
-//                 />
+//                 <div className="relative">
+//                   <input
+//                     type={showPassword ? "text" : "password"}
+//                     name="password"
+//                     required
+//                     value={formData.password}
+//                     onChange={handleInputChange}
+//                     placeholder="••••••••"
+//                     className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 pr-11 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+//                   />
+//                   <button
+//                     type="button"
+//                     onClick={() => setShowPassword((v) => !v)}
+//                     className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-950/30 hover:text-orange-500 transition-colors duration-200 focus:outline-none"
+//                     aria-label={
+//                       showPassword ? "Hide password" : "Show password"
+//                     }
+//                   >
+//                     {showPassword ? <EyeClosedIcon /> : <EyeOpenIcon />}
+//                   </button>
+//                 </div>
 //               </div>
 //               <div>
 //                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-1">
 //                   Confirm Password
 //                 </label>
-//                 <input
-//                   type="password"
-//                   name="confirmPassword"
-//                   required
-//                   value={formData.confirmPassword}
-//                   onChange={handleInputChange}
-//                   placeholder="••••••••"
-//                   className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
-//                 />
+//                 <div className="relative">
+//                   <input
+//                     type={showConfirmPassword ? "text" : "password"}
+//                     name="confirmPassword"
+//                     required
+//                     value={formData.confirmPassword}
+//                     onChange={handleInputChange}
+//                     placeholder="••••••••"
+//                     className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 pr-11 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+//                   />
+//                   <button
+//                     type="button"
+//                     onClick={() => setShowConfirmPassword((v) => !v)}
+//                     className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-950/30 hover:text-orange-500 transition-colors duration-200 focus:outline-none"
+//                     aria-label={
+//                       showConfirmPassword
+//                         ? "Hide confirm password"
+//                         : "Show confirm password"
+//                     }
+//                   >
+//                     {showConfirmPassword ? <EyeClosedIcon /> : <EyeOpenIcon />}
+//                   </button>
+//                 </div>
 //               </div>
 //             </div>
 

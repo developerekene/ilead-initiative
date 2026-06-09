@@ -15,6 +15,7 @@ import Login from "./components/Login";
 import ForgotPassword from "./components/ForgotPassword";
 import IShareView from "./pages/IShareView";
 import ITrainView from "./pages/ITrainView";
+import CompleteProfile from "./components/Completeprofile";
 
 // Full layout — Navbar + Footer (used by all public pages)
 const RootLayout = () => {
@@ -88,6 +89,10 @@ const router = createBrowserRouter([
       {
         path: "iTrain",
         element: <ITrainView />,
+      },
+      {
+        path: "complete-profile",
+        element: <CompleteProfile />,
       },
     ],
   },
