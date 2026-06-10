@@ -16,7 +16,7 @@ const firebaseConfig = {
 
 // Prevent re-initializing the app on hot reloads
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-console.log("API KEY:", process.env.REACT_APP_FIREBASE_API_KEY);
+// console.log("API KEY:", process.env.REACT_APP_FIREBASE_API_KEY);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
