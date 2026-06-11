@@ -358,7 +358,7 @@ const Login: React.FC = () => {
             <p className="text-center text-xs text-purple-950/40 font-medium pt-2">
               Don't have an account?{" "}
               <Link
-                to="/join-our-commnity"
+                to="/join-our-community"
                 className="text-orange-500 font-bold hover:text-purple-900 transition-colors"
               >
                 Join the community
