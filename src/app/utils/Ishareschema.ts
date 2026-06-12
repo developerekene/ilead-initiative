@@ -30,7 +30,7 @@ export interface ISharePost {
   flagged?: boolean; // set by moderation (Ticket 16)
 }
 
-// ── Factory — build a new post payload (omit id, added after write) ───────────
+// ── Factory — build a new post payload (omit id, added after write)
 export const buildISharePost = (
   overrides: Omit<ISharePost, "id" | "timestamp" | "status">,
 ): Omit<ISharePost, "id"> => ({
@@ -42,7 +42,7 @@ export const buildISharePost = (
   fulfilledAt: null,
 });
 
-// ── Firestore collection name ─────────────────────────────────────────────────
+// ── Firestore collection name
 export const ISHARE_COLLECTION = "ishare_posts";
 
 // ── Firestore Security Rules (deploy via `firebase deploy --only firestore`) ──

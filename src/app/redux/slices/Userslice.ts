@@ -54,13 +54,13 @@ const writeUserDoc = async (
   );
 };
 
-// ─── Helper: read profileComplete from Firestore ──────────────────────────────
+// Helper: read profileComplete from Firestore
 const fetchProfileComplete = async (uid: string): Promise<boolean> => {
   const snap = await getDoc(doc(db, "users", uid));
   return snap.exists() ? (snap.data()?.profileComplete ?? false) : false;
 };
 
-// ─── Async Thunks ─────────────────────────────────────────────────────────────
+// Async Thunks
 
 export const loginWithEmail = createAsyncThunk(
   "user/loginWithEmail",
