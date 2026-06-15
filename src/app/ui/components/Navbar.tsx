@@ -310,7 +310,7 @@ const Navbar: React.FC = () => {
             </div>
           )}
 
-          <NotificationCenter />
+          {isLoggedIn && <NotificationCenter />}
 
           {/* Mobile Hamburger */}
           <button

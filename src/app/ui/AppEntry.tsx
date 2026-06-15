@@ -9,11 +9,8 @@ import { Provider, useDispatch } from "react-redux";
 import { onAuthStateChanged } from "firebase/auth";
 import { store } from "../redux/store";
 import { auth } from "../firebase";
-import {
-  setUser,
-  setProfileComplete,
-  SerializedUser,
-} from "../redux/slices/Userslice";
+import { setUser, setProfileComplete } from "../redux/slices/Userslice";
+import { SerializedUser } from "../Authservice";
 import { AppDispatch } from "../redux/store";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
@@ -29,12 +26,10 @@ import IShareView from "./pages/IShareView";
 import ITrainView from "./pages/ITrainView";
 import CompleteProfile from "./components/Completeprofile";
 
-// ─── Auth listener ────────────────────────────────────────────────────────────
+// Auth listener
 // Serializes the Firebase User BEFORE it enters Redux so Immer never
 // receives a class instance — that was silently breaking state after
 // onAuthStateChanged fired post-registration.
-
-// Replace just the AuthListener component in your existing AppEntry.tsx:
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -83,7 +78,7 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   return null;
 };
 
-// ─── Layouts ──────────────────────────────────────────────────────────────────
+// ─── Layouts
 const RootLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
     <ScrollToTop />
@@ -99,6 +94,15 @@ const AppLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
     <ScrollToTop />
     <Navbar />
+    <main className="flex-1 pt-20">
+      <Outlet />
+    </main>
+  </div>
+);
+
+const ProfileLayout = () => (
+  <div className="min-h-screen bg-white flex flex-col">
+    <ScrollToTop />
     <main className="flex-1 pt-20">
       <Outlet />
     </main>
@@ -136,14 +140,17 @@ const router = createBrowserRouter([
       { path: "iTrain", element: <ITrainView /> },
     ],
   },
-  // App pages — Navbar only, no Footer
+  // App pages  (Navbar only, no Footer)
   {
     path: "/",
     element: <AppLayout />,
-    children: [
-      { path: "dashboard", element: <Dashboard /> },
-      { path: "complete-profile", element: <CompleteProfile /> },
-    ],
+    children: [{ path: "dashboard", element: <Dashboard /> }],
+  },
+  // App pages (No Navbar, no Footer)
+  {
+    path: "/",
+    element: <ProfileLayout />,
+    children: [{ path: "complete-profile", element: <CompleteProfile /> }],
   },
 ]);
 
