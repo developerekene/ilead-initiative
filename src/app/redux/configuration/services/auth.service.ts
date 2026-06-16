@@ -4,6 +4,15 @@ import { collection, doc, getDoc, setDoc } from "firebase/firestore";
 import { store } from "../../store";
 import { setUser } from "../../slices/User";
 
+interface RegistrationInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  accountType?: string;
+}
+
 const generateUniqueId = (): string => {
   return Math.random().toString(36).substr(2, 9);
 };
@@ -47,9 +56,17 @@ export class AuthService {
         const dataForRedux = getUserData?.user?.primaryInformation;
         store.dispatch(
           setUser({
+            // email: dataForRedux?.email,
+            // firstName: dataForRedux?.firstName,
+            // lastName: dataForRedux?.lastName,
+            uid: user.uid,
             email: dataForRedux?.email,
             firstName: dataForRedux?.firstName,
             lastName: dataForRedux?.lastName,
+            displayName:
+              `${dataForRedux?.firstName ?? ""} ${dataForRedux?.lastName ?? ""}`.trim(),
+            isLoggedIn: true,
+            profileComplete: false,
           }),
         );
       }

@@ -14,7 +14,7 @@ import {
   selectIsLoggedIn,
   selectProfileComplete,
   setProfileComplete,
-} from "../../redux/slices/Userslice";
+} from "../../redux/slices/User";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../redux/store";
 
@@ -314,24 +314,27 @@ const CompleteProfile: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const profileComplete = useSelector(selectProfileComplete);
 
-  // ── Auth guard: redirect if not logged in ─────────────────────────────────
-  // We check Redux state — no need for onAuthStateChanged here because
-  // the userSlice setUser action is already called by your app entry point listener
-  // REPLACE with:
+  // useEffect(() => {
+  //   if (!isLoggedIn) {
+  //     navigate("/join-our-community", { replace: true });
+  //   }
+  // }, [isLoggedIn, navigate]);
+
+  //Auth guard: redirect if not logged in
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate("/join-our-community", { replace: true });
+      navigate("/sign-in", { replace: true });
     }
   }, [isLoggedIn, navigate]);
 
   useEffect(() => {
-    // Returning user who already completed profile — skip straight to dashboard
+    // Returning user who already completed profile, skip straight to dashboard
     if (profileComplete === true) {
       navigate("/dashboard", { replace: true });
     }
   }, [profileComplete, navigate]);
 
-  // ── Local UI state ────────────────────────────────────────────────────────
+  //Local UI state
   const [accountType, setAccountType] = useState<AccountType>("individual");
   const [step, setStep] = useState<Step>(1);
   const [isDone, setIsDone] = useState(false);
@@ -448,9 +451,7 @@ const CompleteProfile: React.FC = () => {
     return Object.keys(e).length === 0;
   };
 
-  // ── Save to Firestore ─────────────────────────────────────────────────────
-  // We use the uid from the Redux store (SerializedUser.uid) — no Firebase
-  // auth object needed here, just the plain uid string.
+  //Save to Firestore
   const saveToFirestore = async () => {
     if (!reduxUser?.uid) {
       setSaveError("Session expired. Please sign in again.");
@@ -460,51 +461,29 @@ const CompleteProfile: React.FC = () => {
     setSaving(true);
     setSaveError("");
 
-    // WithFieldValue<DocumentData> is the exact type Firestore's updateDoc
-    // accepts — it allows FieldValue sentinels (serverTimestamp) alongside
-    // plain values, and satisfies the required index signature.
     const profileData: WithFieldValue<DocumentData> = {
-      // Step 1
       location,
       bio,
       pronouns,
       ...(avatarPreview ? { avatarUrl: avatarPreview } : {}),
-
-      // Step 2 — Individual fields
       ...(accountType === "individual"
-        ? {
-            interestArea,
-            skillLevel: skillLevel[0] ?? "",
-            goals,
-            hoursPerWeek,
-          }
+        ? { interestArea, skillLevel: skillLevel[0] ?? "", goals, hoursPerWeek }
         : {}),
-
-      // Step 2 — Contributor fields
       ...(accountType === "contributor"
-        ? {
-            role,
-            yearsExp,
-            contribSkills,
-            contribTypes,
-          }
+        ? { role, yearsExp, contribSkills, contribTypes }
         : {}),
-
-      // Step 3
       availability,
       contactMethod,
       ...(linkedin ? { linkedin } : {}),
       ...(github ? { github } : {}),
       ...(twitter ? { twitter } : {}),
-
-      // Flip the profileComplete flag — Dashboard can gate on this
       profileComplete: true,
       updatedAt: serverTimestamp(),
     };
 
     try {
       await updateDoc(doc(db, "users", reduxUser.uid), profileData);
-      dispatch(setProfileComplete()); // ← flip Redux flag immediately
+      dispatch(setProfileComplete(true));
       sessionStorage.removeItem("ilead_account_type");
       sessionStorage.removeItem("ilead_reg_data");
       setIsDone(true);
@@ -516,7 +495,7 @@ const CompleteProfile: React.FC = () => {
     }
   };
 
-  // ── Step navigation ───────────────────────────────────────────────────────
+  //Step navigation
   const goNext = () => {
     if (step === 1 && !validateStep1()) return;
     if (step === 2 && !validateStep2()) return;

@@ -2,15 +2,22 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import {
-  loginWithEmail,
-  loginWithGoogle,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../../firebase";
+import {
+  setUser,
+  setLoading,
+  setError,
+  clearError,
   selectUserLoading,
   selectUserError,
-  clearError,
-} from "../../redux/slices/Userslice";
+} from "../../redux/slices/User";
 import type { AppDispatch } from "../../redux/store";
 
-// Eye icons as inline SVG components
 const EyeOpenIcon = () => (
   <svg
     className="w-4 h-4"
@@ -48,6 +55,8 @@ const EyeClosedIcon = () => (
   </svg>
 );
 
+const googleProvider = new GoogleAuthProvider();
+
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -55,13 +64,12 @@ const Login: React.FC = () => {
   const isLoading = useSelector(selectUserLoading);
   const authError = useSelector(selectUserError);
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+
+  const displayError = localError || authError;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -70,44 +78,114 @@ const Login: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  //Rehydrate Redux from Firestore after any sign-in method
+  const hydrateUser = async (
+    uid: string,
+    fallback: { email: string; displayName: string; photoURL: string | null },
+  ) => {
+    try {
+      const snap = await getDoc(doc(db, "users", uid));
+      if (snap.exists()) {
+        const data = snap.data();
+        const primary = data?.user?.primaryInformation ?? {};
+        dispatch(
+          setUser({
+            uid,
+            email: primary.email ?? fallback.email,
+            firstName: primary.firstName ?? "",
+            lastName: primary.lastName ?? "",
+            displayName:
+              `${primary.firstName ?? ""} ${primary.lastName ?? ""}`.trim() ||
+              fallback.displayName,
+            isLoggedIn: true,
+            profileComplete: data?.profileComplete ?? false,
+            photoURL: fallback.photoURL,
+          }),
+        );
+        return data?.profileComplete ?? false;
+      }
+    } catch (err) {
+      console.warn("Login: Firestore hydration failed", err);
+    }
+    // Firestore unavailable — set minimal state so the user isn't blocked
+    dispatch(
+      setUser({
+        uid,
+        email: fallback.email,
+        displayName: fallback.displayName,
+        isLoggedIn: true,
+        profileComplete: false,
+        photoURL: fallback.photoURL,
+      }),
+    );
+    return false;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
+    dispatch(clearError());
 
     if (!formData.email || !formData.password) {
       setLocalError("Please fill in all fields.");
       return;
     }
 
-    const result = await dispatch(
-      loginWithEmail({
-        email: formData.email,
-        password: formData.password,
-      }),
-    );
-
-    if (loginWithEmail.fulfilled.match(result)) {
-      navigate("/dashboard");
+    dispatch(setLoading(true));
+    try {
+      const credential = await signInWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password,
+      );
+      const profileComplete = await hydrateUser(credential.user.uid, {
+        email: credential.user.email ?? formData.email,
+        displayName: credential.user.displayName ?? "",
+        photoURL: credential.user.photoURL,
+      });
+      navigate(profileComplete ? "/dashboard" : "/complete-profile", {
+        replace: true,
+      });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Sign in failed. Please try again.";
+      dispatch(setError(message));
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
   const handleGoogleLogin = async () => {
     setLocalError(null);
     dispatch(clearError());
-
-    const result = await dispatch(loginWithGoogle());
-
-    if (loginWithGoogle.fulfilled.match(result)) {
-      navigate("/dashboard");
+    dispatch(setLoading(true));
+    try {
+      const credential = await signInWithPopup(auth, googleProvider);
+      const profileComplete = await hydrateUser(credential.user.uid, {
+        email: credential.user.email ?? "",
+        displayName: credential.user.displayName ?? "",
+        photoURL: credential.user.photoURL,
+      });
+      navigate(profileComplete ? "/dashboard" : "/complete-profile", {
+        replace: true,
+      });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Google sign in failed. Please try again.";
+      dispatch(setError(message));
+    } finally {
+      dispatch(setLoading(false));
     }
   };
-
-  const displayError = localError || authError;
 
   return (
     <section className="w-full min-h-screen bg-slate-50/50 flex items-center justify-center py-20 px-4 sm:px-6 lg:px-12">
       <div className="bg-white w-full max-w-6xl rounded-[2.5rem] shadow-xl shadow-purple-950/5 border border-purple-950/5 overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[750px]">
-        {/* Left Panel */}
+        {/* ── Left Panel ── */}
         <div className="lg:col-span-5 bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 p-10 md:p-12 flex flex-col justify-between text-white relative overflow-hidden">
           <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -top-20 -right-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -127,85 +205,58 @@ const Login: React.FC = () => {
             </p>
           </div>
 
-          {/* Stats block — replaces image on login for a distinct feel */}
           <div className="my-8 relative z-10 w-full space-y-4">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
-                <svg
-                  className="w-5 h-5 text-orange-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
+            {[
+              {
+                icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
+                color: "orange",
+                stat: "850+",
+                label: "Active peers connected",
+              },
+              {
+                icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z",
+                color: "purple",
+                stat: "450 hrs",
+                label: "Mentorship hours gifted",
+              },
+              {
+                icon: "M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2",
+                color: "orange",
+                stat: "84 Systems",
+                label: "Workstations deployed",
+              },
+            ].map(({ icon, color, stat, label }) => (
+              <div
+                key={stat}
+                className="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center gap-4"
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${color === "orange" ? "bg-orange-500/20" : "bg-purple-400/20"}`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+                  <svg
+                    className={`w-5 h-5 ${color === "orange" ? "text-orange-400" : "text-purple-300"}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d={icon}
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-white font-black text-lg leading-none">
+                    {stat}
+                  </p>
+                  <p className="text-purple-300/70 text-xs font-medium mt-0.5">
+                    {label}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-white font-black text-lg leading-none">
-                  850+
-                </p>
-                <p className="text-purple-300/70 text-xs font-medium mt-0.5">
-                  Active peers connected
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-purple-400/20 flex items-center justify-center shrink-0">
-                <svg
-                  className="w-5 h-5 text-purple-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-white font-black text-lg leading-none">
-                  450 hrs
-                </p>
-                <p className="text-purple-300/70 text-xs font-medium mt-0.5">
-                  Mentorship hours gifted
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
-                <svg
-                  className="w-5 h-5 text-orange-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-white font-black text-lg leading-none">
-                  84 Systems
-                </p>
-                <p className="text-purple-300/70 text-xs font-medium mt-0.5">
-                  Workstations deployed
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
 
           <div className="text-xs text-purple-300/60 font-medium">
@@ -213,7 +264,7 @@ const Login: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Panel — Login Form */}
+        {/* ── Right Panel ── */}
         <div className="lg:col-span-7 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
           <div className="mb-10">
             <h3 className="text-2xl font-black text-purple-950 tracking-tight">
@@ -224,7 +275,6 @@ const Login: React.FC = () => {
             </p>
           </div>
 
-          {/* Error Banner */}
           {displayError && (
             <div className="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-sm font-semibold text-red-600">
               {displayError}
@@ -232,7 +282,6 @@ const Login: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
             <div>
               <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-1">
                 Email Address
@@ -248,7 +297,6 @@ const Login: React.FC = () => {
               />
             </div>
 
-            {/* Password with eye toggle */}
             <div>
               <div className="flex items-center justify-between mb-1.5 pl-1">
                 <label className="text-xs font-bold text-purple-950/70">
@@ -282,7 +330,6 @@ const Login: React.FC = () => {
               </div>
             </div>
 
-            {/* Remember Me Toggle */}
             <div className="pt-1 flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-purple-950/[0.02]">
               <span className="text-xs sm:text-sm font-semibold text-purple-950/70 pl-1">
                 Keep me signed in
@@ -290,25 +337,20 @@ const Login: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setRememberMe(!rememberMe)}
-                className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 focus:outline-none cursor-pointer ${
-                  rememberMe ? "bg-orange-500" : "bg-slate-300"
-                }`}
+                className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 focus:outline-none cursor-pointer ${rememberMe ? "bg-orange-500" : "bg-slate-300"}`}
                 aria-label="Toggle remember me"
               >
                 <div
-                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
-                    rememberMe ? "translate-x-5" : "translate-x-0"
-                  }`}
+                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${rememberMe ? "translate-x-5" : "translate-x-0"}`}
                 />
               </button>
             </div>
 
-            {/* Action Buttons */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-orange-500 hover:bg-purple-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-4 px-6 rounded-xl text-sm tracking-wide shadow-lg shadow-orange-500/10 hover:shadow-purple-900/10 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full bg-orange-500 hover:bg-purple-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-4 px-6 rounded-xl text-sm tracking-wide shadow-lg shadow-orange-500/10 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>
@@ -354,7 +396,6 @@ const Login: React.FC = () => {
               </button>
             </div>
 
-            {/* Sign up redirect */}
             <p className="text-center text-xs text-purple-950/40 font-medium pt-2">
               Don't have an account?{" "}
               <Link

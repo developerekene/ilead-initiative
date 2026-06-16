@@ -10,7 +10,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
-import { selectUser } from "../../../redux/slices/Userslice";
+import { selectUser } from "../../../redux/slices/User";
 import { ISHARE_COLLECTION, ISharePost } from "../../../utils/Ishareschema";
 
 // Firestore collection for feedback / milestone records

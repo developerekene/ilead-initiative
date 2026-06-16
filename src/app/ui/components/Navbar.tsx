@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase";
 import {
   selectUser,
   selectIsLoggedIn,
-  logoutUser,
-} from "../../redux/slices/Userslice";
+  clearUser,
+} from "../../redux/slices/User";
 import type { AppDispatch } from "../../redux/store";
 import NotificationCenter from "./NotificationCenter";
 
@@ -13,16 +15,13 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
-  // Redux auth state
   const user = useSelector(selectUser);
   const isLoggedIn = useSelector(selectIsLoggedIn);
 
-  // Derive a short greeting name: first word of displayName, or email prefix
   const greetingName = user?.displayName
     ? user.displayName.split(" ")[0]
     : (user?.email?.split("@")[0] ?? "there");
 
-  // Local UI state
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -34,20 +33,15 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-
-      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(target))
         setIsMoreOpen(false);
-      }
-      if (profileRef.current && !profileRef.current.contains(target)) {
+      if (profileRef.current && !profileRef.current.contains(target))
         setIsProfileOpen(false);
-      }
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(target)) {
         const clickedToggle = (target as HTMLElement).closest(
           ".mobile-toggle-btn",
         );
-        if (!clickedToggle) {
-          setIsMobileMenuOpen(false);
-        }
+        if (!clickedToggle) setIsMobileMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -60,16 +54,22 @@ const Navbar: React.FC = () => {
     setIsProfileOpen(false);
   };
 
+  //Sign out via Firebase directly, then clear Redux, no thunk needed
   const handleLogout = async () => {
     closeAllMenus();
-    await dispatch(logoutUser());
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+    dispatch(clearUser());
     navigate("/");
   };
 
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-orange-100 shadow-sm shadow-purple-500/5">
       <nav className="flex justify-between items-center px-6 py-4 md:px-12 max-w-7xl mx-auto">
-        {/* Logo Area */}
+        {/* Logo */}
         <Link
           to="/"
           onClick={closeAllMenus}
@@ -81,7 +81,7 @@ const Navbar: React.FC = () => {
           </span>
         </Link>
 
-        {/* Desktop Navigation Links */}
+        {/* Desktop Nav Links */}
         <div className="hidden md:flex items-center gap-10">
           <Link
             to="/iShare"
@@ -96,7 +96,6 @@ const Navbar: React.FC = () => {
             iTrain
           </Link>
 
-          {/* More Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsMoreOpen(!isMoreOpen)}
@@ -120,41 +119,25 @@ const Navbar: React.FC = () => {
 
             {isMoreOpen && (
               <div className="absolute left-0 mt-3 w-48 rounded-xl bg-white border border-orange-100 shadow-xl shadow-purple-950/5 py-2 z-50">
-                <Link
-                  to="/all-causes"
-                  onClick={closeAllMenus}
-                  className="block px-4 py-2 text-sm font-medium text-purple-950/70 hover:text-purple-900 hover:bg-orange-50/60 transition-colors"
-                >
-                  All Campaigns
-                </Link>
-                <Link
-                  to="/about-ilead"
-                  onClick={closeAllMenus}
-                  className="block px-4 py-2 text-sm font-medium text-purple-950/70 hover:text-purple-900 hover:bg-orange-50/60 transition-colors"
-                >
-                  About Ilead
-                </Link>
-                <Link
-                  to="/privacy-policy"
-                  onClick={closeAllMenus}
-                  className="block px-4 py-2 text-sm font-medium text-purple-950/70 hover:text-purple-900 hover:bg-orange-50/60 transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-                <Link
-                  to="/terms-and-conditions"
-                  onClick={closeAllMenus}
-                  className="block px-4 py-2 text-sm font-medium text-purple-950/70 hover:text-purple-900 hover:bg-orange-50/60 transition-colors"
-                >
-                  Terms and Conditions
-                </Link>
-                <Link
-                  to="/contact"
-                  onClick={closeAllMenus}
-                  className="block px-4 py-2 text-sm font-medium text-purple-950/70 hover:text-purple-900 hover:bg-orange-50/60 transition-colors"
-                >
-                  Contact
-                </Link>
+                {[
+                  { to: "/all-causes", label: "All Campaigns" },
+                  { to: "/about-ilead", label: "About Ilead" },
+                  { to: "/privacy-policy", label: "Privacy Policy" },
+                  {
+                    to: "/terms-and-conditions",
+                    label: "Terms and Conditions",
+                  },
+                  { to: "/contact", label: "Contact" },
+                ].map(({ to, label }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={closeAllMenus}
+                    className="block px-4 py-2 text-sm font-medium text-purple-950/70 hover:text-purple-900 hover:bg-orange-50/60 transition-colors"
+                  >
+                    {label}
+                  </Link>
+                ))}
               </div>
             )}
           </div>
@@ -162,7 +145,6 @@ const Navbar: React.FC = () => {
 
         {/* Right Action Group */}
         <div className="flex items-center gap-4 md:gap-6">
-          {/* ── CTA: "Join our Community" OR "Welcome, [Name]" ── */}
           {isLoggedIn ? (
             <div className="hidden sm:flex items-center gap-2 bg-purple-50 border border-purple-100 px-4 py-2 rounded-full">
               <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
@@ -176,13 +158,12 @@ const Navbar: React.FC = () => {
                 closeAllMenus();
                 navigate("/join-our-community");
               }}
-              className="hidden sm:inline-block bg-orange-500 hover:bg-purple-700 text-white px-6 py-2.5 rounded-full text-sm font-bold tracking-wide transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer shadow-lg shadow-orange-500/20 hover:shadow-purple-700/20"
+              className="hidden sm:inline-block bg-orange-500 hover:bg-purple-700 text-white px-6 py-2.5 rounded-full text-sm font-bold tracking-wide transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer shadow-lg shadow-orange-500/20"
             >
               Join our Community
             </button>
           )}
 
-          {/* Profile Dropdown */}
           {isLoggedIn && (
             <div className="relative" ref={profileRef}>
               <button
@@ -214,96 +195,39 @@ const Navbar: React.FC = () => {
 
               {isProfileOpen && (
                 <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-white border border-orange-100 shadow-xl shadow-purple-950/10 overflow-hidden z-50">
-                  {/* User Info */}
                   <div className="px-4 py-4 border-b border-gray-100">
-                    {isLoggedIn ? (
-                      <>
-                        <p className="font-bold text-purple-950">
-                          {user?.displayName ?? "Community Member"}
-                        </p>
-                        <p className="text-xs text-gray-500">{user?.email}</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="font-bold text-purple-950">
-                          Not signed in
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Join the iLEAD ecosystem
-                        </p>
-                      </>
-                    )}
+                    <p className="font-bold text-purple-950">
+                      {user?.displayName ?? "Community Member"}
+                    </p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
                   </div>
 
-                  <Link
-                    to="/profile"
-                    onClick={closeAllMenus}
-                    className="block px-4 py-3 text-sm hover:bg-orange-50 transition-colors"
-                  >
-                    My Profile
-                  </Link>
-                  <Link
-                    to="/dashboard"
-                    onClick={closeAllMenus}
-                    className="block px-4 py-3 text-sm hover:bg-orange-50 transition-colors"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    to="/my-contributions"
-                    onClick={closeAllMenus}
-                    className="block px-4 py-3 text-sm hover:bg-orange-50 transition-colors"
-                  >
-                    My Contributions
-                  </Link>
-                  <Link
-                    to="/saved-campaigns"
-                    onClick={closeAllMenus}
-                    className="block px-4 py-3 text-sm hover:bg-orange-50 transition-colors"
-                  >
-                    Saved Campaigns
-                  </Link>
-                  <Link
-                    to="/notifications"
-                    onClick={closeAllMenus}
-                    className="block px-4 py-3 text-sm hover:bg-orange-50 transition-colors"
-                  >
-                    Notifications
-                  </Link>
-                  <Link
-                    to="/settings"
-                    onClick={closeAllMenus}
-                    className="block px-4 py-3 text-sm hover:bg-orange-50 transition-colors"
-                  >
-                    Settings
-                  </Link>
-                  <Link
-                    to="/help"
-                    onClick={closeAllMenus}
-                    className="block px-4 py-3 text-sm hover:bg-orange-50 transition-colors"
-                  >
-                    Help & Support
-                  </Link>
+                  {[
+                    { to: "/profile", label: "My Profile" },
+                    { to: "/dashboard", label: "Dashboard" },
+                    { to: "/my-contributions", label: "My Contributions" },
+                    { to: "/saved-campaigns", label: "Saved Campaigns" },
+                    { to: "/notifications", label: "Notifications" },
+                    { to: "/settings", label: "Settings" },
+                    { to: "/help", label: "Help & Support" },
+                  ].map(({ to, label }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={closeAllMenus}
+                      className="block px-4 py-3 text-sm hover:bg-orange-50 transition-colors"
+                    >
+                      {label}
+                    </Link>
+                  ))}
 
                   <div className="border-t border-gray-100">
-                    {isLoggedIn ? (
-                      <button
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        Logout
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          closeAllMenus();
-                          navigate("/join-our-community");
-                        }}
-                        className="w-full text-left px-4 py-3 text-sm text-orange-500 font-bold hover:bg-orange-50 transition-colors"
-                      >
-                        Sign In / Register
-                      </button>
-                    )}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      Logout
+                    </button>
                   </div>
                 </div>
               )}
@@ -371,14 +295,23 @@ const Navbar: React.FC = () => {
             Contact
           </Link>
 
-          {/* Mobile CTA: "Join" OR "Welcome" */}
           {isLoggedIn ? (
-            <div className="sm:hidden flex items-center gap-2 bg-purple-50 border border-purple-100 px-4 py-3 rounded-xl mt-2">
-              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              <span className="text-sm font-bold text-purple-950">
-                Welcome, <span className="text-orange-500">{greetingName}</span>
-              </span>
-            </div>
+            <>
+              <div className="sm:hidden flex items-center gap-2 bg-purple-50 border border-purple-100 px-4 py-3 rounded-xl mt-2">
+                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                <span className="text-sm font-bold text-purple-950">
+                  Welcome,{" "}
+                  <span className="text-orange-500">{greetingName}</span>
+                </span>
+              </div>
+              {/* ✅ Logout also accessible from mobile drawer */}
+              <button
+                onClick={handleLogout}
+                className="sm:hidden w-full mt-1 text-left px-4 py-3 text-sm text-red-600 font-bold hover:bg-red-50 rounded-xl transition-colors"
+              >
+                Logout
+              </button>
+            </>
           ) : (
             <button
               onClick={() => {

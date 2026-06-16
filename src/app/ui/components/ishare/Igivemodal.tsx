@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
-import { selectUser } from "../../../redux/slices/Userslice";
+import { selectUser } from "../../../redux/slices/User";
 import {
   ISHARE_COLLECTION,
   PostCategory,

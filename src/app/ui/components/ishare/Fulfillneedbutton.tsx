@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
-import { selectUser } from "../../../redux/slices/Userslice";
+import { selectUser } from "../../../redux/slices/User";
 import { ISHARE_COLLECTION, ISharePost } from "../../../utils/Ishareschema";
 
 interface FulfillNeedButtonProps {

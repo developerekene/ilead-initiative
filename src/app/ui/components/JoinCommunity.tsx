@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  registerUser,
-  loginWithGoogle,
   clearError,
+  setLoading,
+  setError,
   selectUserLoading,
   selectUserError,
   selectIsLoggedIn,
-} from "../../redux/slices/Userslice";
-import { AppDispatch, store } from "../../redux/store";
+} from "../../redux/slices/User";
+import { AppDispatch } from "../../redux/store";
 import { authService } from "../../redux/configuration/services/auth.service";
 
 const EyeOff = () => (
@@ -77,13 +77,10 @@ const JoinCommunity: React.FC = () => {
 
   const loading = useSelector(selectUserLoading);
   const reduxError = useSelector(selectUserError);
-  const isLoggedIn = useSelector(selectIsLoggedIn); // ← ADD THIS
+  const isLoggedIn = useSelector(selectIsLoggedIn);
 
-  // ── Guard: already logged-in users should not be on this page ────────────
   useEffect(() => {
-    if (isLoggedIn) {
-      navigate("/dashboard", { replace: true });
-    }
+    if (isLoggedIn) navigate("/dashboard", { replace: true });
   }, [isLoggedIn, navigate]);
 
   const [accountType, setAccountType] = useState<"individual" | "contributor">(
@@ -144,46 +141,33 @@ const JoinCommunity: React.FC = () => {
       }),
     );
 
-    try {
-      await authService
-        .handleUserRegistration({
-          userData: formData,
-        })
-        .then(() => {
-          navigate("/complete-profile", { replace: true });
-        })
-        .catch((error) => {
-          console.error("Registration error:", error);
-          throw error; // Re-throw to be caught by outer catch
-        });
-      // store
-      //   .dispatch(
-      //     registerUser({
-      //       email: formData.email,
-      //       password: formData.password,
-      //       firstName: formData.firstName,
-      //       lastName: formData.lastName,
-      //     }),
-      //   )
-      //   .unwrap();
+    dispatch(setLoading(true));
+    dispatch(clearError());
 
-      // Registration succeeded — isLoggedIn will flip to true via
-      // onAuthStateChanged → useEffect above will navigate automatically.
-      // But we also navigate directly here as an immediate fallback.
-    } catch {
+    try {
+      //Pass flat fields + accountType directly, matches what authService expects
+      await authService.handleUserRegistration({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        accountType,
+      });
+
+      // authService already dispatches setUser; navigate on success
+      navigate("/complete-profile", { replace: true });
+    } catch (err: unknown) {
       sessionStorage.removeItem("ilead_account_type");
       sessionStorage.removeItem("ilead_reg_data");
-    }
-  };
 
-  const handleGoogleSignUp = async () => {
-    sessionStorage.setItem("ilead_account_type", accountType);
-
-    try {
-      await dispatch(loginWithGoogle()).unwrap();
-      navigate("/complete-profile", { replace: true });
-    } catch {
-      sessionStorage.removeItem("ilead_account_type");
+      //Surface the error into Redux so the banner renders
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Registration failed. Please try again.";
+      dispatch(setError(message));
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
@@ -414,7 +398,11 @@ const JoinCommunity: React.FC = () => {
             {/* Terms */}
             <div className="pt-2">
               <div
-                className={`flex items-center justify-between bg-slate-50 p-4 rounded-xl border transition-colors ${fieldErrors.terms ? "border-red-300 bg-red-50/30" : "border-purple-950/[0.02]"}`}
+                className={`flex items-center justify-between bg-slate-50 p-4 rounded-xl border transition-colors ${
+                  fieldErrors.terms
+                    ? "border-red-300 bg-red-50/30"
+                    : "border-purple-950/[0.02]"
+                }`}
               >
                 <span className="text-xs sm:text-sm font-semibold text-purple-950/70 pl-1">
                   Accept our{" "}
@@ -432,11 +420,15 @@ const JoinCommunity: React.FC = () => {
                     if (fieldErrors.terms)
                       setFieldErrors((p) => ({ ...p, terms: "" }));
                   }}
-                  className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 focus:outline-none cursor-pointer flex-shrink-0 ml-4 ${acceptTerms ? "bg-orange-500" : "bg-slate-300"}`}
+                  className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 focus:outline-none cursor-pointer flex-shrink-0 ml-4 ${
+                    acceptTerms ? "bg-orange-500" : "bg-slate-300"
+                  }`}
                   aria-label="Toggle acceptance of terms"
                 >
                   <div
-                    className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${acceptTerms ? "translate-x-5" : "translate-x-0"}`}
+                    className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                      acceptTerms ? "translate-x-5" : "translate-x-0"
+                    }`}
                   />
                 </button>
               </div>
@@ -482,9 +474,14 @@ const JoinCommunity: React.FC = () => {
                 )}
               </button>
 
+              {/*Google button  */}
               <button
                 type="button"
-                onClick={handleGoogleSignUp}
+                onClick={() => {
+                  sessionStorage.setItem("ilead_account_type", accountType);
+                  // Wire up your Google auth service method here when ready
+                  // e.g. authService.handleGoogleSignIn().then(...)
+                }}
                 disabled={loading}
                 className="w-full bg-white hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed border-2 border-purple-950/10 text-purple-950 font-black py-4 px-6 rounded-xl text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer"
               >
@@ -499,8 +496,7 @@ const JoinCommunity: React.FC = () => {
             </div>
 
             <p className="text-center text-xs text-purple-950/40 font-medium pt-2">
-              Already have an account?
-              {/* ← Link instead of <a> — prevents full page reload */}
+              Already have an account?{" "}
               <Link
                 to="/sign-in"
                 className="text-orange-500 hover:text-purple-900 font-bold transition-colors"

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import { db } from "../../../firebase";
-import { selectUser } from "../../../redux/slices/Userslice";
+import { selectUser } from "../../../redux/slices/User";
 
 const FLAG_REASONS = [
   "Spam or misleading",
