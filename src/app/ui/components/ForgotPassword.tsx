@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../../firebase";
 import {
-  sendPasswordReset,
+  setLoading,
+  setError,
+  clearError,
   selectUserLoading,
   selectUserError,
-  clearError,
-} from "../../redux/slices/Userslice";
+} from "../../redux/slices/User";
 import type { AppDispatch } from "../../redux/store";
 
-// Step types
 type Step = "request" | "sent";
 
-// Eye icons
 const EyeOpenIcon = () => (
   <svg
     className="w-4 h-4"
@@ -50,7 +51,6 @@ const EyeClosedIcon = () => (
   </svg>
 );
 
-// Step indicator dot
 const StepDot: React.FC<{ active: boolean; done: boolean; label: string }> = ({
   active,
   done,
@@ -58,13 +58,7 @@ const StepDot: React.FC<{ active: boolean; done: boolean; label: string }> = ({
 }) => (
   <div className="flex flex-col items-center gap-1.5">
     <div
-      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-        done
-          ? "bg-orange-500 text-white"
-          : active
-            ? "bg-white text-purple-950 shadow-md"
-            : "bg-white/10 text-white/30"
-      }`}
+      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${done ? "bg-orange-500 text-white" : active ? "bg-white text-purple-950 shadow-md" : "bg-white/10 text-white/30"}`}
     >
       {done ? (
         <svg
@@ -100,7 +94,27 @@ const ForgotPassword: React.FC = () => {
 
   const displayError = localError || authError;
 
-  // Handle email submission — sends reset link
+  //Calls Firebase directly, no thunk needed
+  const sendReset = async (emailAddress: string): Promise<boolean> => {
+    dispatch(setLoading(true));
+    dispatch(clearError());
+    setLocalError(null);
+
+    try {
+      await sendPasswordResetEmail(auth, emailAddress);
+      return true;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to send reset email. Please try again.";
+      dispatch(setError(message));
+      return false;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
@@ -117,15 +131,13 @@ const ForgotPassword: React.FC = () => {
       return;
     }
 
-    const result = await dispatch(sendPasswordReset({ email }));
-
-    if (sendPasswordReset.fulfilled.match(result)) {
+    const success = await sendReset(email);
+    if (success) {
       setStep("sent");
       startResendCooldown();
     }
   };
 
-  // 60-second cooldown before allowing resend
   const startResendCooldown = () => {
     setResendCooldown(60);
     const interval = setInterval(() => {
@@ -141,12 +153,8 @@ const ForgotPassword: React.FC = () => {
 
   const handleResend = async () => {
     if (resendCooldown > 0) return;
-    setLocalError(null);
-    dispatch(clearError());
-    const result = await dispatch(sendPasswordReset({ email }));
-    if (sendPasswordReset.fulfilled.match(result)) {
-      startResendCooldown();
-    }
+    const success = await sendReset(email);
+    if (success) startResendCooldown();
   };
 
   return (
@@ -157,7 +165,6 @@ const ForgotPassword: React.FC = () => {
           <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -top-20 -right-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Brand */}
           <div>
             <span className="font-black text-xl tracking-tight text-white mb-8 block">
               iLEAD
@@ -169,18 +176,15 @@ const ForgotPassword: React.FC = () => {
             </h2>
             <p className="text-purple-200 text-sm font-medium leading-relaxed max-w-sm">
               Losing access happens. What matters is that you get back to your
-              community quickly and securely. We've got you covered.
+              community quickly and securely.
             </p>
           </div>
 
-          {/* Step progress tracker */}
           <div className="my-8 relative z-10 w-full">
             <p className="text-xs font-bold uppercase tracking-widest text-purple-300/60 mb-6">
               Recovery Steps
             </p>
-
             <div className="flex flex-col gap-0">
-              {/* Step 1 */}
               <div className="flex items-start gap-4">
                 <div className="flex flex-col items-center">
                   <StepDot
@@ -192,7 +196,7 @@ const ForgotPassword: React.FC = () => {
                 </div>
                 <div className="pt-1 pb-6">
                   <p
-                    className={`text-sm font-black transition-colors ${step === "request" ? "text-white" : step === "sent" ? "text-orange-400" : "text-white/30"}`}
+                    className={`text-sm font-black transition-colors ${step === "request" ? "text-white" : "text-orange-400"}`}
                   >
                     Enter your email
                   </p>
@@ -201,8 +205,6 @@ const ForgotPassword: React.FC = () => {
                   </p>
                 </div>
               </div>
-
-              {/* Step 2 */}
               <div className="flex items-start gap-4">
                 <div className="flex flex-col items-center">
                   <StepDot active={step === "sent"} done={false} label="2" />
@@ -219,8 +221,6 @@ const ForgotPassword: React.FC = () => {
                   </p>
                 </div>
               </div>
-
-              {/* Step 3 */}
               <div className="flex items-start gap-4">
                 <div className="flex flex-col items-center">
                   <StepDot active={false} done={false} label="3" />
@@ -247,7 +247,6 @@ const ForgotPassword: React.FC = () => {
           {/* ── STEP 1: Request reset ── */}
           {step === "request" && (
             <>
-              {/* Back link */}
               <Link
                 to="/sign-in"
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-950/40 hover:text-orange-500 transition-colors mb-10 w-fit"
@@ -269,7 +268,6 @@ const ForgotPassword: React.FC = () => {
               </Link>
 
               <div className="mb-10">
-                {/* Icon */}
                 <div className="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center mb-6">
                   <svg
                     className="w-7 h-7 text-orange-500"
@@ -289,12 +287,11 @@ const ForgotPassword: React.FC = () => {
                   Forgot your Password?
                 </h3>
                 <p className="text-sm text-purple-950/50 font-medium mt-1.5 max-w-sm leading-relaxed">
-                  No problem. Enter the email address tied to your iLEAD account
-                  and we'll send you a secure reset link instantly.
+                  No problem. Enter the email tied to your iLEAD account and
+                  we'll send a secure reset link instantly.
                 </p>
               </div>
 
-              {/* Error Banner */}
               {displayError && (
                 <div className="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-sm font-semibold text-red-600">
                   {displayError}
@@ -321,7 +318,6 @@ const ForgotPassword: React.FC = () => {
                   />
                 </div>
 
-                {/* Info note */}
                 <div className="flex items-start gap-3 bg-purple-50/60 border border-purple-100/60 rounded-xl px-4 py-3">
                   <svg
                     className="w-4 h-4 text-purple-400 shrink-0 mt-0.5"
@@ -341,7 +337,7 @@ const ForgotPassword: React.FC = () => {
                     <span className="font-bold text-purple-950/70">
                       15 minutes
                     </span>
-                    . Check your spam folder if you don't see it in your inbox.
+                    . Check your spam folder if you don't see it.
                   </p>
                 </div>
 
@@ -349,7 +345,7 @@ const ForgotPassword: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-orange-500 hover:bg-purple-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-4 px-6 rounded-xl text-sm tracking-wide shadow-lg shadow-orange-500/10 hover:shadow-purple-900/10 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full bg-orange-500 hover:bg-purple-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-4 px-6 rounded-xl text-sm tracking-wide shadow-lg shadow-orange-500/10 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <>
@@ -393,10 +389,9 @@ const ForgotPassword: React.FC = () => {
             </>
           )}
 
-          {/* ── STEP 2: Email sent confirmation ── */}
+          {/* ── STEP 2: Email sent ── */}
           {step === "sent" && (
             <div className="flex flex-col items-center text-center max-w-sm mx-auto">
-              {/* Animated success icon */}
               <div className="w-20 h-20 rounded-full bg-orange-50 border-2 border-orange-100 flex items-center justify-center mb-8 relative">
                 <svg
                   className="w-9 h-9 text-orange-500"
@@ -411,7 +406,6 @@ const ForgotPassword: React.FC = () => {
                     d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
                   />
                 </svg>
-                {/* Pulse ring */}
                 <span className="absolute inset-0 rounded-full bg-orange-500/10 animate-ping" />
               </div>
 
@@ -425,7 +419,6 @@ const ForgotPassword: React.FC = () => {
                 {email}
               </p>
 
-              {/* Steps reminder */}
               <div className="w-full bg-slate-50 rounded-2xl border border-purple-950/5 p-5 mb-8 text-left space-y-3">
                 {[
                   { num: "1", text: "Open the email from iLEAD" },
@@ -443,7 +436,6 @@ const ForgotPassword: React.FC = () => {
                 ))}
               </div>
 
-              {/* Resend */}
               <div className="w-full space-y-3">
                 <button
                   type="button"
@@ -483,7 +475,7 @@ const ForgotPassword: React.FC = () => {
 
                 <Link
                   to="/sign-in"
-                  className="w-full bg-purple-950 hover:bg-orange-500 text-white font-black py-4 px-6 rounded-xl text-sm tracking-wide shadow-lg shadow-purple-950/10 hover:shadow-orange-500/10 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                  className="w-full bg-purple-950 hover:bg-orange-500 text-white font-black py-4 px-6 rounded-xl text-sm tracking-wide shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                 >
                   Back to Sign In
                 </Link>

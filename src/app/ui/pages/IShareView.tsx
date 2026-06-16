@@ -55,22 +55,17 @@ const ISharePage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Vital Stats ── */}
       <IShareVitalStats />
 
-      {/* ── Top Donors Carousel ── */}
       <TopDonorsCarousel />
 
-      {/* ── Donors / Volunteer Meter ── */}
       <DonorsVolunteerMeter />
 
       {/* Main Feed  */}
       <IShareFeed onCreatePost={handleCreatePost} />
 
-      {/* Community Assist Meter (personal dashboard)  */}
       <CommunityAssistMeter />
 
-      {/* Modals */}
       <IGiveModal isOpen={iGiveOpen} onClose={() => setIGiveOpen(false)} />
       <INeedModal isOpen={iNeedOpen} onClose={() => setINeedOpen(false)} />
     </div>

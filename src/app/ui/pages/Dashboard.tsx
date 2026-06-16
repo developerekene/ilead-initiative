@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   selectIsLoggedIn,
   selectProfileComplete,
-} from "../../redux/slices/Userslice";
+} from "../../redux/slices/User";
 import SideBar from "../components/dashboard/SideBar";
 
 const Dashboard = () => {
@@ -17,14 +17,14 @@ const Dashboard = () => {
       navigate("/sign-in", { replace: true });
       return;
     }
-    if (profileComplete === false) {
-      // profileComplete=null means still loading — don't redirect yet
+
+    if (!profileComplete) {
       navigate("/complete-profile", { replace: true });
     }
   }, [isLoggedIn, profileComplete, navigate]);
 
-  // Show spinner while profileComplete is still null (being resolved)
-  if (!isLoggedIn || profileComplete === null) {
+  // Only spinner while not yet authenticated
+  if (!isLoggedIn || !profileComplete) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center bg-slate-50">
         <svg
@@ -49,6 +49,7 @@ const Dashboard = () => {
       </div>
     );
   }
+
   return (
     <div>
       <SideBar />

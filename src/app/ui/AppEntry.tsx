@@ -9,8 +9,8 @@ import { Provider, useDispatch } from "react-redux";
 import { onAuthStateChanged } from "firebase/auth";
 import { store } from "../redux/store";
 import { auth } from "../firebase";
-import { setUser, setProfileComplete } from "../redux/slices/Userslice";
-import { SerializedUser } from "../Authservice";
+import { setUser, clearUser, setProfileComplete } from "../redux/slices/User";
+import { SerializedUser } from "../redux/slices/User";
 import { AppDispatch } from "../redux/store";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
@@ -26,59 +26,84 @@ import IShareView from "./pages/IShareView";
 import ITrainView from "./pages/ITrainView";
 import CompleteProfile from "./components/Completeprofile";
 
-// Auth listener
-// Serializes the Firebase User BEFORE it enters Redux so Immer never
-// receives a class instance — that was silently breaking state after
-// onAuthStateChanged fired post-registration.
-
+//Auth Listener
+// Runs once on mount. Waits for Firebase to resolve the session,
+// then hydrates Redux from Firestore before ungating the router.
+// This eliminates the race condition where routes render before
+// isLoggedIn is settled.
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const serialized: SerializedUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
-          emailVerified: firebaseUser.emailVerified,
-        };
-
-        // Wrap in try/catch — if Firestore is unreachable (offline, cold
-        // start, network blip) we still ungate the router and let the
-        // individual route guards handle the null profileComplete state
-        let profileComplete: boolean | null = null;
+        // Try to rehydrate full profile from Firestore (handles page refresh)
         try {
           const snap = await getDoc(doc(db, "users", firebaseUser.uid));
-          profileComplete = snap.exists()
-            ? (snap.data()?.profileComplete ?? false)
-            : false;
-        } catch (err) {
-          console.warn("AuthListener: could not fetch profileComplete", err);
-          // Leave as null — Dashboard/CompleteProfile spinners will show
-          // until the user retries or connectivity is restored
-        }
 
-        dispatch(
-          setUser({
-            user: serialized,
-            profileComplete: profileComplete ?? undefined,
-          }),
-        );
+          if (snap.exists()) {
+            const data = snap.data();
+            const primary = data?.user?.primaryInformation ?? {};
+            const secondary = data?.user?.secondaryInformation ?? {};
+
+            dispatch(
+              setUser({
+                uid: firebaseUser.uid,
+                email: primary.email ?? firebaseUser.email ?? "",
+                firstName: primary.firstName ?? "",
+                lastName: primary.lastName ?? "",
+                displayName:
+                  `${primary.firstName ?? ""} ${primary.lastName ?? ""}`.trim() ||
+                  firebaseUser.displayName ||
+                  "",
+                isLoggedIn: true,
+                profileComplete: data?.profileComplete ?? false,
+                photoURL: firebaseUser.photoURL ?? null,
+              } satisfies Partial<SerializedUser>),
+            );
+          } else {
+            // Firestore doc missing — set minimal identity so guards work
+            dispatch(
+              setUser({
+                uid: firebaseUser.uid,
+                email: firebaseUser.email ?? "",
+                displayName: firebaseUser.displayName ?? "",
+                isLoggedIn: true,
+                profileComplete: false,
+                photoURL: firebaseUser.photoURL ?? null,
+              }),
+            );
+          }
+        } catch (err) {
+          console.warn("AuthListener: Firestore fetch failed", err);
+          // Still mark as logged in with whatever Firebase gave us
+          // so the user isn't stuck on a spinner indefinitely
+          dispatch(
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email ?? "",
+              displayName: firebaseUser.displayName ?? "",
+              isLoggedIn: true,
+              profileComplete: false,
+              photoURL: firebaseUser.photoURL ?? null,
+            }),
+          );
+        }
       } else {
-        dispatch(setUser(null));
+        //clearUser() not setUser(null) which would break the slice
+        dispatch(clearUser());
       }
 
-      onReady(); // always ungate the router, even on Firestore failure
+      // Always ungate the router, even on Firestore failure
+      onReady();
     });
+
     return unsub;
   }, [dispatch, onReady]);
 
   return null;
 };
 
-// ─── Layouts
 const RootLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
     <ScrollToTop />
@@ -124,9 +149,8 @@ const NotFoundView = () => (
   </div>
 );
 
-// ─── Router
+//Router
 const router = createBrowserRouter([
-  // Public pages — Navbar + Footer
   {
     path: "/",
     element: <RootLayout />,
@@ -140,13 +164,11 @@ const router = createBrowserRouter([
       { path: "iTrain", element: <ITrainView /> },
     ],
   },
-  // App pages  (Navbar only, no Footer)
   {
     path: "/",
     element: <AppLayout />,
     children: [{ path: "dashboard", element: <Dashboard /> }],
   },
-  // App pages (No Navbar, no Footer)
   {
     path: "/",
     element: <ProfileLayout />,
@@ -156,20 +178,14 @@ const router = createBrowserRouter([
 
 export default function AppEntry() {
   const [authReady, setAuthReady] = useState(false);
-  // useCallback ensures AuthListener's useEffect doesn't re-run after
-  // authReady flips (onReady reference stays stable across renders)
   const onReady = React.useCallback(() => setAuthReady(true), []);
 
   return (
     <Provider store={store}>
-      {/* AuthListener must be inside Provider so useDispatch works */}
       <AuthListener onReady={onReady} />
       {authReady ? (
         <RouterProvider router={router} />
       ) : (
-        // Hold the entire router off-screen until Firebase resolves auth.
-        // This guarantees isLoggedIn is settled before any route renders,
-        // eliminating the race condition in CompleteProfile's auth guard.
         <div className="w-full min-h-screen flex items-center justify-center bg-slate-50">
           <svg
             className="animate-spin w-8 h-8 text-orange-500"
