@@ -25,12 +25,9 @@ import ForgotPassword from "./components/ForgotPassword";
 import IShareView from "./pages/IShareView";
 import ITrainView from "./pages/ITrainView";
 import CompleteProfile from "./components/Completeprofile";
+import CampaignDetails from "./pages/CampaignDetails";
+import { Toaster } from "react-hot-toast";
 
-//Auth Listener
-// Runs once on mount. Waits for Firebase to resolve the session,
-// then hydrates Redux from Firestore before ungating the router.
-// This eliminates the race condition where routes render before
-// isLoggedIn is settled.
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -162,6 +159,7 @@ const router = createBrowserRouter([
       { path: "forgot-password", element: <ForgotPassword /> },
       { path: "iShare", element: <IShareView /> },
       { path: "iTrain", element: <ITrainView /> },
+      { path: "campaign-details/:campaignId", element: <CampaignDetails /> },
     ],
   },
   {
@@ -182,6 +180,7 @@ export default function AppEntry() {
 
   return (
     <Provider store={store}>
+      <Toaster />
       <AuthListener onReady={onReady} />
       {authReady ? (
         <RouterProvider router={router} />

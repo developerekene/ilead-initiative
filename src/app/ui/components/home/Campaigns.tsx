@@ -108,14 +108,15 @@ const Campaigns: React.FC = () => {
                     to={`/campaign-details/${campaign.id}`}
                     className="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-950 font-bold py-3 px-4 rounded-xl text-center text-sm transition-all duration-200"
                   >
-                    View
+                    View Campaign
                   </Link>
-                  <Link
+                  
+                  {/* <Link
                     to="/community"
                     className="flex-[2] bg-purple-950 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-xl text-center text-sm shadow-lg shadow-purple-950/10 hover:shadow-orange-500/10 transition-all duration-200"
                   >
                     Participate
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </div>

@@ -120,7 +120,7 @@ const Navbar: React.FC = () => {
             {isMoreOpen && (
               <div className="absolute left-0 mt-3 w-48 rounded-xl bg-white border border-orange-100 shadow-xl shadow-purple-950/5 py-2 z-50">
                 {[
-                  { to: "/all-causes", label: "All Campaigns" },
+                  { to: "/all-Campaign", label: "All Campaigns" },
                   { to: "/about-ilead", label: "About Ilead" },
                   { to: "/privacy-policy", label: "Privacy Policy" },
                   {
