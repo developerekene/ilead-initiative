@@ -8,10 +8,16 @@ export interface SerializedUser {
   email: string;
   displayName: string;
   isLoggedIn: boolean;
-  profileComplete: boolean;
+  profileComplete?: boolean;
   loading: boolean;
   error: string | null;
   photoURL?: string | null;
+  location?: string | null;
+  bio?: string;
+  pronouns?: string;
+  availability?: string | null;
+  contactMethod?: string | null;
+  updatedAt?: number;
 }
 
 const initialState: SerializedUser = {
@@ -25,6 +31,12 @@ const initialState: SerializedUser = {
   loading: false,
   error: null,
   photoURL: null,
+  location: "",
+  bio: "",
+  pronouns: "",
+  availability: "",
+  contactMethod: "",
+  updatedAt: 0,
 };
 
 const userSlice = createSlice({
@@ -33,6 +45,7 @@ const userSlice = createSlice({
   reducers: {
     setUser(state, action: PayloadAction<Partial<SerializedUser>>) {
       Object.assign(state, action.payload);
+      console.log(action.payload);
     },
 
     clearUser() {

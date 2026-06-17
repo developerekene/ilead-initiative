@@ -10,6 +10,8 @@ import {
 } from "../../redux/slices/User";
 import type { AppDispatch } from "../../redux/store";
 import NotificationCenter from "./NotificationCenter";
+import { authService } from "../../redux/configuration/services/auth.service";
+import { error } from "console";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -57,13 +59,11 @@ const Navbar: React.FC = () => {
   //Sign out via Firebase directly, then clear Redux, no thunk needed
   const handleLogout = async () => {
     closeAllMenus();
-    try {
-      await signOut(auth);
-    } catch (err) {
-      console.error("Logout error:", err);
-    }
-    dispatch(clearUser());
-    navigate("/");
+
+    await authService
+      .handleUserSignout()
+      .then(() => navigate("/sign-in"))
+      .catch((error: any) => console.error(error));
   };
 
   return (

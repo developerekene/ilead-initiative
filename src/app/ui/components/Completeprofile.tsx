@@ -17,6 +17,7 @@ import {
 } from "../../redux/slices/User";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../redux/store";
+import { authService } from "../../redux/configuration/services/auth.service";
 
 type AccountType = "individual" | "contributor";
 type Step = 1 | 2 | 3;
@@ -368,7 +369,6 @@ const CompleteProfile: React.FC = () => {
   // Step 3 — shared
   const [availability, setAvailability] = useState<string[]>([
     "Weekday mornings",
-    "Saturday",
   ]);
   const [contactMethod, setContactMethod] = useState(
     "Via iLEAD platform messages",
@@ -482,7 +482,7 @@ const CompleteProfile: React.FC = () => {
     };
 
     try {
-      await updateDoc(doc(db, "users", reduxUser.uid), profileData);
+      await authService.updateUserInformation(profileData);
       dispatch(setProfileComplete(true));
       sessionStorage.removeItem("ilead_account_type");
       sessionStorage.removeItem("ilead_reg_data");
@@ -546,8 +546,8 @@ const CompleteProfile: React.FC = () => {
                 You're in the ecosystem.
               </h2>
               <p className="text-sm text-purple-950/50 font-medium leading-relaxed max-w-sm mx-auto">
-                Your profile is live and saved to Firestore. Jump into your
-                first iShare post or explore the community feed.
+                Your profile is live. Jump into your first iShare post or
+                explore the community feed.
               </p>
             </div>
             <button
