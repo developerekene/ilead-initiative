@@ -11,6 +11,7 @@ import {
   selectUserError,
 } from "../../redux/slices/User";
 import type { AppDispatch } from "../../redux/store";
+import { authService } from "../../redux/configuration/services/auth.service";
 
 type Step = "request" | "sent";
 
@@ -94,14 +95,13 @@ const ForgotPassword: React.FC = () => {
 
   const displayError = localError || authError;
 
-  //Calls Firebase directly, no thunk needed
   const sendReset = async (emailAddress: string): Promise<boolean> => {
     dispatch(setLoading(true));
     dispatch(clearError());
     setLocalError(null);
 
     try {
-      await sendPasswordResetEmail(auth, emailAddress);
+      await authService.handlePasswordReset(emailAddress);
       return true;
     } catch (err: unknown) {
       const message =
