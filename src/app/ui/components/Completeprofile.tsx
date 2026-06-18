@@ -367,9 +367,7 @@ const CompleteProfile: React.FC = () => {
   ]);
 
   // Step 3 — shared
-  const [availability, setAvailability] = useState<string[]>([
-    "Weekday mornings",
-  ]);
+  const [availability, setAvailability] = useState<string[]>([""]);
   const [contactMethod, setContactMethod] = useState(
     "Via iLEAD platform messages",
   );

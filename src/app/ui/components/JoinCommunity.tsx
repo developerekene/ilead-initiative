@@ -11,6 +11,7 @@ import {
 } from "../../redux/slices/User";
 import { AppDispatch } from "../../redux/store";
 import { authService } from "../../redux/configuration/services/auth.service";
+import { FcGoogle } from "react-icons/fc";
 
 const EyeOff = () => (
   <svg
@@ -165,6 +166,27 @@ const JoinCommunity: React.FC = () => {
         err instanceof Error
           ? err.message
           : "Registration failed. Please try again.";
+      dispatch(setError(message));
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    sessionStorage.setItem("ilead_account_type", accountType);
+    dispatch(setLoading(true));
+    dispatch(clearError());
+    try {
+      const result = await authService.handleGoogleAuth(accountType);
+      navigate(result?.profileComplete ? "/dashboard" : "/complete-profile", {
+        replace: true,
+      });
+    } catch (err: unknown) {
+      sessionStorage.removeItem("ilead_account_type");
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Google sign up failed. Please try again.";
       dispatch(setError(message));
     } finally {
       dispatch(setLoading(false));
@@ -477,20 +499,17 @@ const JoinCommunity: React.FC = () => {
               {/*Google button  */}
               <button
                 type="button"
-                onClick={() => {
-                  sessionStorage.setItem("ilead_account_type", accountType);
-                  // Wire up your Google auth service method here when ready
-                  // e.g. authService.handleGoogleSignIn().then(...)
-                }}
+                onClick={handleGoogleSignUp}
                 disabled={loading}
                 className="w-full bg-white hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed border-2 border-purple-950/10 text-purple-950 font-black py-4 px-6 rounded-xl text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer"
               >
-                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                {/* <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                   <path
                     fill="#EA4335"
                     d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.253-3.133C18.41 2.021 15.598 1 12.24 1c-6.075 0-11 4.925-11 11s4.925 11 11 11c6.34 0 10.556-4.445 10.556-10.74 0-.726-.077-1.282-.175-1.69h-10.38z"
                   />
-                </svg>
+                </svg> */}
+                <FcGoogle size={24} />
                 Continue with Google
               </button>
             </div>
