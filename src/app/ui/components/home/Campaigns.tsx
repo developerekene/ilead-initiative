@@ -12,6 +12,11 @@ interface Campaign {
   metricValue: string;
   statusBadge: string;
 }
+interface CampaignsProps {
+  showViewAll?: boolean;
+  searchQuery?: string;
+  showHeader?: boolean;
+}
 
 const ILEAD_CAMPAIGNS: Campaign[] = [
   {
@@ -46,26 +51,39 @@ const ILEAD_CAMPAIGNS: Campaign[] = [
   },
 ];
 
-const Campaigns: React.FC = () => {
+const Campaigns: React.FC<CampaignsProps> = ({
+  showViewAll = true,
+  searchQuery = "",
+  showHeader = true,
+}) => {
+  const filteredCampaigns = ILEAD_CAMPAIGNS.filter(
+    (c) =>
+      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.category.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   return (
     <div>
       <section className="w-full bg-white max-w-7xl mx-auto px-6 md:px-12 py-24">
         {/* Section Header */}
-        <div className="text-center mb-16 max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-purple-950 mb-4">
-            Active Communities of{" "}
-            <span className="text-orange-500">Impact</span>
-          </h2>
-          <p className="text-base sm:text-lg text-purple-950/60 font-medium leading-relaxed">
-            We don't just talk about change; we build it through hands-on
-            interaction, deep strategic mentorship, and unconditional support.
-            Explore our ongoing workflows.
-          </p>
-        </div>
+        {showHeader && (
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-purple-950 mb-4">
+              Active Communities of{" "}
+              <span className="text-orange-500">Impact</span>
+            </h2>
+            <p className="text-base sm:text-lg text-purple-950/60 font-medium leading-relaxed">
+              We don't just talk about change; we build it through hands-on
+              interaction, deep strategic mentorship, and unconditional support.
+              Explore our ongoing workflows.
+            </p>
+          </div>
+        )}
 
         {/* Dynamic Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-          {ILEAD_CAMPAIGNS.map((campaign) => (
+          {filteredCampaigns.map((campaign) => (
             <div
               key={campaign.id}
               className="bg-white border border-purple-950/5 rounded-[2rem] p-8 flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-purple-950/5 hover:border-orange-500/20 group"
@@ -105,12 +123,12 @@ const Campaigns: React.FC = () => {
 
                 <div className="flex flex-col sm:flex-row gap-3 w-full">
                   <Link
-                    to={`/campaign-details/${campaign.id}`}
+                    to={`/campaigns/campaign-details/${campaign.id}`}
                     className="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-950 font-bold py-3 px-4 rounded-xl text-center text-sm transition-all duration-200"
                   >
                     View Campaign
                   </Link>
-                  
+
                   {/* <Link
                     to="/community"
                     className="flex-[2] bg-purple-950 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-xl text-center text-sm shadow-lg shadow-purple-950/10 hover:shadow-orange-500/10 transition-all duration-200"
@@ -121,15 +139,32 @@ const Campaigns: React.FC = () => {
               </div>
             </div>
           ))}
+
+          {filteredCampaigns.length === 0 && (
+            <div className="text-center py-20 text-purple-950/40 font-medium">
+              No campaigns found for "{searchQuery}"
+            </div>
+          )}
         </div>
-        <div className="text-center  mt-12">
-          <Button
-            text="View all Campaigns"
-            to="/campaigns"
-            className=" bg-purple-950 hover:bg-orange-500 text-white  hover:shadow-orange-500/10 font-black rounded-xl"
-          />
-        </div>
+        {showViewAll && (
+          <div className="text-center  mt-12">
+            <Button
+              text="View all Campaigns"
+              to="/campaigns"
+              className=" bg-purple-950 hover:bg-orange-500 text-white  hover:shadow-orange-500/10 font-black rounded-xl"
+            />
+          </div>
+        )}
       </section>
+      {/*USAGE
+      Homepage: show the button
+      <Campaigns showViewAll={true} />
+
+       Campaigns page — hide the button
+      <Campaigns showViewAll={false} />
+
+       Default (no prop) — shows button
+      <Campaigns /> */}
     </div>
   );
 };

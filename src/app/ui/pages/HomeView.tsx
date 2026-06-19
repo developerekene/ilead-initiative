@@ -17,8 +17,8 @@ const HomeView: React.FunctionComponent = () => (
             bridge the opportunity gap, and build real-world digital literacy together."
       buttonOneText="Join the Ecosystem"
       buttonTwoText="Learn More"
-      btnTwoNavigation="/ishare"
-      btnOneNavigation="/community"
+      btnTwoNavigation="/about-ilead"
+      btnOneNavigation="/join-our-community"
     />
     <TrustBar />
     <Campaigns />
