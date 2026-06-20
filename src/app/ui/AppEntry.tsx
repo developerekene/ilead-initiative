@@ -27,6 +27,8 @@ import ITrainView from "./pages/ITrainView";
 import CompleteProfile from "./components/Completeprofile";
 import CampaignDetails from "./pages/CampaignDetails";
 import { Toaster } from "react-hot-toast";
+import AboutUs from "./pages/AboutUs";
+import CampaignPage from "./pages/CampaignPage";
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -159,7 +161,12 @@ const router = createBrowserRouter([
       { path: "forgot-password", element: <ForgotPassword /> },
       { path: "iShare", element: <IShareView /> },
       { path: "iTrain", element: <ITrainView /> },
-      { path: "campaign-details/:campaignId", element: <CampaignDetails /> },
+      { path: "about-ilead", element: <AboutUs /> },
+      { path: "campaigns", element: <CampaignPage /> },
+      {
+        path: "campaigns/campaign-details/:campaignId",
+        element: <CampaignDetails />,
+      },
     ],
   },
   {
