@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Button from "../Button";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/store";
 
 // In-file typed dataset mirroring iLEAD's active giving, tech mentorship, and business strategy tracks
 interface Campaign {
@@ -56,7 +58,10 @@ const Campaigns: React.FC<CampaignsProps> = ({
   searchQuery = "",
   showHeader = true,
 }) => {
-  const filteredCampaigns = ILEAD_CAMPAIGNS.filter(
+  const campaigns = useSelector(
+    (state: RootState) => state.campaignSlice.campaigns,
+  );
+  const filteredCampaigns = campaigns.filter(
     (c) =>
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -123,7 +128,7 @@ const Campaigns: React.FC<CampaignsProps> = ({
 
                 <div className="flex flex-col sm:flex-row gap-3 w-full">
                   <Link
-                    to={`/campaigns/campaign-details/${campaign.id}`}
+                    to={`/all-Campaign/campaign-details/${campaign.id}`}
                     className="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-950 font-bold py-3 px-4 rounded-xl text-center text-sm transition-all duration-200"
                   >
                     View Campaign
@@ -150,7 +155,7 @@ const Campaigns: React.FC<CampaignsProps> = ({
           <div className="text-center  mt-12">
             <Button
               text="View all Campaigns"
-              to="/campaigns"
+              to="/all-Campaign"
               className=" bg-purple-950 hover:bg-orange-500 text-white  hover:shadow-orange-500/10 font-black rounded-xl"
             />
           </div>

@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
-import { RootState } from "../../redux/store";
-import Button from "../components/Button";
+import { RootState } from "../../../redux/store";
+import Button from "../Button";
 import { toast } from "react-hot-toast";
 
-interface Campaign {
-  id: string;
-  title: string;
-  category: "Tech Mentorship" | "Business Strategy" | "Community Giving";
-  description: string;
-  metricLabel: string;
-  metricValue: string;
-  statusBadge: string;
-  longFormBody: string;
-  keyDeliverables: string[];
-}
+// interface Campaign {
+//   id: string;
+//   title: string;
+//   category: "Tech Mentorship" | "Business Strategy" | "Community Giving";
+//   description: string;
+//   metricLabel: string;
+//   metricValue: string;
+//   statusBadge: string;
+//   longFormBody: string;
+//   keyDeliverables: string[];
+// }
 
 // Interface mapping for the new registry logs table
 interface SubmissionRecord {
@@ -27,59 +27,59 @@ interface SubmissionRecord {
   dateRegistered: string;
 }
 
-const ILEAD_CAMPAIGNS: Campaign[] = [
-  {
-    id: "you-are-not-alone-2026",
-    title: 'The "You Are Not Alone" Network',
-    category: "Community Giving",
-    description:
-      "Providing proactive professional check-ins, direct technical workspace assistance, and collaborative safety nets for engineers breaking out of extreme isolation.",
-    metricLabel: "Active Peers Connected",
-    metricValue: "850+ Members",
-    statusBadge: "Always Open",
-    longFormBody:
-      "Isolation is one of the silent killers of technical excellence and personal well-being. The 'You Are Not Alone' Network creates a consistent framework of real human validation for software engineers and digital creators. By facilitating weekly mental health check-ins, providing unblocked technical code reviews, and creating shared spaces for safe, unfiltered growth, we establish a robust human foundation beneath technical development layers.",
-    keyDeliverables: [
-      "24/7 technical SOS channel for immediate engineering roadblocks",
-      "Bi-weekly interactive peer circles breaking down developer burnout",
-      "Direct matched mentorship pairing senior engineering leaders with breaking talent",
-    ],
-  },
-  {
-    id: "business-bootcamp",
-    title: "SME & Founders Strategic Acceleration",
-    category: "Business Strategy",
-    description:
-      "Breaking down financial planning, scalable team operations, and market positioning for local creators trying to build sustainable businesses.",
-    metricLabel: "Mentorship Hours Gifted",
-    metricValue: "450 hrs",
-    statusBadge: "In Progress",
-    longFormBody:
-      "Great products fail without an equally intentional operational strategy. This sprint focuses purely on grounding local entrepreneurs, creators, and technical solo-founders in sustainable economic realities. We peel back the buzzwords to drill into unit economics, scalable engineering team management, high-impact pipeline growth, and defensible market positioning tailored for sustainable local business longevity.",
-    keyDeliverables: [
-      "1-on-1 financial model mapping and operational overhead diagnostics",
-      "Live pitching, positioning, and service-pricing validation workshops",
-      "Direct access blueprints for hiring and managing remote development teams",
-    ],
-  },
-  {
-    id: "peer-support-fund",
-    title: "The Selfless Circle Equipment Fund",
-    category: "Community Giving",
-    description:
-      "A zero-interest, crowd-fueled collective pool helping community members purchase modern laptops and essential remote working setups.",
-    metricLabel: "Laptops Provided",
-    metricValue: "84 Systems",
-    statusBadge: "Active Support",
-    longFormBody:
-      "Talent is distributed evenly across the globe, but hardware access is not. The Selfless Circle Equipment Fund acts as a community-governed, entirely crowd-funded hardware engine. By eliminating the high capital barriers required to acquire modern development machines, we ensure no advanced learner is locked out of the global digital talent workspace due to broken or outdated computer hardware setup parameters.",
-    keyDeliverables: [
-      "100% zero-interest, community-backed hardware financing loans",
-      "Sourcing and distribution operations for vetted high-spec modern laptops",
-      "Complimentary data allocation and power backup support modules",
-    ],
-  },
-];
+// const ILEAD_CAMPAIGNS: Campaign[] = [
+// {
+//   id: "you-are-not-alone-2026",
+//   title: 'The "You Are Not Alone" Network',
+//   category: "Community Giving",
+//   description:
+//     "Providing proactive professional check-ins, direct technical workspace assistance, and collaborative safety nets for engineers breaking out of extreme isolation.",
+//   metricLabel: "Active Peers Connected",
+//   metricValue: "850+ Members",
+//   statusBadge: "Always Open",
+//   longFormBody:
+//     "Isolation is one of the silent killers of technical excellence and personal well-being. The 'You Are Not Alone' Network creates a consistent framework of real human validation for software engineers and digital creators. By facilitating weekly mental health check-ins, providing unblocked technical code reviews, and creating shared spaces for safe, unfiltered growth, we establish a robust human foundation beneath technical development layers.",
+//   keyDeliverables: [
+//     "24/7 technical SOS channel for immediate engineering roadblocks",
+//     "Bi-weekly interactive peer circles breaking down developer burnout",
+//     "Direct matched mentorship pairing senior engineering leaders with breaking talent",
+//   ],
+// },
+//   {
+//     id: "business-bootcamp",
+//     title: "SME & Founders Strategic Acceleration",
+//     category: "Business Strategy",
+//     description:
+//       "Breaking down financial planning, scalable team operations, and market positioning for local creators trying to build sustainable businesses.",
+//     metricLabel: "Mentorship Hours Gifted",
+//     metricValue: "450 hrs",
+//     statusBadge: "In Progress",
+//     longFormBody:
+//       "Great products fail without an equally intentional operational strategy. This sprint focuses purely on grounding local entrepreneurs, creators, and technical solo-founders in sustainable economic realities. We peel back the buzzwords to drill into unit economics, scalable engineering team management, high-impact pipeline growth, and defensible market positioning tailored for sustainable local business longevity.",
+//     keyDeliverables: [
+//       "1-on-1 financial model mapping and operational overhead diagnostics",
+//       "Live pitching, positioning, and service-pricing validation workshops",
+//       "Direct access blueprints for hiring and managing remote development teams",
+//     ],
+//   },
+//   {
+//     id: "peer-support-fund",
+//     title: "The Selfless Circle Equipment Fund",
+//     category: "Community Giving",
+//     description:
+//       "A zero-interest, crowd-fueled collective pool helping community members purchase modern laptops and essential remote working setups.",
+//     metricLabel: "Laptops Provided",
+//     metricValue: "84 Systems",
+//     statusBadge: "Active Support",
+//     longFormBody:
+//       "Talent is distributed evenly across the globe, but hardware access is not. The Selfless Circle Equipment Fund acts as a community-governed, entirely crowd-funded hardware engine. By eliminating the high capital barriers required to acquire modern development machines, we ensure no advanced learner is locked out of the global digital talent workspace due to broken or outdated computer hardware setup parameters.",
+//     keyDeliverables: [
+//       "100% zero-interest, community-backed hardware financing loans",
+//       "Sourcing and distribution operations for vetted high-spec modern laptops",
+//       "Complimentary data allocation and power backup support modules",
+//     ],
+//   },
+// ];
 
 const CampaignDetails: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
@@ -88,6 +88,9 @@ const CampaignDetails: React.FC = () => {
 
   // Auth and User State Rehydration mapping fields
   const user = useSelector((state: RootState) => state.user);
+  const campaigns = useSelector(
+    (state: RootState) => state.campaignSlice.campaigns,
+  );
   const isUserLoggedIn = user.isLoggedIn;
 
   // View Panel & Mode Switch Vectors
@@ -95,7 +98,7 @@ const CampaignDetails: React.FC = () => {
   const [formMode, setFormMode] = useState<"participant" | "contributor">(
     "participant",
   );
-  const campaign = ILEAD_CAMPAIGNS.find((c) => c.id === campaignId);
+  const campaign = campaigns.find((c) => c.id === campaignId);
 
   const [PAV, setPAV] = useState("Participate as a Volunteer");
   const [BTI, setBTI] = useState("Back This Initiative");
@@ -290,18 +293,6 @@ const CampaignDetails: React.FC = () => {
   return (
     <div className="bg-white min-h-screen text-purple-950 relative overflow-x-hidden">
       <section className="w-full max-w-5xl mx-auto px-6 md:px-12 py-16 md:py-24">
-        {/* <div className="mb-10">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-950/50 hover:text-orange-500 transition-colors duration-200 group"
-          >
-            <span className="transform group-hover:-translate-x-1 transition-transform">
-              ←
-            </span>{" "}
-            Go Back
-          </Link>
-        </div> */}
-
         <div className="border-b border-purple-950/5 pb-10 mb-12">
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <span className="text-xs font-bold text-purple-700 tracking-wider uppercase bg-purple-50 px-3.5 py-1.5 rounded-lg border border-purple-100">

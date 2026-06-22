@@ -25,7 +25,7 @@ import ForgotPassword from "./components/ForgotPassword";
 import IShareView from "./pages/IShareView";
 import ITrainView from "./pages/ITrainView";
 import CompleteProfile from "./components/Completeprofile";
-import CampaignDetails from "./pages/CampaignDetails";
+import CampaignDetails from "./components/campaigncomponents/CampaignDetails";
 import { Toaster } from "react-hot-toast";
 import AboutUs from "./pages/AboutUs";
 import CampaignPage from "./pages/CampaignPage";
@@ -162,9 +162,9 @@ const router = createBrowserRouter([
       { path: "iShare", element: <IShareView /> },
       { path: "iTrain", element: <ITrainView /> },
       { path: "about-ilead", element: <AboutUs /> },
-      { path: "campaigns", element: <CampaignPage /> },
+      { path: "all-Campaign", element: <CampaignPage /> },
       {
-        path: "campaigns/campaign-details/:campaignId",
+        path: "all-Campaign/campaign-details/:campaignId",
         element: <CampaignDetails />,
       },
     ],
