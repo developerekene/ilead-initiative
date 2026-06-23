@@ -121,6 +121,7 @@ const Navbar: React.FC = () => {
               <div className="absolute left-0 mt-3 w-48 rounded-xl bg-white border border-orange-100 shadow-xl shadow-purple-950/5 py-2 z-50">
                 {[
                   { to: "/all-Campaign", label: "All Campaigns" },
+                  { to: "/membership", label: "Membership" },
                   { to: "/about-ilead", label: "About Ilead" },
                   { to: "/privacy-policy", label: "Privacy Policy" },
                   {
@@ -281,11 +282,18 @@ const Navbar: React.FC = () => {
           <div className="h-px bg-purple-950/5 my-1" />
 
           <Link
-            to="/all-causes"
+            to="/all-Campaign"
             onClick={closeAllMenus}
             className="text-sm font-semibold text-purple-950/60 hover:text-purple-900 hover:bg-orange-50/50 px-4 py-2 rounded-xl transition-colors pl-6"
           >
             All Campaigns
+          </Link>
+          <Link
+            to="/membership"
+            onClick={closeAllMenus}
+            className="text-sm font-semibold text-purple-950/60 hover:text-purple-900 hover:bg-orange-50/50 px-4 py-2 rounded-xl transition-colors pl-6"
+          >
+            Membership
           </Link>
           <Link
             to="/contact"
@@ -297,17 +305,63 @@ const Navbar: React.FC = () => {
 
           {isLoggedIn ? (
             <>
-              <div className="sm:hidden flex items-center gap-2 bg-purple-50 border border-purple-100 px-4 py-3 rounded-xl mt-2">
-                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                <span className="text-sm font-bold text-purple-950">
-                  Welcome,{" "}
-                  <span className="text-orange-500">{greetingName}</span>
-                </span>
+              <div className="h-px bg-purple-950/5 my-1" />
+              {/* Mobile Profile Section */}
+              <div className="flex items-center gap-3 px-4 py-3 bg-purple-50 border border-purple-100 rounded-xl">
+                <div className="w-11 h-11 rounded-full border border-orange-100 bg-white shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  {user?.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={user.displayName ?? "Profile"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <svg
+                      className="w-5 h-5 text-purple-900"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4.418 0-8 1.79-8 4v2h16v-2c0-2.21-3.582-4-8-4z"
+                      />
+                    </svg>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-purple-950 text-sm truncate">
+                    {user?.displayName ?? "Community Member"}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                </div>
               </div>
-              {/* ✅ Logout also accessible from mobile drawer */}
+
+              {/* Profile Links */}
+              {[
+                { to: "/profile", label: "My Profile" },
+                { to: "/dashboard", label: "Dashboard" },
+                { to: "/my-contributions", label: "My Contributions" },
+                { to: "/saved-campaigns", label: "Saved Campaigns" },
+                { to: "/notifications", label: "Notifications" },
+                { to: "/settings", label: "Settings" },
+                { to: "/help", label: "Help & Support" },
+              ].map(({ to, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={closeAllMenus}
+                  className="text-sm font-semibold text-purple-950/70 hover:text-purple-900 hover:bg-orange-50/50 px-4 py-2.5 rounded-xl transition-colors pl-6"
+                >
+                  {label}
+                </Link>
+              ))}
+
               <button
                 onClick={handleLogout}
-                className="sm:hidden w-full mt-1 text-left px-4 py-3 text-sm text-red-600 font-bold hover:bg-red-50 rounded-xl transition-colors"
+                className="w-full mt-1 text-left px-4 py-3 text-sm text-red-600 font-bold hover:bg-red-50 rounded-xl transition-colors"
               >
                 Logout
               </button>

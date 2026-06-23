@@ -1,5 +1,5 @@
 import React from "react";
-import Campaigns from "../components/home/Campaigns";
+import Campaigns from "../components/campaigncomponents/Campaigns";
 import Hero from "../components/home/Hero";
 import ILeadBentoGrid from "../components/home/ILeadBentoGrid";
 import ImpactWorkflows from "../components/home/ImapctWorkFlows";

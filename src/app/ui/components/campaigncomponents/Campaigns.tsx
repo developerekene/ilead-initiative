@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Button from "../Button";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/store";
 
 // In-file typed dataset mirroring iLEAD's active giving, tech mentorship, and business strategy tracks
 interface Campaign {
@@ -56,7 +58,10 @@ const Campaigns: React.FC<CampaignsProps> = ({
   searchQuery = "",
   showHeader = true,
 }) => {
-  const filteredCampaigns = ILEAD_CAMPAIGNS.filter(
+  const campaigns = useSelector(
+    (state: RootState) => state.campaignSlice.campaigns,
+  );
+  const filteredCampaigns = campaigns.filter(
     (c) =>
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -65,7 +70,7 @@ const Campaigns: React.FC<CampaignsProps> = ({
 
   return (
     <div>
-      <section className="w-full bg-white max-w-7xl mx-auto px-6 md:px-12 py-24">
+      <section className="w-full bg-white max-w-7xl mx-auto px-6 md:px-12 pt-4 pb-16">
         {/* Section Header */}
         {showHeader && (
           <div className="text-center mb-16 max-w-3xl mx-auto">
@@ -101,11 +106,11 @@ const Campaigns: React.FC<CampaignsProps> = ({
                 </div>
 
                 {/* Campaign Typography */}
-                <h3 className="text-xl sm:text-2xl font-black text-purple-950 leading-snug mb-4 group-hover:text-purple-700 transition-colors duration-200">
+                <h3 className="text-xl sm:text-2xl font-black text-purple-950 leading-snug mb-4 group-hover:text-purple-700 transition-colors duration-200 break-words">
                   {campaign.title}
                 </h3>
 
-                <p className="text-sm sm:text-base text-purple-950/60 font-medium leading-relaxed mb-8">
+                <p className="text-sm sm:text-base text-purple-950/60 font-medium leading-relaxed mb-8 break-words line-clamp-3">
                   {campaign.description}
                 </p>
               </div>
@@ -113,7 +118,7 @@ const Campaigns: React.FC<CampaignsProps> = ({
               {/* Bottom Actions & Community Vital Statistics */}
               <div>
                 <div className="flex justify-between items-center pt-5 border-t border-purple-950/5 mb-6 text-sm">
-                  <span className="text-purple-950/50 font-medium">
+                  <span className="text-purple-950/50 font-medium truncate">
                     {campaign.metricLabel}
                   </span>
                   <span className="text-purple-950 font-black tracking-tight bg-purple-50/50 px-2.5 py-1 rounded-md">
@@ -123,7 +128,7 @@ const Campaigns: React.FC<CampaignsProps> = ({
 
                 <div className="flex flex-col sm:flex-row gap-3 w-full">
                   <Link
-                    to={`/campaigns/campaign-details/${campaign.id}`}
+                    to={`/all-Campaign/campaign-details/${campaign.id}`}
                     className="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-950 font-bold py-3 px-4 rounded-xl text-center text-sm transition-all duration-200"
                   >
                     View Campaign
@@ -150,7 +155,7 @@ const Campaigns: React.FC<CampaignsProps> = ({
           <div className="text-center  mt-12">
             <Button
               text="View all Campaigns"
-              to="/campaigns"
+              to="/all-Campaign"
               className=" bg-purple-950 hover:bg-orange-500 text-white  hover:shadow-orange-500/10 font-black rounded-xl"
             />
           </div>
