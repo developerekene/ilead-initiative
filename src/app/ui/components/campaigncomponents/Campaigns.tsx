@@ -70,7 +70,7 @@ const Campaigns: React.FC<CampaignsProps> = ({
 
   return (
     <div>
-      <section className="w-full bg-white max-w-7xl mx-auto px-6 md:px-12 py-24">
+      <section className="w-full bg-white max-w-7xl mx-auto px-6 md:px-12 pt-4 pb-16">
         {/* Section Header */}
         {showHeader && (
           <div className="text-center mb-16 max-w-3xl mx-auto">

@@ -1,4 +1,3 @@
-// campaignSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface Campaign {
@@ -49,9 +48,15 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
     metricLabel: "Mentorship Hours Gifted",
     metricValue: "450 hrs",
     statusBadge: "In Progress",
-    longFormBody: "...",
-    keyDeliverables: ["..."],
+    longFormBody:
+      "Great products fail without an equally intentional operational strategy. This sprint focuses purely on grounding local entrepreneurs, creators, and technical solo-founders in sustainable economic realities. We peel back the buzzwords to drill into unit economics, scalable engineering team management, high-impact pipeline growth, and defensible market positioning tailored for sustainable local business longevity.",
+    keyDeliverables: [
+      "1-on-1 financial model mapping and operational overhead diagnostics",
+      "Live pitching, positioning, and service-pricing validation workshops",
+      "Direct access blueprints for hiring and managing remote development teams",
+    ],
   },
+
   {
     id: "peer-support-fund",
     title: "The Selfless Circle Equipment Fund",
@@ -61,8 +66,13 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
     metricLabel: "Laptops Provided",
     metricValue: "84 Systems",
     statusBadge: "Active Support",
-    longFormBody: "...",
-    keyDeliverables: ["..."],
+    longFormBody:
+      "Talent is distributed evenly across the globe, but hardware access is not. The Selfless Circle Equipment Fund acts as a community-governed, entirely crowd-funded hardware engine. By eliminating the high capital barriers required to acquire modern development machines, we ensure no advanced learner is locked out of the global digital talent workspace due to broken or outdated computer hardware setup parameters.",
+    keyDeliverables: [
+      "100% zero-interest, community-backed hardware financing loans",
+      "Sourcing and distribution operations for vetted high-spec modern laptops",
+      "Complimentary data allocation and power backup support modules",
+    ],
   },
 ];
 

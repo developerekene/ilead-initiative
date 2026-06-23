@@ -13,7 +13,7 @@ const CampaignSearch: React.FC<CampaignSearchProps> = ({
   onCreateClick,
 }) => {
   return (
-    <div className="w-full bg-white max-w-7xl mx-auto px-6 md:px-12 py-24">
+    <div className="w-full bg-white max-w-7xl mx-auto px-6 md:px-12 pt-12 pb-8">
       {/* Header & Search */}
       <div className="text-center mb-4 max-w-3xl mx-auto">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-purple-950 mb-4">
@@ -26,7 +26,7 @@ const CampaignSearch: React.FC<CampaignSearchProps> = ({
         </p>
       </div>
 
-      <div className="flex justify-end items-center gap-4 pt-12 px-6">
+      <div className="flex justify-end items-center gap-4 pt-6 px-6">
         <div className="relative w-full max-w-lg">
           <CiSearch
             size={20}
