@@ -304,10 +304,10 @@ const CampaignDetails: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-purple-950 leading-tight mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-purple-950 leading-tight mb-6 break-words">
             {campaign.title}
           </h1>
-          <p className="text-base sm:text-xl text-purple-950/70 font-medium leading-relaxed max-w-3xl">
+          <p className="text-base sm:text-xl text-purple-950/70 font-medium leading-relaxed max-w-3xl break-words">
             {campaign.description}
           </p>
         </div>
@@ -318,7 +318,7 @@ const CampaignDetails: React.FC = () => {
               <h3 className="text-xs font-black text-purple-950/40 uppercase tracking-widest mb-4">
                 Operational Intent & Scope
               </h3>
-              <p className="text-sm sm:text-base text-purple-950/80 font-medium leading-relaxed">
+              <p className="text-sm sm:text-base text-purple-950/80 font-medium leading-relaxed break-words">
                 {campaign.longFormBody}
               </p>
             </div>
@@ -336,7 +336,7 @@ const CampaignDetails: React.FC = () => {
                     <span className="text-orange-500 mt-1 font-bold select-none text-xs shrink-0 bg-orange-50 border border-orange-100 w-5 h-5 rounded-full flex items-center justify-center">
                       ✓
                     </span>
-                    <span>{deliverable}</span>
+                    <span className="break-words">{deliverable}</span>
                   </li>
                 ))}
               </ul>

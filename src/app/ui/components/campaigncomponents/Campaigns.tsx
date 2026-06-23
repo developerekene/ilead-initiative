@@ -106,11 +106,11 @@ const Campaigns: React.FC<CampaignsProps> = ({
                 </div>
 
                 {/* Campaign Typography */}
-                <h3 className="text-xl sm:text-2xl font-black text-purple-950 leading-snug mb-4 group-hover:text-purple-700 transition-colors duration-200">
+                <h3 className="text-xl sm:text-2xl font-black text-purple-950 leading-snug mb-4 group-hover:text-purple-700 transition-colors duration-200 break-words">
                   {campaign.title}
                 </h3>
 
-                <p className="text-sm sm:text-base text-purple-950/60 font-medium leading-relaxed mb-8">
+                <p className="text-sm sm:text-base text-purple-950/60 font-medium leading-relaxed mb-8 break-words line-clamp-3">
                   {campaign.description}
                 </p>
               </div>
@@ -118,7 +118,7 @@ const Campaigns: React.FC<CampaignsProps> = ({
               {/* Bottom Actions & Community Vital Statistics */}
               <div>
                 <div className="flex justify-between items-center pt-5 border-t border-purple-950/5 mb-6 text-sm">
-                  <span className="text-purple-950/50 font-medium">
+                  <span className="text-purple-950/50 font-medium truncate">
                     {campaign.metricLabel}
                   </span>
                   <span className="text-purple-950 font-black tracking-tight bg-purple-50/50 px-2.5 py-1 rounded-md">
