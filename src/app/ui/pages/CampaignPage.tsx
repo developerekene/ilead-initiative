@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Campaigns from "../components/campaigncomponents/Campaigns";
 import CampaignSearch from "../components/campaigncomponents/CampaignSearch";
-import CreateCampaignModal from "../components/campaigncomponents/CreateCampaignModal";
+import CreateCampaignForm from "../components/campaigncomponents/CreateCampaignForm";
 
 const CampaignPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,7 +18,7 @@ const CampaignPage = () => {
         showHeader={false}
         searchQuery={searchQuery}
       />
-      <CreateCampaignModal
+      <CreateCampaignForm
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
