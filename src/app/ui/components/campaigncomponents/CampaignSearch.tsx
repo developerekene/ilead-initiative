@@ -1,7 +1,7 @@
 import React from "react";
 import { CiSearch } from "react-icons/ci";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { RootState } from "../../../redux/store";
 import toast from "react-hot-toast";
 
@@ -17,6 +17,7 @@ const CampaignSearch: React.FC<CampaignSearchProps> = ({
   onCreateClick,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn);
 
   const handleCreateClick = () => {
@@ -24,7 +25,7 @@ const CampaignSearch: React.FC<CampaignSearchProps> = ({
       toast.error("You need to be signed in to create a campaign.", {
         style: { background: "#ff4d4f", color: "#fff" },
       });
-      navigate("/sign-in");
+      navigate("/sign-in", { state: { from: location } });
       return;
     }
     onCreateClick();
@@ -58,12 +59,7 @@ const CampaignSearch: React.FC<CampaignSearchProps> = ({
             className="w-full pl-12 pr-5 py-3 rounded-xl border border-purple-950/10 bg-purple-50 text-purple-950 placeholder:text-purple-950/40 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-purple-950/20"
           />
         </div>
-        {/* <button
-          onClick={onCreateClick}
-          className=" font-black px-6 py-3 rounded-xl text-sm tracking-wide transition-all duration-200  bg-orange-500 hover:bg-orange-600 text-white"
-        >
-          + Create a New Campaign
-        </button> */}
+
         <button
           onClick={handleCreateClick}
           className="relative font-black px-6 py-3 rounded-xl text-sm tracking-wide transition-all duration-200 bg-orange-500 hover:bg-orange-600 text-white shrink-0 group"
