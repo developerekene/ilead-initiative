@@ -15,7 +15,6 @@ const CampaignDetails: React.FC = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  // ── Redux state ──────────────────────────────────────────
   const user = useSelector((state: RootState) => state.user);
   const campaigns = useSelector(
     (state: RootState) => state.campaignSlice.campaigns,
@@ -35,7 +34,7 @@ const CampaignDetails: React.FC = () => {
     (s) => s.campaignId === campaignId,
   );
 
-  // ── Panel / form mode ────────────────────────────────────
+  //Panel / form mode
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [formMode, setFormMode] = useState<"participant" | "contributor">(
     "participant",
@@ -45,25 +44,25 @@ const CampaignDetails: React.FC = () => {
   const [PAV, setPAV] = useState("Participate as a Volunteer");
   const [BTI, setBTI] = useState("Back This Initiative");
 
-  // ── Shared form fields ───────────────────────────────────
+  //Shared form fields
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [timezone, setTimezone] = useState("");
 
-  // ── Participant-only fields ──────────────────────────────
+  //Participant-only fields
   const [skillsInventory, setSkillsInventory] = useState("");
   const [weeklyHours, setWeeklyHours] = useState("2-5 hours");
   const [participantMotivation, setParticipantMotivation] = useState("");
 
-  // ── Contributor-only fields ──────────────────────────────
+  //Contributor-only fields
   const [contributionType, setContributionType] = useState("Mentorship");
   const [professionalBackground, setProfessionalBackground] = useState("");
   const [resourceDescription, setResourceDescription] = useState("");
   const [linkedinProfile, setLinkedinProfile] = useState("");
   const [hasPriorExperience, setHasPriorExperience] = useState("No");
 
-  // ── Auto-fill from user state ────────────────────────────
+  //Auto-fill from user state
   useEffect(() => {
     if (isUserLoggedIn) {
       setFullName(
@@ -78,7 +77,7 @@ const CampaignDetails: React.FC = () => {
     window.scrollTo(0, 0);
   }, [campaignId]);
 
-  // ── Campaign not found guard ─────────────────────────────
+  // Campaign not found guard
   if (!campaign) {
     return (
       <main className="w-full bg-white min-h-screen flex flex-col items-center justify-center p-6 text-center">
@@ -139,7 +138,7 @@ const CampaignDetails: React.FC = () => {
     }
   };
 
-  // ── Form submission — dispatches to Redux ────────────────
+  // Form submission — dispatches to Redux
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(setSubmitting(true));

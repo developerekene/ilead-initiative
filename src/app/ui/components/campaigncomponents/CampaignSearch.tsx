@@ -1,5 +1,9 @@
 import React from "react";
 import { CiSearch } from "react-icons/ci";
+import { useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { RootState } from "../../../redux/store";
+import toast from "react-hot-toast";
 
 interface CampaignSearchProps {
   searchQuery: string;
@@ -12,8 +16,22 @@ const CampaignSearch: React.FC<CampaignSearchProps> = ({
   setSearchQuery,
   onCreateClick,
 }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn);
+
+  const handleCreateClick = () => {
+    if (!isLoggedIn) {
+      toast.error("You need to be signed in to create a campaign.", {
+        style: { background: "#ff4d4f", color: "#fff" },
+      });
+      navigate("/sign-in", { state: { from: location } });
+      return;
+    }
+    onCreateClick();
+  };
   return (
-    <div className="w-full bg-white max-w-7xl mx-auto px-6 md:px-12 pt-12 pb-8">
+    <div className="w-full bg-white max-w-7xl mx-auto px-6 md:px-12 pt-32 pb-8">
       {/* Header & Search */}
       <div className="text-center mb-4 max-w-3xl mx-auto">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-purple-950 mb-4">
@@ -41,11 +59,18 @@ const CampaignSearch: React.FC<CampaignSearchProps> = ({
             className="w-full pl-12 pr-5 py-3 rounded-xl border border-purple-950/10 bg-purple-50 text-purple-950 placeholder:text-purple-950/40 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-purple-950/20"
           />
         </div>
+
         <button
-          onClick={onCreateClick}
-          className=" font-black px-6 py-3 rounded-xl text-sm tracking-wide transition-all duration-200  bg-orange-500 hover:bg-orange-600 text-white"
+          onClick={handleCreateClick}
+          className="relative font-black px-6 py-3 rounded-xl text-sm tracking-wide transition-all duration-200 bg-orange-500 hover:bg-orange-600 text-white shrink-0 group"
         >
           + Create a New Campaign
+          {/* Tooltip shown only when logged out */}
+          {!isLoggedIn && (
+            <span className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap bg-purple-950 text-white text-xs font-medium px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              Sign in to create a campaign
+            </span>
+          )}
         </button>
       </div>
     </div>

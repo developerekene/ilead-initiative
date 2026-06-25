@@ -4,54 +4,11 @@ import Button from "../Button";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
 
-// In-file typed dataset mirroring iLEAD's active giving, tech mentorship, and business strategy tracks
-interface Campaign {
-  id: string;
-  title: string;
-  category: "Tech Mentorship" | "Business Strategy" | "Community Giving";
-  description: string;
-  metricLabel: string;
-  metricValue: string;
-  statusBadge: string;
-}
 interface CampaignsProps {
   showViewAll?: boolean;
   searchQuery?: string;
   showHeader?: boolean;
 }
-
-const ILEAD_CAMPAIGNS: Campaign[] = [
-  {
-    id: "you-are-not-alone-2026",
-    title: 'The "You Are Not Alone" Network',
-    category: "Community Giving",
-    description:
-      "Providing proactive professional check-ins, direct technical workspace assistance, and collaborative safety nets for engineers breaking out of extreme isolation.",
-    metricLabel: "Active Peers Connected",
-    metricValue: "850+ Members",
-    statusBadge: "Always Open",
-  },
-  {
-    id: "business-bootcamp",
-    title: "SME & Founders Strategic Acceleration",
-    category: "Business Strategy",
-    description:
-      "Breaking down financial planning, scalable team operations, and market positioning for local creators trying to build sustainable businesses.",
-    metricLabel: "Mentorship Hours Gifted",
-    metricValue: "450 hrs",
-    statusBadge: "In Progress",
-  },
-  {
-    id: "peer-support-fund",
-    title: "The Selfless Circle Equipment Fund",
-    category: "Community Giving",
-    description:
-      "A zero-interest, crowd-fueled collective pool helping community members purchase modern laptops and essential remote working setups.",
-    metricLabel: "Laptops Provided",
-    metricValue: "84 Systems",
-    statusBadge: "Active Support",
-  },
-];
 
 const Campaigns: React.FC<CampaignsProps> = ({
   showViewAll = true,

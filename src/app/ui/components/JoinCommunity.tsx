@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   clearError,
@@ -75,6 +75,9 @@ const friendlyError = (msg: string): string => {
 const JoinCommunity: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const location = useLocation();
+  const from = (location.state as { from?: { pathname: string } })?.from
+    ?.pathname;
 
   const loading = useSelector(selectUserLoading);
   const reduxError = useSelector(selectUserError);
@@ -156,7 +159,8 @@ const JoinCommunity: React.FC = () => {
       });
 
       // authService already dispatches setUser; navigate on success
-      navigate("/complete-profile", { replace: true });
+      // navigate("/complete-profile", { replace: true });
+      navigate(from ?? "/complete-profile", { replace: true });
     } catch (err: unknown) {
       sessionStorage.removeItem("ilead_account_type");
       sessionStorage.removeItem("ilead_reg_data");
@@ -178,9 +182,13 @@ const JoinCommunity: React.FC = () => {
     dispatch(clearError());
     try {
       const result = await authService.handleGoogleAuth(accountType);
-      navigate(result?.profileComplete ? "/dashboard" : "/complete-profile", {
-        replace: true,
-      });
+      // navigate(result?.profileComplete ? "/dashboard" : "/complete-profile", {
+      //   replace: true,
+      // });
+      navigate(
+        from ?? (result?.profileComplete ? "/dashboard" : "/complete-profile"),
+        { replace: true },
+      );
     } catch (err: unknown) {
       sessionStorage.removeItem("ilead_account_type");
       const message =

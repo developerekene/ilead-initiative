@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -62,6 +62,9 @@ const googleProvider = new GoogleAuthProvider();
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: { pathname: string } })?.from
+    ?.pathname;
 
   const isLoading = useSelector(selectUserLoading);
   const authError = useSelector(selectUserError);
@@ -139,9 +142,12 @@ const Login: React.FC = () => {
         formData.email,
         formData.password,
       );
-      navigate(result?.profileComplete ? "/dashboard" : "/complete-profile", {
-        replace: true,
-      });
+      navigate(
+        (from ?? result?.profileComplete) ? "/dashboard" : "/complete-profile",
+        {
+          replace: true,
+        },
+      );
     } catch (err: unknown) {
       const message =
         err instanceof Error
@@ -183,9 +189,12 @@ const Login: React.FC = () => {
     dispatch(setLoading(true));
     try {
       const result = await authService.handleGoogleAuth();
-      navigate(result?.profileComplete ? "/dashboard" : "/complete-profile", {
-        replace: true,
-      });
+      navigate(
+        (from ?? result?.profileComplete) ? "/dashboard" : "/complete-profile",
+        {
+          replace: true,
+        },
+      );
     } catch (err: unknown) {
       const message =
         err instanceof Error
