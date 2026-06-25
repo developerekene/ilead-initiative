@@ -5,16 +5,16 @@ import ILeadBentoGrid from "../components/home/ILeadBentoGrid";
 import ImpactWorkflows from "../components/home/ImapctWorkFlows";
 import ImpactGallery from "../components/home/ImpactGallery";
 import TrustBar from "../components/home/TrustBar";
+import ILeadMarketingSection from "../components/ILeadMarketingSection";
 
 const HomeView: React.FunctionComponent = () => (
   <div>
     <Hero
       badge="A Cross-Disciplinary Talent Ecosystem"
-      firstTitle="Cultivate potential."
-      secondTitle="Without the"
-      thirdTitle="isolation"
-      desc="True progress does not happen in a vacuum. iLEAD brings together builders, thinkers, and creators across backgrounds and disciplines to exchange insight,
-            bridge the opportunity gap, and build real-world digital literacy together."
+      firstTitle="Learn"
+      secondTitle="Connect"
+      thirdTitle="Grow"
+      desc="Empowering Africa through learning, Skills and Opportunities. We are an innovative web platform designed to connect, learners, educators and professionals across Africa and beyond."
       buttonOneText="Join the Ecosystem"
       buttonTwoText="Learn More"
       btnTwoNavigation="/about-ilead"
@@ -22,6 +22,7 @@ const HomeView: React.FunctionComponent = () => (
     />
     <TrustBar />
     <Campaigns />
+    <ILeadMarketingSection />
     <ILeadBentoGrid />
     <ImpactGallery />
     <ImpactWorkflows />

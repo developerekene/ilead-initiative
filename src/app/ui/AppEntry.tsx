@@ -30,6 +30,7 @@ import { Toaster } from "react-hot-toast";
 import AboutUs from "./pages/AboutUs";
 import CampaignPage from "./pages/CampaignPage";
 import MembershipPage from "./pages/MembershipPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -165,6 +166,7 @@ const router = createBrowserRouter([
       { path: "about-ilead", element: <AboutUs /> },
       { path: "membership", element: <MembershipPage /> },
       { path: "all-Campaign", element: <CampaignPage /> },
+      { path: "privacy-policy", element: <PrivacyPolicy /> },
       {
         path: "all-Campaign/campaign-details/:campaignId",
         element: <CampaignDetails />,
