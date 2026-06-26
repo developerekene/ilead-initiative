@@ -2,23 +2,29 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Button from "../Button";
 import { useSelector } from "react-redux";
+import { type Campaign } from "../../../redux/slices/campaignSlice";
 import { RootState } from "../../../redux/store";
 
 interface CampaignsProps {
+  campaigns?: Campaign[]; // Accept an optional list of campaigns
   showViewAll?: boolean;
   searchQuery?: string;
   showHeader?: boolean;
 }
 
 const Campaigns: React.FC<CampaignsProps> = ({
+  campaigns: campaignList, // Rename for clarity
   showViewAll = true,
   searchQuery = "",
   showHeader = true,
 }) => {
-  const campaigns = useSelector(
+  const allCampaignsFromStore = useSelector(
     (state: RootState) => state.campaignSlice.campaigns,
   );
-  const filteredCampaigns = campaigns.filter(
+  // Use the passed-in list if it exists, otherwise use the full list from Redux
+  const campaignsToDisplay = campaignList ?? allCampaignsFromStore;
+
+  const filteredCampaigns = campaignsToDisplay.filter(
     (c) =>
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
