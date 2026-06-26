@@ -1,11 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-} from "firebase/auth";
+import { GoogleAuthProvider } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import {
@@ -143,10 +139,8 @@ const Login: React.FC = () => {
         formData.password,
       );
       navigate(
-        (from ?? result?.profileComplete) ? "/dashboard" : "/complete-profile",
-        {
-          replace: true,
-        },
+        from ?? (result?.profileComplete ? "/dashboard" : "/complete-profile"),
+        { replace: true },
       );
     } catch (err: unknown) {
       const message =
@@ -190,10 +184,8 @@ const Login: React.FC = () => {
     try {
       const result = await authService.handleGoogleAuth();
       navigate(
-        (from ?? result?.profileComplete) ? "/dashboard" : "/complete-profile",
-        {
-          replace: true,
-        },
+        from ?? (result?.profileComplete ? "/dashboard" : "/complete-profile"),
+        { replace: true },
       );
     } catch (err: unknown) {
       const message =
