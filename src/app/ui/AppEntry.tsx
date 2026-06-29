@@ -30,6 +30,7 @@ import { Toaster } from "react-hot-toast";
 import AboutUs from "./pages/AboutUs";
 import CampaignPage from "./pages/CampaignPage";
 import MembershipPage from "./pages/MembershipPage";
+import MyCampaignsPage from "./pages/MyCampaignsPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
@@ -126,6 +127,17 @@ const AppLayout = () => (
   </div>
 );
 
+const DashboardLayout = () => (
+  <div className="min-h-screen bg-white flex flex-col">
+    <ScrollToTop />
+    <Navbar />
+    {/* Added padding to offset the fixed Navbar */}
+    <div className="flex-1 pt-20">
+      <Outlet />
+    </div>
+  </div>
+);
+
 const ProfileLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
     <ScrollToTop />
@@ -154,7 +166,7 @@ const NotFoundView = () => (
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <RootLayout />,
+    element: <AppLayout />,
     errorElement: <NotFoundView />,
     children: [
       { index: true, element: <HomeView /> },
@@ -174,12 +186,21 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/",
-    element: <AppLayout />,
-    children: [{ path: "dashboard", element: <Dashboard /> }],
+    path: "/dashboard",
+    element: <DashboardLayout />, // Re-added the layout wrapper containing the Navbar
+    errorElement: <NotFoundView />,
+    children: [
+      {
+        path: "", // This empty path ensures /dashboard matches and renders the Dashboard component
+        element: <Dashboard />,
+        children: [
+          { path: "campaigns", element: <MyCampaignsPage /> },
+          // Add other dashboard routes here, e.g., { path: "story", element: <MyStoryPage /> }
+        ],
+      },
+    ],
   },
   {
-    path: "/",
     element: <ProfileLayout />,
     children: [{ path: "complete-profile", element: <CompleteProfile /> }],
   },

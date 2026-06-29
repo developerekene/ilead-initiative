@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   addCampaign,
   type Campaign,
 } from "../../../redux/slices/campaignSlice";
+import { selectUser } from "../../../redux/slices/User";
 import { v4 as uuidv4 } from "uuid";
 import {
   FormPanel,
@@ -24,6 +25,9 @@ interface Props {
 
 const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
+  // 1. Grab the current user from Redux so we know who is creating the campaign
+  const user = useSelector(selectUser);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState({
@@ -68,7 +72,9 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
           ...form,
           id: uuidv4(),
           keyDeliverables: form.keyDeliverables.filter(Boolean),
-        }),
+          // 2. Attach the user's ID as the creatorId so it shows up in "My Campaigns"
+          creatorId: user?.uid || "anonymous",
+        } as Campaign & { creatorId?: string }), // Type assertion to satisfy TS temporarily
       );
       setIsSubmitting(false);
       onClose();

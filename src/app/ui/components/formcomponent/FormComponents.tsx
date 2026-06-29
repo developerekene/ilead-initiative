@@ -352,7 +352,8 @@ export const FormPanel: React.FC<FormPanelProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-purple-950/40 backdrop-blur-sm transition-opacity duration-300 ${
+      // Changed z-50 to z-[60] here so it sits on top of the Navbar
+      className={`fixed inset-0 z-[60] bg-purple-950/40 backdrop-blur-sm transition-opacity duration-300 ${
         isOpen
           ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none"
@@ -429,7 +430,7 @@ export const FormModal: React.FC<FormModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-purple-950/40 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[60] bg-purple-950/40 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
