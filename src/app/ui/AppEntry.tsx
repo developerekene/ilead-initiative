@@ -10,6 +10,7 @@ import JoinCommunity from "./components/JoinCommunity";
 import Navbar from "./components/Navbar";
 import HomeView from "./pages/HomeView";
 import Contact from "./components/Contact";
+import IleadTermsAndCondition from "./components/ILeadTermsAndCondition";
 
 const RootLayout = () => {
   return (
@@ -56,6 +57,10 @@ const router = createBrowserRouter([
       {
         path: "Contact-us",
         element: <Contact />,
+      },
+      {
+        path: "terms-and-conditions",
+        element: <IleadTermsAndCondition />,
       },
     ],
   },
