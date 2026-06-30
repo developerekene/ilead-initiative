@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 
+export type MembershipPlanId = "free" | "silver" | "gold" | "platinum";
+
 export interface SerializedUser {
   uid: string;
   firstName: string;
@@ -18,6 +20,7 @@ export interface SerializedUser {
   availability?: string | null;
   contactMethod?: string | null;
   updatedAt?: number;
+  plan: MembershipPlanId;
 }
 
 const initialState: SerializedUser = {
@@ -37,6 +40,7 @@ const initialState: SerializedUser = {
   availability: "",
   contactMethod: "",
   updatedAt: 0,
+  plan: "free",
 };
 
 const userSlice = createSlice({
@@ -67,6 +71,9 @@ const userSlice = createSlice({
     setProfileComplete(state, action: PayloadAction<boolean>) {
       state.profileComplete = action.payload;
     },
+    setPlan(state, action: PayloadAction<MembershipPlanId>) {
+      state.plan = action.payload;
+    },
   },
 });
 
@@ -77,6 +84,7 @@ export const {
   setError,
   clearError,
   setProfileComplete,
+  setPlan,
 } = userSlice.actions;
 
 // Selectors
@@ -86,5 +94,6 @@ export const selectUserLoading = (state: RootState) => state.user.loading;
 export const selectUserError = (state: RootState) => state.user.error;
 export const selectProfileComplete = (state: RootState) =>
   state.user.profileComplete;
+export const selectUserPlan = (state: RootState) => state.user.plan;
 
 export default userSlice.reducer;
