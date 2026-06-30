@@ -11,6 +11,8 @@ import Navbar from "./components/Navbar";
 import HomeView from "./pages/HomeView";
 import Contact from "./components/Contact";
 import IleadTermsAndCondition from "./components/ILeadTermsAndCondition";
+import Settings from "./components/Settings";
+import HelpAandSupport from "./components/HelpAndSupport";
 
 const RootLayout = () => {
   return (
@@ -61,6 +63,14 @@ const router = createBrowserRouter([
       {
         path: "terms-and-conditions",
         element: <IleadTermsAndCondition />,
+      },
+      {
+        path: "settings",
+        element: <Settings />,
+      },
+      {
+        path: "help-and-support",
+        element: <HelpAandSupport />,
       },
     ],
   },

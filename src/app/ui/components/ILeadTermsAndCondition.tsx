@@ -149,7 +149,6 @@ const ILeadTermsAndCondition: React.FC = () => {
               >
                 reach out to us
               </a>
-              .
             </p>
           </div>
         </div>
