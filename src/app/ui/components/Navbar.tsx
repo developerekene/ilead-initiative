@@ -128,7 +128,7 @@ const Navbar: React.FC = () => {
                     to: "/terms-and-conditions",
                     label: "Terms and Conditions",
                   },
-                  { to: "/contact", label: "Contact" },
+                  { to: "/contact-us", label: "Contact" },
                 ].map(({ to, label }) => (
                   <Link
                     key={to}
@@ -335,7 +335,9 @@ const Navbar: React.FC = () => {
                   <p className="font-bold text-purple-950 text-sm truncate">
                     {user?.displayName ?? "Community Member"}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {user?.email}
+                  </p>
                 </div>
               </div>
 

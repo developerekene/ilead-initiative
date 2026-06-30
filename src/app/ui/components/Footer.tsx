@@ -158,6 +158,12 @@ const Footer: React.FC = () => {
             >
               Privacy Charter
             </Link>
+            <Link
+              to="/contact-us"
+              className="text-sm font-medium text-purple-950/60 hover:text-orange-500 transition-colors duration-200"
+            >
+              Contact Us
+            </Link>
           </div>
         </div>
       </div>

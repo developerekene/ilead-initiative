@@ -29,9 +29,12 @@ import CampaignDetails from "./components/campaigncomponents/CampaignDetails";
 import { Toaster } from "react-hot-toast";
 import AboutUs from "./pages/AboutUs";
 import CampaignPage from "./pages/CampaignPage";
+import ContactUsPage from "./pages/ContactUsPage";
 import MembershipPage from "./pages/MembershipPage";
 import MyCampaignsPage from "./pages/MyCampaignsPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndCondition from "./pages/TermsAndCondition";
+import Setting from "./pages/Settings";
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -179,6 +182,10 @@ const router = createBrowserRouter([
       { path: "membership", element: <MembershipPage /> },
       { path: "all-Campaign", element: <CampaignPage /> },
       { path: "privacy-policy", element: <PrivacyPolicy /> },
+      { path: "terms-and-conditions", element: <TermsAndCondition /> },
+      { path: "contact-us", element: <ContactUsPage /> },
+      { path: "settings", element: <Setting /> },
+
       {
         path: "all-Campaign/campaign-details/:campaignId",
         element: <CampaignDetails />,
