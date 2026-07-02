@@ -13,6 +13,7 @@ import { CiLock } from "react-icons/ci";
 import { TIERS } from "../../../utils/data";
 import { MembershipTier } from "../../../utils/types";
 import toast from "react-hot-toast";
+import { authService } from "../../../redux/configuration/services/auth.service";
 
 // const PAYSTACK_KEY = process.env.REACT_APP_PAYSTACK_PUBLIC_KEY_TEST as string;
 const PAYSTACK_KEY =
@@ -38,15 +39,32 @@ const MembershipPlan: React.FC = () => {
   const initializePayment = usePaystackPayment({
     publicKey: PAYSTACK_KEY,
     email: user.email,
-    amount: 0, // overridden per transaction below
+    amount: 0,
     currency: "NGN",
   });
 
-  const completeUpgrade = (tier: MembershipTier) => {
-    dispatch(setPlan(tier.id));
-    setProcessingTier(null);
-    toast.success(`Upgraded to ${tier.name}!`);
-    // TODO: persist tier.id to Firestore so it survives refresh
+  //   const completeUpgrade = (tier: MembershipTier) => {
+  //     dispatch(setPlan(tier.id));
+  //     setProcessingTier(null);
+  //     toast.success(`Upgraded to ${tier.name}!`);
+  //     // TODO: persist tier.id to Firestore so it survives refresh
+  //   };
+
+  const completeUpgrade = async (tier: MembershipTier, reference: string) => {
+    try {
+      await authService.handleMembershipPlan(tier.id, {
+        reference,
+        billing,
+        amount: getPrice(tier.price),
+      });
+      toast.success(`Upgraded to ${tier.name}!`);
+    } catch {
+      toast.error(
+        "Payment succeeded but saving your plan failed. Contact support.",
+      );
+    } finally {
+      setProcessingTier(null);
+    }
   };
 
   const handleSelect = (tier: MembershipTier) => {
@@ -63,8 +81,13 @@ const MembershipPlan: React.FC = () => {
     }
 
     // Free plan — no payment
+    // if (tier.price === 0) {
+    //   dispatch(setPlan("free"));
+    //   toast.success("You're now on the Free plan.");
+    //   return;
+    // }
     if (tier.price === 0) {
-      dispatch(setPlan("free"));
+      authService.handleMembershipPlan("free").catch(() => {});
       toast.success("You're now on the Free plan.");
       return;
     }
@@ -102,10 +125,13 @@ const MembershipPlan: React.FC = () => {
           ],
         },
       },
+      //   onSuccess: (reference: { reference: string }) => {
+      //     // IMPORTANT: verify `reference.reference` server-side before trusting it.
+      //     console.log("Paystack reference:", reference.reference);
+      //     completeUpgrade(tier);
+      //   },
       onSuccess: (reference: { reference: string }) => {
-        // IMPORTANT: verify `reference.reference` server-side before trusting it.
-        console.log("Paystack reference:", reference.reference);
-        completeUpgrade(tier);
+        completeUpgrade(tier, reference.reference);
       },
       onClose: () => {
         setProcessingTier(null);

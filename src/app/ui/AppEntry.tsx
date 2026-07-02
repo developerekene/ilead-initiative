@@ -106,6 +106,7 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   return null;
 };
 
+// This layout contains the Footer and will be used for main public routes
 const RootLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
     <ScrollToTop />
@@ -117,15 +118,7 @@ const RootLayout = () => (
   </div>
 );
 
-const AppLayout = () => (
-  <div className="min-h-screen bg-white flex flex-col">
-    <ScrollToTop />
-    <Navbar />
-    <main className="flex-1 pt-20">
-      <Outlet />
-    </main>
-  </div>
-);
+// (AppLayout removed since RootLayout handles this now)
 
 const DashboardLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
@@ -166,7 +159,7 @@ const NotFoundView = () => (
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <AppLayout />,
+    element: <RootLayout />,
     errorElement: <NotFoundView />,
     children: [
       { index: true, element: <HomeView /> },
@@ -187,16 +180,13 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <DashboardLayout />, // Re-added the layout wrapper containing the Navbar
+    element: <DashboardLayout />,
     errorElement: <NotFoundView />,
     children: [
       {
-        path: "", // This empty path ensures /dashboard matches and renders the Dashboard component
+        path: "",
         element: <Dashboard />,
-        children: [
-          { path: "campaigns", element: <MyCampaignsPage /> },
-          // Add other dashboard routes here, e.g., { path: "story", element: <MyStoryPage /> }
-        ],
+        children: [{ path: "campaigns", element: <MyCampaignsPage /> }],
       },
     ],
   },
