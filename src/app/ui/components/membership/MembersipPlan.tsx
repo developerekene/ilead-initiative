@@ -80,12 +80,6 @@ const MembershipPlan: React.FC = () => {
       return;
     }
 
-    // Free plan — no payment
-    // if (tier.price === 0) {
-    //   dispatch(setPlan("free"));
-    //   toast.success("You're now on the Free plan.");
-    //   return;
-    // }
     if (tier.price === 0) {
       authService.handleMembershipPlan("free").catch(() => {});
       toast.success("You're now on the Free plan.");
@@ -125,11 +119,7 @@ const MembershipPlan: React.FC = () => {
           ],
         },
       },
-      //   onSuccess: (reference: { reference: string }) => {
-      //     // IMPORTANT: verify `reference.reference` server-side before trusting it.
-      //     console.log("Paystack reference:", reference.reference);
-      //     completeUpgrade(tier);
-      //   },
+
       onSuccess: (reference: { reference: string }) => {
         completeUpgrade(tier, reference.reference);
       },

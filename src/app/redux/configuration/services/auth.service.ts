@@ -287,52 +287,6 @@ export class AuthService {
       });
   }
 
-  // async updateMembershipPlan(
-  //   planId: string,
-  //   paymentMeta?: {
-  //     reference: string;
-  //     billing: "monthly" | "annual";
-  //     amount: number;
-  //   },
-  // ): Promise<void> {
-  //   try {
-  //     const currentUser = await this.getCurrentUser();
-  //     const userId = currentUser.uid;
-  //     const userDoc = doc(db, "users", userId);
-
-  //     const snapshot = await getDoc(userDoc);
-  //     if (!snapshot.exists()) throw new Error("User not found");
-
-  //     // Write plan at document root — matches how profileComplete is stored/read
-  //     const writePayload: Record<string, any> = {
-  //       plan: planId,
-  //       planUpdatedAt: Date.now(),
-  //     };
-
-  //     // Append a payment record to history if this came from a real transaction
-  //     if (paymentMeta) {
-  //       const existing = snapshot.data()?.membershipHistory ?? [];
-  //       writePayload.membershipHistory = [
-  //         ...existing,
-  //         {
-  //           planId,
-  //           reference: paymentMeta.reference,
-  //           billing: paymentMeta.billing,
-  //           amount: paymentMeta.amount,
-  //           paidAt: new Date().toISOString(),
-  //         },
-  //       ];
-  //     }
-
-  //     await updateDoc(userDoc, writePayload);
-
-  //     // Sync Redux so UI updates immediately
-  //     store.dispatch(setPlan(planId as any));
-  //   } catch (error) {
-  //     console.error("Error updating membership plan:", error);
-  //     throw error;
-  //   }
-  // }
   async handleMembershipPlan(
     planId: string,
     paymentMeta?: {
