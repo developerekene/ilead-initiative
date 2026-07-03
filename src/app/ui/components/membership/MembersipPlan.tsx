@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { usePaystackPayment } from "react-paystack";
 import {
   selectIsLoggedIn,
   selectUserPlan,
+  selectUser,
   setPlan,
 } from "../../../redux/slices/User";
 import { FaCheck } from "react-icons/fa6";
@@ -11,13 +13,59 @@ import { CiLock } from "react-icons/ci";
 import { TIERS } from "../../../utils/data";
 import { MembershipTier } from "../../../utils/types";
 import toast from "react-hot-toast";
+import { authService } from "../../../redux/configuration/services/auth.service";
+
+// const PAYSTACK_KEY = process.env.REACT_APP_PAYSTACK_PUBLIC_KEY_TEST as string;
+const PAYSTACK_KEY =
+  (process.env.NODE_ENV === "production"
+    ? process.env.REACT_APP_PAYSTACK_PUBLIC_KEY_LIVE
+    : process.env.REACT_APP_PAYSTACK_PUBLIC_KEY_TEST) ?? "";
 
 const MembershipPlan: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const currentPlan = useSelector(selectUserPlan);
+  const user = useSelector(selectUser);
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
+  const [processingTier, setProcessingTier] = useState<string | null>(null);
+
+  const getPrice = (base: number) => {
+    if (base === 0) return 0;
+    return billing === "annual" ? Math.round(base * 10) : base;
+  };
+
+  // Initialize Paystack — config is built per-click via initializePayment(config)
+  const initializePayment = usePaystackPayment({
+    publicKey: PAYSTACK_KEY,
+    email: user.email,
+    amount: 0,
+    currency: "NGN",
+  });
+
+  //   const completeUpgrade = (tier: MembershipTier) => {
+  //     dispatch(setPlan(tier.id));
+  //     setProcessingTier(null);
+  //     toast.success(`Upgraded to ${tier.name}!`);
+  //     // TODO: persist tier.id to Firestore so it survives refresh
+  //   };
+
+  const completeUpgrade = async (tier: MembershipTier, reference: string) => {
+    try {
+      await authService.handleMembershipPlan(tier.id, {
+        reference,
+        billing,
+        amount: getPrice(tier.price),
+      });
+      toast.success(`Upgraded to ${tier.name}!`);
+    } catch {
+      toast.error(
+        "Payment succeeded but saving your plan failed. Contact support.",
+      );
+    } finally {
+      setProcessingTier(null);
+    }
+  };
 
   const handleSelect = (tier: MembershipTier) => {
     if (!isLoggedIn) {
@@ -25,7 +73,6 @@ const MembershipPlan: React.FC = () => {
       return;
     }
 
-    // Already on this plan — no-op
     if (tier.id === currentPlan) {
       toast("You're already on this plan.", {
         style: { background: "#1e1b4b", color: "#fff" },
@@ -33,31 +80,65 @@ const MembershipPlan: React.FC = () => {
       return;
     }
 
-    // Free plan needs no payment — set it directly
     if (tier.price === 0) {
-      dispatch(setPlan("free"));
+      authService.handleMembershipPlan("free").catch(() => {});
       toast.success("You're now on the Free plan.");
       return;
     }
 
-    // Paid plans — wire up payment flow later, then dispatch on success
-    // For now, simulate selection:
-    dispatch(setPlan(tier.id));
-    toast.success(`Upgraded to ${tier.name}!`);
-  };
+    if (!PAYSTACK_KEY) {
+      toast.error("Payment is not configured. Please contact support.");
+      return;
+    }
 
-  const getPrice = (base: number) => {
-    if (base === 0) return 0;
-    return billing === "annual" ? Math.round(base * 10) : base;
+    const amountKobo = getPrice(tier.price) * 100; // Paystack works in kobo
+    setProcessingTier(tier.id);
+
+    initializePayment({
+      config: {
+        email: user.email,
+        amount: amountKobo,
+        currency: "NGN",
+        metadata: {
+          custom_fields: [
+            {
+              display_name: "Plan",
+              variable_name: "plan_id",
+              value: tier.id,
+            },
+            {
+              display_name: "Billing",
+              variable_name: "billing_cycle",
+              value: billing,
+            },
+            {
+              display_name: "User ID",
+              variable_name: "uid",
+              value: user.uid,
+            },
+          ],
+        },
+      },
+
+      onSuccess: (reference: { reference: string }) => {
+        completeUpgrade(tier, reference.reference);
+      },
+      onClose: () => {
+        setProcessingTier(null);
+        toast("Payment cancelled.", {
+          style: { background: "#1e1b4b", color: "#fff" },
+        });
+      },
+    });
   };
 
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-14 pb-10 text-center">
-        <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-orange-100 text-orange-700 mb-4">
+        {/* <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-orange-100 text-orange-700 mb-4">
           Membership Plans
-        </span>
+        </span> */}
         <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-purple-950 mb-4">
           Choose Your Level of <span className="text-orange-500">Impact</span>
         </h1>
@@ -94,6 +175,7 @@ const MembershipPlan: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {TIERS.map((tier) => {
             const isCurrent = isLoggedIn && tier.id === currentPlan;
+            const isProcessing = processingTier === tier.id;
 
             return (
               <div
@@ -104,10 +186,9 @@ const MembershipPlan: React.FC = () => {
                   tier.popular ? "shadow-xl shadow-orange-500/10" : "shadow-sm"
                 }`}
               >
-                {/* Current-plan ribbon (takes priority over Popular) */}
                 {isCurrent ? (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className="bg-purple-950 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full shadow-md shadow-purple-950/30">
+                    <span className="bg-green-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full shadow-md shadow-purple-950/30">
                       Current Plan
                     </span>
                   </div>
@@ -188,25 +269,49 @@ const MembershipPlan: React.FC = () => {
                 {/* CTA */}
                 <button
                   onClick={() => handleSelect(tier)}
-                  disabled={isCurrent}
-                  className={`w-full py-3.5 rounded-xl text-sm font-black tracking-wide transition-all duration-200 ${
+                  disabled={isCurrent || isProcessing}
+                  className={`w-full py-3.5 rounded-xl text-sm font-black tracking-wide transition-all duration-200 flex items-center justify-center gap-2 ${
                     isCurrent
                       ? "bg-slate-100 text-purple-950/40 cursor-not-allowed"
                       : tier.buttonStyle
-                  }`}
+                  } ${isProcessing ? "opacity-70 cursor-wait" : ""}`}
                 >
-                  {isCurrent
-                    ? "Current Plan"
-                    : tier.price === 0
-                      ? "Get Started Free"
-                      : `Choose ${tier.name}`}
+                  {isProcessing ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8H4z"
+                        />
+                      </svg>
+                      Processing...
+                    </>
+                  ) : isCurrent ? (
+                    "Current Plan"
+                  ) : tier.price === 0 ? (
+                    "Get Started Free"
+                  ) : (
+                    `Choose ${tier.name}`
+                  )}
                 </button>
               </div>
             );
           })}
         </div>
 
-        {/* Footer note */}
         <p className="text-center text-xs text-purple-950/40 font-medium mt-10">
           All plans are billed in Nigerian Naira (₦). Cancel anytime. Questions?{" "}
           <a

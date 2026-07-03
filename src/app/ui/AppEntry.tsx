@@ -60,6 +60,7 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
                   "",
                 isLoggedIn: true,
                 profileComplete: data?.profileComplete ?? false,
+                plan: data?.user?.plan ?? "free",
                 photoURL: firebaseUser.photoURL ?? null,
               } satisfies Partial<SerializedUser>),
             );
@@ -72,6 +73,7 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
                 displayName: firebaseUser.displayName ?? "",
                 isLoggedIn: true,
                 profileComplete: false,
+                plan: "free",
                 photoURL: firebaseUser.photoURL ?? null,
               }),
             );
@@ -87,6 +89,7 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
               displayName: firebaseUser.displayName ?? "",
               isLoggedIn: true,
               profileComplete: false,
+              plan: "free",
               photoURL: firebaseUser.photoURL ?? null,
             }),
           );
