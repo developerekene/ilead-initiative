@@ -39,19 +39,19 @@ const membershipSlice = createSlice({
   name: "membership",
   initialState,
   reducers: {
-    setBilling(state, action: PayloadAction<BillingCycle>) {
+    setBilling(state: { billing: any; }, action: PayloadAction<BillingCycle>) {
       state.billing = action.payload;
     },
 
     // Fired when the Paystack popup opens for a given tier
-    startPayment(state, action: PayloadAction<MembershipPlanId>) {
+    startPayment(state: { paymentStatus: string; processingTier: any; error: null; }, action: PayloadAction<MembershipPlanId>) {
       state.paymentStatus = "processing";
       state.processingTier = action.payload;
       state.error = null;
     },
 
     // Fired on verified successful payment — upgrades the plan and logs it
-    paymentSuccess(state, action: PayloadAction<PaymentRecord>) {
+    paymentSuccess(state: { activePlan: any; paymentStatus: string; processingTier: null; lastReference: any; history: any[]; }, action: PayloadAction<PaymentRecord>) {
       state.activePlan = action.payload.planId;
       state.paymentStatus = "success";
       state.processingTier = null;
@@ -60,26 +60,26 @@ const membershipSlice = createSlice({
     },
 
     // Fired on failed/verification-failed payment
-    paymentFailed(state, action: PayloadAction<string>) {
+    paymentFailed(state: { paymentStatus: string; processingTier: null; error: any; }, action: PayloadAction<string>) {
       state.paymentStatus = "failed";
       state.processingTier = null;
       state.error = action.payload;
     },
 
     // Fired when the user closes the popup without paying
-    cancelPayment(state) {
+    cancelPayment(state: { paymentStatus: string; processingTier: null; }) {
       state.paymentStatus = "idle";
       state.processingTier = null;
     },
 
     // Direct plan set with no payment (e.g. downgrading to Free)
-    setActivePlan(state, action: PayloadAction<MembershipPlanId>) {
+    setActivePlan(state: { activePlan: any; paymentStatus: string; processingTier: null; }, action: PayloadAction<MembershipPlanId>) {
       state.activePlan = action.payload;
       state.paymentStatus = "idle";
       state.processingTier = null;
     },
 
-    clearMembershipError(state) {
+    clearMembershipError(state: { error: null; }) {
       state.error = null;
     },
 
