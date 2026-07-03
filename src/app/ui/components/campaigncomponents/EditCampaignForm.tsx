@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addCampaign,
+  updateCampaignItem,
   type Campaign,
 } from "../../../redux/slices/campaignSlice";
 import { selectUser } from "../../../redux/slices/User";
-import { v4 as uuidv4 } from "uuid";
 import toast from "react-hot-toast";
 import { campaignService } from "../../../redux/configuration/services/campaign.service";
 import {
@@ -15,7 +14,6 @@ import {
   FormSelect,
   FormRow,
   FormDivider,
-  FormClause,
   FormActions,
   FormSection,
 } from "../formcomponent/FormComponents";
@@ -23,9 +21,14 @@ import {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  campaignToEdit: Campaign | null;
 }
 
-const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
+const EditCampaignForm: React.FC<Props> = ({
+  isOpen,
+  onClose,
+  campaignToEdit,
+}) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,6 +43,23 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
     longFormBody: "",
     keyDeliverables: [""],
   });
+
+  useEffect(() => {
+    if (campaignToEdit && isOpen) {
+      setForm({
+        title: campaignToEdit.title,
+        category: campaignToEdit.category,
+        description: campaignToEdit.description,
+        metricLabel: campaignToEdit.metricLabel,
+        metricValue: campaignToEdit.metricValue,
+        statusBadge: campaignToEdit.statusBadge,
+        longFormBody: campaignToEdit.longFormBody,
+        keyDeliverables: campaignToEdit.keyDeliverables?.length
+          ? campaignToEdit.keyDeliverables
+          : [""],
+      });
+    }
+  }, [campaignToEdit, isOpen]);
 
   const set = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -65,45 +85,25 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!user?.uid) {
-      toast.error("You must be logged in to create a campaign.");
-      return;
-    }
+    if (!user?.uid || !campaignToEdit) return;
 
     setIsSubmitting(true);
 
     try {
-      const newCampaign = {
+      const updatedCampaign = {
+        ...campaignToEdit,
         ...form,
-        id: uuidv4(),
-        creatorId: user.uid,
         keyDeliverables: form.keyDeliverables.filter(Boolean),
-      } as Campaign & { creatorId?: string };
+      } as Campaign;
 
-      // 1. Save to Firebase Firestore under the user's specific document
-      await campaignService.createCampaign(user.uid, newCampaign);
+      await campaignService.updateCampaign(user.uid, updatedCampaign);
+      dispatch(updateCampaignItem(updatedCampaign));
 
-      // 2. If Firebase succeeds, save to Redux State so the UI updates instantly
-      dispatch(addCampaign(newCampaign));
-
-      // 3. Reset Form & Close Modal
-      setForm({
-        title: "",
-        category: "Tech Mentorship",
-        description: "",
-        metricLabel: "",
-        metricValue: "",
-        statusBadge: "In Progress",
-        longFormBody: "",
-        keyDeliverables: [""],
-      });
-
-      toast.success("Campaign launched successfully!");
+      toast.success("Campaign updated successfully!");
       onClose();
     } catch (error) {
-      console.error("Failed to launch campaign", error);
-      toast.error("Failed to launch campaign. Please try again.");
+      console.error("Failed to update campaign", error);
+      toast.error("Failed to update campaign.");
     } finally {
       setIsSubmitting(false);
     }
@@ -113,16 +113,14 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
     <FormPanel
       isOpen={isOpen}
       onClose={onClose}
-      title="Create New Campaign"
-      badge="New Initiative"
+      title="Edit Campaign"
+      badge="Update"
       badgeVariant="orange"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        {/* Basic info */}
         <FormInput
           label="Campaign Title"
           required
-          placeholder="e.g., The Developer Resilience Fund"
           value={form.title}
           onChange={(e) => set("title", e.target.value)}
         />
@@ -141,7 +139,6 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
           <FormInput
             label="Status Badge"
             required
-            placeholder="e.g., In Progress"
             value={form.statusBadge}
             onChange={(e) => set("statusBadge", e.target.value)}
           />
@@ -149,10 +146,8 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
 
         <FormTextarea
           label="Short Description"
-          fieldNote="(card preview)"
           required
           rows={2}
-          placeholder="A concise summary shown on the campaign card..."
           value={form.description}
           onChange={(e) => set("description", e.target.value)}
         />
@@ -161,14 +156,12 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
           <FormInput
             label="Metric Label"
             required
-            placeholder="e.g., Members Served"
             value={form.metricLabel}
             onChange={(e) => set("metricLabel", e.target.value)}
           />
           <FormInput
             label="Metric Value"
             required
-            placeholder="e.g., 200+ Members"
             value={form.metricValue}
             onChange={(e) => set("metricValue", e.target.value)}
           />
@@ -178,31 +171,27 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
 
         <FormTextarea
           label="Full Campaign Body"
-          fieldNote="(detail page)"
           required
           rows={4}
-          placeholder="The full operational intent, scope, and vision of this campaign..."
           value={form.longFormBody}
           onChange={(e) => set("longFormBody", e.target.value)}
         />
 
-        {/* Key deliverables */}
         <FormSection title="Key Deliverables">
           <div className="flex flex-col gap-2">
             {form.keyDeliverables.map((d, i) => (
               <div key={i} className="flex items-center gap-2">
                 <input
                   type="text"
-                  placeholder={`Deliverable ${i + 1}`}
                   value={d}
                   onChange={(e) => setDeliverable(i, e.target.value)}
-                  className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm font-medium text-purple-950 placeholder:text-purple-950/30 focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+                  className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm focus:border-orange-500 transition-all"
                 />
                 {form.keyDeliverables.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeDeliverable(i)}
-                    className="w-8 h-8 shrink-0 rounded-full border border-purple-950/10 hover:border-red-400 hover:text-red-400 text-purple-950/30 flex items-center justify-center text-sm transition-all"
+                    className="w-8 h-8 rounded-full border border-purple-950/10 hover:text-red-400 shrink-0"
                   >
                     ✕
                   </button>
@@ -212,27 +201,22 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={addDeliverable}
-              className="text-xs font-bold text-purple-700 self-start hover:text-orange-500 transition-colors pt-1"
+              className="text-xs font-bold text-purple-700 self-start pt-1"
             >
-              + Add another deliverable
+              + Add deliverable
             </button>
           </div>
         </FormSection>
 
-        <FormClause
-          title="Visibility Notice"
-          body="This campaign will be immediately visible to all platform members once launched. Ensure all details are accurate before submitting."
-        />
-
         <FormActions
           onCancel={onClose}
-          submitLabel="Launch Campaign"
+          submitLabel="Save Changes"
           isSubmitting={isSubmitting}
-          loadingLabel="Launching..."
+          loadingLabel="Saving..."
         />
       </form>
     </FormPanel>
   );
 };
 
-export default CreateCampaignForm;
+export default EditCampaignForm;
