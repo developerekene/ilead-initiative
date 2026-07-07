@@ -1,17 +1,11 @@
-// ─── Ticket 01: iShare Firestore Schema & Rules ───────────────────────────────
-// Collection: ishare_posts
-//
-// This file exports TypeScript types, a factory helper, and the Firestore
-// security rules string so they can be deployed via the Firebase CLI.
-
 import { Timestamp } from "firebase/firestore";
 
-// ── Post type union ───────────────────────────────────────────────────────────
+//Post type union
 export type PostType = "offer_give" | "request_need";
 export type PostCategory = "skills" | "hardware" | "mentorship" | "other";
 export type PostStatus = "active" | "fulfilled" | "archived" | "pending_match";
 
-// ── Core document shape ───────────────────────────────────────────────────────
+//Core document shape
 export interface ISharePost {
   id: string;
   userId: string;
@@ -23,6 +17,8 @@ export interface ISharePost {
   timestamp: Timestamp;
   anonymous: boolean;
   // Optional enrichment fields populated client-side / cloud function
+  resourceType?: string | null; // the kind of resource offered/requested
+  safetyAcknowledged?: boolean; // request-side safety consent (iNeed)
   displayName?: string | null;
   photoURL?: string | null;
   matchedUserId?: string | null; // set when status → pending_match
@@ -34,6 +30,8 @@ export interface ISharePost {
 export const buildISharePost = (
   overrides: Omit<ISharePost, "id" | "timestamp" | "status">,
 ): Omit<ISharePost, "id"> => ({
+  resourceType: null,
+  safetyAcknowledged: false,
   ...overrides,
   status: "active",
   timestamp: Timestamp.now(),
@@ -55,8 +53,11 @@ export const ISHARE_COLLECTION = "ishare_posts";
 //
 //     match /ishare_posts/{postId} {
 //
-//       // Anyone (even unauthenticated) can read active posts
-//       allow read: if resource.data.status == 'active';
+//       // Anyone (even unauthenticated) can read active posts;
+//       // owners can additionally read their own non-active posts
+//       allow read: if resource.data.status == 'active'
+//                   || (request.auth != null
+//                       && resource.data.userId == request.auth.uid);
 //
 //       // Authenticated users can create their own posts
 //       allow create: if request.auth != null
