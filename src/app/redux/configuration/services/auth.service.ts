@@ -9,7 +9,7 @@ import {
 import { auth, db } from "../../../firebase";
 import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { store } from "../../store";
-import { clearUser, setUser } from "../../slices/User";
+import { clearUser, setPlan, setUser } from "../../slices/User";
 import { resolve } from "path";
 import { error } from "console";
 
@@ -91,6 +91,7 @@ export class AuthService {
             displayName:
               `${dataForRedux?.firstName ?? ""} ${dataForRedux?.lastName ?? ""}`.trim(),
             isLoggedIn: true,
+            plan: "free",
             profileComplete: false,
           }),
         );
@@ -158,6 +159,7 @@ export class AuthService {
               "",
             isLoggedIn: true,
             profileComplete: getUserData?.profileComplete ?? false,
+            plan: getUserData?.user?.plan ?? "free",
             photoURL: user.photoURL,
           }),
         );
@@ -200,6 +202,7 @@ export class AuthService {
               "",
             isLoggedIn: true,
             profileComplete: getUserData?.profileComplete ?? false,
+            plan: getUserData?.user?.plan ?? "free",
             photoURL: user.photoURL,
           }),
         );
@@ -214,6 +217,7 @@ export class AuthService {
           displayName: user.displayName ?? "",
           isLoggedIn: true,
           profileComplete: false,
+
           photoURL: user.photoURL,
         }),
       );
@@ -223,28 +227,6 @@ export class AuthService {
       throw error;
     }
   }
-
-  // async updateUserInformation(updateData: Partial<any>): Promise<void> {
-  //   try {
-  //     const currentUser = await this.getCurrentUser();
-  //     const userId = currentUser.uid;
-  //     const userDoc = doc(db, "users", userId);
-  //     const userSnapShot = await getDoc(userDoc);
-  //     if (!userSnapShot.exists()) throw new Error("user not found");
-  //     const currentData = userSnapShot.data();
-  //     const updatePrimaryInfo = {
-  //       ...currentData.user.secondaryInformation,
-  //       ...updateData,
-  //     };
-  //     await updateDoc(userDoc, {
-  //       "user.secondaryInformation": updatePrimaryInfo,
-  //     });
-  //     store.dispatch(setUser(updatePrimaryInfo));
-  //   } catch (error) {
-  //     console.error("Error updating primary information:", error);
-  //     throw error;
-  //   }
-  // }
 
   //NEW
   async updateUserInformation(updateData: Partial<any>): Promise<void> {
@@ -303,6 +285,52 @@ export class AuthService {
       .catch((error: any) => {
         console.log("user not signed out", error);
       });
+  }
+
+  async handleMembershipPlan(
+    planId: string,
+    paymentMeta?: {
+      reference: string;
+      billing: "monthly" | "annual";
+      amount: number;
+    },
+  ): Promise<void> {
+    try {
+      const currentUser = await this.getCurrentUser();
+      const userId = currentUser.uid;
+      const userDoc = doc(db, "users", userId);
+
+      const snapshot = await getDoc(userDoc);
+      if (!snapshot.exists()) throw new Error("User not found");
+
+      // Write nested under the `user` map using dot-notation paths
+      const writePayload: Record<string, any> = {
+        "user.plan": planId,
+        "user.planUpdatedAt": Date.now(),
+      };
+
+      if (paymentMeta) {
+        // Read existing history from the nested location
+        const existing = snapshot.data()?.user?.membershipHistory ?? [];
+        writePayload["user.membershipHistory"] = [
+          ...existing,
+          {
+            planId,
+            reference: paymentMeta.reference,
+            billing: paymentMeta.billing,
+            amount: paymentMeta.amount,
+            paidAt: new Date().toISOString(),
+          },
+        ];
+      }
+
+      await updateDoc(userDoc, writePayload);
+
+      store.dispatch(setPlan(planId as any));
+    } catch (error) {
+      console.error("Error updating membership plan:", error);
+      throw error;
+    }
   }
 }
 

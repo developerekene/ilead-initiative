@@ -29,12 +29,11 @@ import CampaignDetails from "./components/campaigncomponents/CampaignDetails";
 import { Toaster } from "react-hot-toast";
 import AboutUs from "./pages/AboutUs";
 import CampaignPage from "./pages/CampaignPage";
-import ContactUsPage from "./pages/ContactUsPage";
 import MembershipPage from "./pages/MembershipPage";
 import MyCampaignsPage from "./pages/MyCampaignsPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ContactUsPage from "./pages/ContactUsPage";
 import TermsAndCondition from "./pages/TermsAndCondition";
-import Setting from "./pages/Settings";
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -63,6 +62,7 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
                   "",
                 isLoggedIn: true,
                 profileComplete: data?.profileComplete ?? false,
+                plan: data?.user?.plan ?? "free",
                 photoURL: firebaseUser.photoURL ?? null,
               } satisfies Partial<SerializedUser>),
             );
@@ -75,6 +75,7 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
                 displayName: firebaseUser.displayName ?? "",
                 isLoggedIn: true,
                 profileComplete: false,
+                plan: "free",
                 photoURL: firebaseUser.photoURL ?? null,
               }),
             );
@@ -90,6 +91,7 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
               displayName: firebaseUser.displayName ?? "",
               isLoggedIn: true,
               profileComplete: false,
+              plan: "free",
               photoURL: firebaseUser.photoURL ?? null,
             }),
           );
@@ -109,6 +111,7 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   return null;
 };
 
+// This layout contains the Footer and will be used for main public routes
 const RootLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
     <ScrollToTop />
@@ -120,15 +123,7 @@ const RootLayout = () => (
   </div>
 );
 
-const AppLayout = () => (
-  <div className="min-h-screen bg-white flex flex-col">
-    <ScrollToTop />
-    <Navbar />
-    <main className="flex-1 pt-20">
-      <Outlet />
-    </main>
-  </div>
-);
+// (AppLayout removed since RootLayout handles this now)
 
 const DashboardLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
@@ -169,7 +164,7 @@ const NotFoundView = () => (
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <AppLayout />,
+    element: <RootLayout />,
     errorElement: <NotFoundView />,
     children: [
       { index: true, element: <HomeView /> },
@@ -184,8 +179,6 @@ const router = createBrowserRouter([
       { path: "privacy-policy", element: <PrivacyPolicy /> },
       { path: "terms-and-conditions", element: <TermsAndCondition /> },
       { path: "contact-us", element: <ContactUsPage /> },
-      { path: "settings", element: <Setting /> },
-
       {
         path: "all-Campaign/campaign-details/:campaignId",
         element: <CampaignDetails />,
@@ -194,16 +187,13 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <DashboardLayout />, // Re-added the layout wrapper containing the Navbar
+    element: <DashboardLayout />,
     errorElement: <NotFoundView />,
     children: [
       {
-        path: "", // This empty path ensures /dashboard matches and renders the Dashboard component
+        path: "",
         element: <Dashboard />,
-        children: [
-          { path: "campaigns", element: <MyCampaignsPage /> },
-          // Add other dashboard routes here, e.g., { path: "story", element: <MyStoryPage /> }
-        ],
+        children: [{ path: "campaigns", element: <MyCampaignsPage /> }],
       },
     ],
   },

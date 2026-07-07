@@ -247,11 +247,11 @@ const Dashboard: React.FC = () => {
         {/* Membership Status Vector Badge */}
         <div className="p-3 bg-gradient-to-br from-purple-950 to-purple-900 rounded-xl text-white text-center shadow-md">
           <div className="text-[10px] font-black uppercase tracking-widest text-orange-400">
-            Account Tier
+            Membership Tier:
           </div>
-          <div className="text-xs font-bold mt-0.5">
+          {/* <div className="text-xs font-bold mt-0.5">
             Verified Core Contributor
-          </div>
+          </div> */}
         </div>
       </aside>
 
