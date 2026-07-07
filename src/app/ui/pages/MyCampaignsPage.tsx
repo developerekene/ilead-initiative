@@ -1,4 +1,3 @@
-// src/pages/MyCampaignsPage.tsx
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -13,12 +12,19 @@ import {
 import { campaignService } from "../../redux/configuration/services/campaign.service";
 import toast from "react-hot-toast";
 import EditCampaignForm from "../components/campaigncomponents/EditCampaignForm";
+import {
+  FormModal,
+  FormActions,
+} from "../components/formcomponent/FormComponents";
 
 const MyCampaignsPage: React.FC = () => {
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [campaignToEdit, setCampaignToEdit] = useState<Campaign | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const loadCampaigns = async () => {
@@ -50,21 +56,26 @@ const MyCampaignsPage: React.FC = () => {
     (campaign) => !userId || campaign.creatorId !== userId,
   );
 
-  const handleDelete = async (campaignId: string) => {
-    if (!userId) return;
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this campaign? This cannot be undone.",
-      )
-    )
-      return;
+  // Step 1: Open the modal instead of the native window alert
+  const handleDelete = (campaignId: string) => {
+    setCampaignToDelete(campaignId);
+  };
 
+  // Step 2: Handle the actual async database deletion
+  const confirmDelete = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!userId || !campaignToDelete) return;
+
+    setIsDeleting(true);
     try {
-      await campaignService.deleteCampaign(userId, campaignId);
-      dispatch(removeCampaignItem(campaignId));
-      toast.success("Campaign deleted.");
+      await campaignService.deleteCampaign(userId, campaignToDelete);
+      dispatch(removeCampaignItem(campaignToDelete));
+      toast.success("Campaign deleted successfully.");
+      setCampaignToDelete(null);
     } catch (error) {
       toast.error("Failed to delete campaign.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -133,16 +144,41 @@ const MyCampaignsPage: React.FC = () => {
         </>
       )}
 
+      {/* Campaign Creation Drawer */}
       <CreateCampaignForm
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
 
+      {/* Campaign Editing Drawer */}
       <EditCampaignForm
         isOpen={!!campaignToEdit}
         onClose={() => setCampaignToEdit(null)}
         campaignToEdit={campaignToEdit}
       />
+
+      <FormModal
+        isOpen={!!campaignToDelete}
+        onClose={() => !isDeleting && setCampaignToDelete(null)}
+        title="Delete Campaign"
+        badge="Danger"
+        badgeVariant="orange"
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={confirmDelete} className="flex flex-col gap-6">
+          <p className="text-sm text-purple-950/70 font-medium leading-relaxed">
+            Are you sure you want to permanently delete this campaign? This action cannot be undone and all active configurations will be lost.
+          </p>
+
+          <FormActions
+            onCancel={() => setCampaignToDelete(null)}
+            submitLabel="Delete Campaign"
+            isSubmitting={isDeleting}
+            loadingLabel="Deleting..."
+            submitVariant="danger" 
+          />
+        </form>
+      </FormModal>
     </div>
   );
 };
