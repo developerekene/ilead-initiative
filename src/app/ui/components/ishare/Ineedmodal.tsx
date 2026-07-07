@@ -8,6 +8,7 @@ import {
   PostCategory,
   buildISharePost,
 } from "../../../utils/Ishareschema";
+import { FormPanel } from "../formcomponent/FormComponents";
 
 interface INeedModalProps {
   isOpen: boolean;
@@ -111,6 +112,8 @@ const INeedModal: React.FC<INeedModalProps> = ({ isOpen, onClose }) => {
         title: form.title.trim(),
         description: form.description.trim(),
         category: form.category as PostCategory,
+        resourceType: form.resourceType, // now persisted
+        safetyAcknowledged: disclaimerAccepted, // consent audit trail
         anonymous: form.anonymous,
         displayName: form.anonymous ? null : user.displayName,
         photoURL: form.anonymous ? null : user.photoURL,
@@ -124,46 +127,37 @@ const INeedModal: React.FC<INeedModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-purple-950/40 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl shadow-purple-950/20 overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-950 to-purple-900 px-8 py-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-black text-white tracking-tight">
-              iNeed — Post a Request
-            </h2>
-            {!submitted && (
-              <p className="text-purple-300/70 text-xs font-medium mt-0.5">
-                Step {step} of 3
-              </p>
-            )}
+    <FormPanel
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={submitted ? "Request Posted" : "iNeed — Post a Request"}
+      badge={submitted ? "Complete" : `Step ${step} of 3`}
+      badgeVariant="purple"
+    >
+      {submitted ? (
+        <div className="flex flex-col items-center text-center py-6">
+          <div className="w-16 h-16 rounded-full bg-purple-50 border-2 border-purple-100 flex items-center justify-center mb-5 text-3xl">
+            🙌
           </div>
+          <h3 className="text-xl font-black text-purple-950 mb-2">
+            Request Posted!
+          </h3>
+          <p className="text-sm text-purple-950/50 font-medium leading-relaxed mb-7 max-w-xs">
+            Your request is live. A community member will reach out when they
+            can help. Stay tuned.
+          </p>
           <button
             onClick={handleClose}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            className="bg-purple-950 hover:bg-orange-500 text-white font-black px-8 py-3 rounded-xl text-sm tracking-wide transition-all duration-200"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth={2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            Back to Feed
           </button>
         </div>
-
-        {/* Progress bar */}
-        {!submitted && (
-          <div className="flex gap-1 px-8 pt-5">
+      ) : (
+        <>
+          {/* Progress bar */}
+          <div className="flex gap-1">
             {([1, 2, 3] as Step[]).map((s) => (
               <div
                 key={s}
@@ -173,291 +167,264 @@ const INeedModal: React.FC<INeedModalProps> = ({ isOpen, onClose }) => {
               />
             ))}
           </div>
-        )}
 
-        <div className="px-8 py-6">
-          {/* ── Success ── */}
-          {submitted ? (
-            <div className="flex flex-col items-center text-center py-6">
-              <div className="w-16 h-16 rounded-full bg-purple-50 border-2 border-purple-100 flex items-center justify-center mb-5 text-3xl">
-                🙌
+          {/* ── Step 1: Title + Resource Type ── */}
+          {step === 1 && (
+            <div className="space-y-5">
+              <div>
+                <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-0.5">
+                  Request Title <span className="text-purple-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.title}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, title: e.target.value }))
+                  }
+                  placeholder="e.g. Need a laptop for remote work"
+                  maxLength={80}
+                  className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-purple-600 focus:bg-white transition-all"
+                />
+                <span className="text-[11px] text-purple-950/30 pl-0.5 mt-1 block">
+                  {form.title.length}/80
+                </span>
               </div>
-              <h3 className="text-xl font-black text-purple-950 mb-2">
-                Request Posted!
-              </h3>
-              <p className="text-sm text-purple-950/50 font-medium leading-relaxed mb-7 max-w-xs">
-                Your request is live. A community member will reach out when
-                they can help. Stay tuned.
-              </p>
-              <button
-                onClick={handleClose}
-                className="bg-purple-950 hover:bg-orange-500 text-white font-black px-8 py-3 rounded-xl text-sm tracking-wide transition-all duration-200"
-              >
-                Back to Feed
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* ── Step 1: Title + Resource Type ── */}
-              {step === 1 && (
-                <div className="space-y-5">
-                  <div>
-                    <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-1">
-                      Request Title <span className="text-purple-600">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={form.title}
-                      onChange={(e) =>
-                        setForm((p) => ({ ...p, title: e.target.value }))
-                      }
-                      placeholder="e.g. Need a laptop for remote work"
-                      maxLength={80}
-                      className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-purple-600 focus:bg-white transition-all"
-                    />
-                    <span className="text-[11px] text-purple-950/30 pl-1 mt-1 block">
-                      {form.title.length}/80
-                    </span>
-                  </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-purple-950/70 block mb-2 pl-1">
-                      What type of resource do you need?{" "}
-                      <span className="text-purple-600">*</span>
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {RESOURCE_TYPES.map((rt) => (
-                        <button
-                          key={rt}
-                          type="button"
-                          onClick={() =>
-                            setForm((p) => ({ ...p, resourceType: rt }))
-                          }
-                          className={`text-xs font-bold px-3 py-2.5 rounded-xl border text-left transition-all duration-150 ${
-                            form.resourceType === rt
-                              ? "bg-purple-50 border-purple-400 text-purple-700"
-                              : "bg-slate-50 border-purple-950/8 text-purple-950/60 hover:border-purple-300 hover:bg-purple-50/50"
-                          }`}
-                        >
-                          {rt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ── Step 2: Category ── */}
-              {step === 2 && (
-                <div className="space-y-3">
-                  <p className="text-xs font-bold text-purple-950/70 pl-1 mb-3">
-                    Category <span className="text-purple-600">*</span>
-                  </p>
-                  {CATEGORIES.map((cat) => (
+              <div>
+                <label className="text-xs font-bold text-purple-950/70 block mb-2 pl-0.5">
+                  What type of resource do you need?{" "}
+                  <span className="text-purple-600">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {RESOURCE_TYPES.map((rt) => (
                     <button
-                      key={cat.value}
+                      key={rt}
                       type="button"
                       onClick={() =>
-                        setForm((p) => ({ ...p, category: cat.value }))
+                        setForm((p) => ({ ...p, resourceType: rt }))
                       }
-                      className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl border text-left transition-all duration-200 ${
-                        form.category === cat.value
-                          ? "bg-purple-50 border-purple-400"
-                          : "bg-slate-50 border-purple-950/8 hover:border-purple-300 hover:bg-purple-50/40"
+                      className={`text-xs font-bold px-3 py-2.5 rounded-xl border text-left transition-all duration-150 ${
+                        form.resourceType === rt
+                          ? "bg-purple-50 border-purple-400 text-purple-700"
+                          : "bg-slate-50 border-purple-950/10 text-purple-950/60 hover:border-purple-300 hover:bg-purple-50/50"
                       }`}
                     >
-                      <span className="text-2xl">{cat.icon}</span>
-                      <div>
-                        <p className="text-sm font-black text-purple-950">
-                          {cat.label}
-                        </p>
-                        <p className="text-xs text-purple-950/50 font-medium">
-                          {cat.desc}
-                        </p>
-                      </div>
-                      {form.category === cat.value && (
-                        <svg
-                          className="ml-auto w-5 h-5 text-purple-600 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          strokeWidth={2.5}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                      )}
+                      {rt}
                     </button>
                   ))}
                 </div>
-              )}
+              </div>
+            </div>
+          )}
 
-              {/* ── Step 3: Description + Safety Disclaimer + Anonymous ── */}
-              {step === 3 && (
-                <div className="space-y-5">
+          {/* ── Step 2: Category ── */}
+          {step === 2 && (
+            <div className="space-y-3">
+              <p className="text-xs font-bold text-purple-950/70 pl-0.5 mb-3">
+                Category <span className="text-purple-600">*</span>
+              </p>
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() =>
+                    setForm((p) => ({ ...p, category: cat.value }))
+                  }
+                  className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl border text-left transition-all duration-200 ${
+                    form.category === cat.value
+                      ? "bg-purple-50 border-purple-400"
+                      : "bg-slate-50 border-purple-950/10 hover:border-purple-300 hover:bg-purple-50/40"
+                  }`}
+                >
+                  <span className="text-2xl">{cat.icon}</span>
                   <div>
-                    <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-1">
-                      Describe your need in detail{" "}
-                      <span className="text-purple-600">*</span>
-                    </label>
-                    <textarea
-                      value={form.description}
-                      onChange={(e) =>
-                        setForm((p) => ({ ...p, description: e.target.value }))
-                      }
-                      placeholder="Explain your situation clearly — what you need, why, how it will be used, and any relevant context that will help someone assist you..."
-                      rows={5}
-                      className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-purple-600 focus:bg-white transition-all resize-none"
-                    />
-                    <span className="text-[11px] text-purple-950/30 pl-1 mt-1 block">
-                      {form.description.length} chars{" "}
-                      {form.description.length < 20 && `(min 20)`}
-                    </span>
+                    <p className="text-sm font-black text-purple-950">
+                      {cat.label}
+                    </p>
+                    <p className="text-xs text-purple-950/50 font-medium">
+                      {cat.desc}
+                    </p>
                   </div>
-
-                  {/* ⚠️ Safety Disclaimer Box */}
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <svg
-                        className="w-5 h-5 text-amber-500 shrink-0 mt-0.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                        />
-                      </svg>
-                      <div>
-                        <p className="text-xs font-black text-amber-800 uppercase tracking-wide mb-1">
-                          Community Safety Reminder
-                        </p>
-                        <p className="text-xs text-amber-700 font-medium leading-relaxed">
-                          iLEAD is a trust-based community. Never share
-                          financial account details, home addresses, or
-                          sensitive personal data in your post. All exchanges
-                          happen through our verified peer channel after
-                          matching.
-                        </p>
-                      </div>
-                    </div>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={disclaimerAccepted}
-                        onChange={(e) =>
-                          setDisclaimerAccepted(e.target.checked)
-                        }
-                        className="w-4 h-4 accent-amber-500 rounded"
-                      />
-                      <span className="text-xs font-bold text-amber-800">
-                        I understand and agree to these safety guidelines
-                      </span>
-                    </label>
-                  </div>
-
-                  {/* Anonymous toggle */}
-                  <div className="flex items-center justify-between bg-slate-50 px-4 py-3.5 rounded-xl border border-purple-950/[0.03]">
-                    <div>
-                      <p className="text-sm font-bold text-purple-950/80">
-                        Post anonymously
-                      </p>
-                      <p className="text-xs text-purple-950/40 font-medium">
-                        Your name won't appear on this request
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setForm((p) => ({ ...p, anonymous: !p.anonymous }))
-                      }
-                      className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 focus:outline-none cursor-pointer ${
-                        form.anonymous ? "bg-purple-950" : "bg-slate-300"
-                      }`}
+                  {form.category === cat.value && (
+                    <svg
+                      className="ml-auto w-5 h-5 text-purple-600 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2.5}
                     >
-                      <div
-                        className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${form.anonymous ? "translate-x-5" : "translate-x-0"}`}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
-                    </button>
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ── Step 3: Description + Safety Disclaimer + Anonymous ── */}
+          {step === 3 && (
+            <div className="space-y-5">
+              <div>
+                <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-0.5">
+                  Describe your need in detail{" "}
+                  <span className="text-purple-600">*</span>
+                </label>
+                <textarea
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, description: e.target.value }))
+                  }
+                  placeholder="Explain your situation clearly — what you need, why, how it will be used, and any relevant context that will help someone assist you..."
+                  rows={5}
+                  className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm text-purple-950 placeholder:text-purple-950/20 font-medium focus:outline-none focus:border-purple-600 focus:bg-white transition-all resize-none"
+                />
+                <span className="text-[11px] text-purple-950/30 pl-0.5 mt-1 block">
+                  {form.description.length} chars{" "}
+                  {form.description.length < 20 && `(min 20)`}
+                </span>
+              </div>
+
+              {/* ⚠️ Safety Disclaimer Box */}
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                <div className="flex items-start gap-3 mb-3">
+                  <svg
+                    className="w-5 h-5 text-amber-500 shrink-0 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                    />
+                  </svg>
+                  <div>
+                    <p className="text-xs font-black text-amber-800 uppercase tracking-wide mb-1">
+                      Community Safety Reminder
+                    </p>
+                    <p className="text-xs text-amber-700 font-medium leading-relaxed">
+                      iLEAD is a trust-based community. Never share financial
+                      account details, home addresses, or sensitive personal
+                      data in your post. All exchanges happen through our
+                      verified peer channel after matching.
+                    </p>
                   </div>
                 </div>
-              )}
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={disclaimerAccepted}
+                    onChange={(e) => setDisclaimerAccepted(e.target.checked)}
+                    className="w-4 h-4 accent-amber-500 rounded"
+                  />
+                  <span className="text-xs font-bold text-amber-800">
+                    I understand and agree to these safety guidelines
+                  </span>
+                </label>
+              </div>
 
-              {/* Error */}
-              {error && (
-                <div className="mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-sm font-semibold text-red-600">
-                  {error}
+              {/* Anonymous toggle */}
+              <div className="flex items-center justify-between bg-slate-50 px-4 py-3.5 rounded-xl border border-purple-950/[0.03]">
+                <div>
+                  <p className="text-sm font-bold text-purple-950/80">
+                    Post anonymously
+                  </p>
+                  <p className="text-xs text-purple-950/40 font-medium">
+                    Your name won't appear on this request
+                  </p>
                 </div>
-              )}
-
-              {/* Navigation */}
-              <div className="flex items-center justify-between mt-7 pt-5 border-t border-purple-950/5">
                 <button
                   type="button"
                   onClick={() =>
-                    step > 1 ? setStep((s) => (s - 1) as Step) : handleClose()
+                    setForm((p) => ({ ...p, anonymous: !p.anonymous }))
                   }
-                  className="text-sm font-bold text-purple-950/40 hover:text-purple-950 transition-colors"
+                  className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 focus:outline-none cursor-pointer ${
+                    form.anonymous ? "bg-purple-950" : "bg-slate-300"
+                  }`}
                 >
-                  {step === 1 ? "Cancel" : "← Back"}
+                  <div
+                    className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                      form.anonymous ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
                 </button>
-
-                {step < 3 ? (
-                  <button
-                    type="button"
-                    onClick={() => setStep((s) => (s + 1) as Step)}
-                    disabled={step === 1 ? !canProceedStep1 : !canProceedStep2}
-                    className="bg-purple-950 hover:bg-orange-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black px-7 py-3 rounded-xl text-sm tracking-wide transition-all duration-200"
-                  >
-                    Continue →
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={!canSubmit || loading}
-                    className="bg-purple-950 hover:bg-orange-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black px-7 py-3 rounded-xl text-sm tracking-wide transition-all duration-200 flex items-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <svg
-                          className="animate-spin w-4 h-4"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8v8z"
-                          />
-                        </svg>
-                        Posting...
-                      </>
-                    ) : (
-                      "Post Request 🙌"
-                    )}
-                  </button>
-                )}
               </div>
-            </>
+            </div>
           )}
-        </div>
-      </div>
-    </div>
+
+          {/* Error */}
+          {error && (
+            <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-sm font-semibold text-red-600">
+              {error}
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="flex items-center justify-between pt-4 border-t border-purple-950/5">
+            <button
+              type="button"
+              onClick={() =>
+                step > 1 ? setStep((s) => (s - 1) as Step) : handleClose()
+              }
+              className="text-sm font-bold text-purple-950/40 hover:text-purple-950 transition-colors"
+            >
+              {step === 1 ? "Cancel" : "← Back"}
+            </button>
+
+            {step < 3 ? (
+              <button
+                type="button"
+                onClick={() => setStep((s) => (s + 1) as Step)}
+                disabled={step === 1 ? !canProceedStep1 : !canProceedStep2}
+                className="bg-purple-950 hover:bg-orange-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black px-7 py-3 rounded-xl text-sm tracking-wide transition-all duration-200"
+              >
+                Continue →
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!canSubmit || loading}
+                className="bg-purple-950 hover:bg-orange-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black px-7 py-3 rounded-xl text-sm tracking-wide transition-all duration-200 flex items-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <svg
+                      className="animate-spin w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8z"
+                      />
+                    </svg>
+                    Posting...
+                  </>
+                ) : (
+                  "Post Request 🙌"
+                )}
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </FormPanel>
   );
 };
 
