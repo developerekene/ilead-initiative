@@ -34,6 +34,7 @@ import MyCampaignsPage from "./pages/MyCampaignsPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ContactUsPage from "./pages/ContactUsPage";
 import TermsAndCondition from "./pages/TermsAndCondition";
+import Settings from "./pages/Settings";
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -179,6 +180,8 @@ const router = createBrowserRouter([
       { path: "privacy-policy", element: <PrivacyPolicy /> },
       { path: "terms-and-conditions", element: <TermsAndCondition /> },
       { path: "contact-us", element: <ContactUsPage /> },
+      { path: "settings", element: <Settings /> },
+
       {
         path: "all-Campaign/campaign-details/:campaignId",
         element: <CampaignDetails />,
