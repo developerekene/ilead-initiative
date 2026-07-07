@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense, lazy } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -14,24 +14,24 @@ import { SerializedUser } from "../redux/slices/User";
 import { AppDispatch } from "../redux/store";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
-import Footer from "./components/Footer";
-import JoinCommunity from "./components/JoinCommunity";
-import Navbar from "./components/Navbar";
-import HomeView from "./pages/HomeView";
-import ScrollToTop from "./components/others/ScrollToTop";
-import Dashboard from "./pages/Dashboard";
-import Login from "./components/Login";
-import ForgotPassword from "./components/ForgotPassword";
-import IShareView from "./pages/IShareView";
-import ITrainView from "./pages/ITrainView";
-import CompleteProfile from "./components/Completeprofile";
-import CampaignDetails from "./components/campaigncomponents/CampaignDetails";
 import { Toaster } from "react-hot-toast";
-import AboutUs from "./pages/AboutUs";
-import CampaignPage from "./pages/CampaignPage";
-import MembershipPage from "./pages/MembershipPage";
-import MyCampaignsPage from "./pages/MyCampaignsPage";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
+const Footer = lazy(() => import("./components/Footer"));
+const JoinCommunity = lazy(() => import("./components/JoinCommunity"));
+const Navbar = lazy(() => import("./components/Navbar"));
+const HomeView = lazy(() => import("./pages/HomeView"));
+const ScrollToTop = lazy(() => import("./components/others/ScrollToTop"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Login = lazy(() => import("./components/Login"));
+const ForgotPassword = lazy(() => import("./components/ForgotPassword"));
+const IShareView = lazy(() => import("./pages/IShareView"));
+const ITrainView = lazy(() => import("./pages/ITrainView"));
+const CompleteProfile = lazy(() => import("./components/Completeprofile"));
+const CampaignDetails = lazy(() => import("./components/campaigncomponents/CampaignDetails"));
+const AboutUs = lazy(() => import("./pages/AboutUs"));
+const CampaignPage = lazy(() => import("./pages/CampaignPage"));
+const MembershipPage = lazy(() => import("./pages/MembershipPage"));
+const MyCampaignsPage = lazy(() => import("./pages/MyCampaignsPage"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -112,33 +112,45 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
 // This layout contains the Footer and will be used for main public routes
 const RootLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
-    <ScrollToTop />
-    <Navbar />
+    <Suspense fallback={null}>
+      <ScrollToTop />
+      <Navbar />
+    </Suspense>
     <main className="flex-1 pt-20">
-      <Outlet />
+      <Suspense fallback={<div className="w-full h-[50vh] flex items-center justify-center"><span className="animate-spin w-8 h-8 rounded-full border-4 border-orange-500 border-t-transparent" /></div>}>
+        <Outlet />
+      </Suspense>
     </main>
-    <Footer />
+    <Suspense fallback={null}>
+      <Footer />
+    </Suspense>
   </div>
 );
 
-// (AppLayout removed since RootLayout handles this now)
-
 const DashboardLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
-    <ScrollToTop />
-    <Navbar />
+    <Suspense fallback={null}>
+      <ScrollToTop />
+      <Navbar />
+    </Suspense>
     {/* Added padding to offset the fixed Navbar */}
     <div className="flex-1 pt-20">
-      <Outlet />
+      <Suspense fallback={<div className="w-full h-[50vh] flex items-center justify-center"><span className="animate-spin w-8 h-8 rounded-full border-4 border-orange-500 border-t-transparent" /></div>}>
+        <Outlet />
+      </Suspense>
     </div>
   </div>
 );
 
 const ProfileLayout = () => (
   <div className="min-h-screen bg-white flex flex-col">
-    <ScrollToTop />
+    <Suspense fallback={null}>
+      <ScrollToTop />
+    </Suspense>
     <main className="flex-1 pt-20">
-      <Outlet />
+      <Suspense fallback={<div className="w-full h-[50vh] flex items-center justify-center"><span className="animate-spin w-8 h-8 rounded-full border-4 border-orange-500 border-t-transparent" /></div>}>
+        <Outlet />
+      </Suspense>
     </main>
   </div>
 );
@@ -204,7 +216,7 @@ export default function AppEntry() {
   const onReady = React.useCallback(() => setAuthReady(true), []);
 
   return (
-    <Provider store={store}>
+    <>
       <Toaster />
       <AuthListener onReady={onReady} />
       {authReady ? (
@@ -232,6 +244,6 @@ export default function AppEntry() {
           </svg>
         </div>
       )}
-    </Provider>
+    </>
   );
 }
