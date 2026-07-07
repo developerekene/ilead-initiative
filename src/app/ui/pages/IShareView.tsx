@@ -43,13 +43,13 @@ const ISharePage: React.FC = () => {
               onClick={() => setIGiveOpen(true)}
               className="bg-orange-500 hover:bg-white hover:text-purple-950 text-white font-black px-8 py-4 rounded-xl text-sm tracking-wide shadow-lg shadow-orange-500/20 transition-all duration-300 transform hover:-translate-y-0.5"
             >
-              iGive — Share a Resource
+              iGive — Give Resources
             </button>
             <button
               onClick={() => setINeedOpen(true)}
               className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-black px-8 py-4 rounded-xl text-sm tracking-wide transition-all duration-300 transform hover:-translate-y-0.5"
             >
-              iNeed — Post a Request
+              iNeed — Make a Request
             </button>
           </div>
         </div>
