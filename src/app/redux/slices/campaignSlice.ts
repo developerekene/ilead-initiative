@@ -3,13 +3,14 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export interface Campaign {
   id: string;
   title: string;
-  category: "Tech Mentorship" | "Business Strategy" | "Community Giving";
+  category: "Tech Mentorship" | "Business Strategy" | "Community Giving" | "Election";
   description: string;
   metricLabel: string;
   metricValue: string;
   statusBadge: string;
   longFormBody: string;
   keyDeliverables: string[];
+  candidates?: string[];
   creatorId?: string;
 }
 
