@@ -15,6 +15,11 @@ import { AppDispatch } from "../redux/store";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { Toaster } from "react-hot-toast";
+
+import SettingsPage from "./pages/SettingsPage";
+import ContactUs from "./pages/ContactUs";
+import TermsAndCondition from "./pages/TermsAndCondition";
+
 const Footer = lazy(() => import("./components/Footer"));
 const JoinCommunity = lazy(() => import("./components/JoinCommunity"));
 const Navbar = lazy(() => import("./components/Navbar"));
@@ -26,7 +31,9 @@ const ForgotPassword = lazy(() => import("./components/ForgotPassword"));
 const IShareView = lazy(() => import("./pages/IShareView"));
 const ITrainView = lazy(() => import("./pages/ITrainView"));
 const CompleteProfile = lazy(() => import("./components/Completeprofile"));
-const CampaignDetails = lazy(() => import("./components/campaigncomponents/CampaignDetails"));
+const CampaignDetails = lazy(
+  () => import("./components/campaigncomponents/CampaignDetails"),
+);
 const AboutUs = lazy(() => import("./pages/AboutUs"));
 const CampaignPage = lazy(() => import("./pages/CampaignPage"));
 const MembershipPage = lazy(() => import("./pages/MembershipPage"));
@@ -117,7 +124,13 @@ const RootLayout = () => (
       <Navbar />
     </Suspense>
     <main className="flex-1 pt-20">
-      <Suspense fallback={<div className="w-full h-[50vh] flex items-center justify-center"><span className="animate-spin w-8 h-8 rounded-full border-4 border-orange-500 border-t-transparent" /></div>}>
+      <Suspense
+        fallback={
+          <div className="w-full h-[50vh] flex items-center justify-center">
+            <span className="animate-spin w-8 h-8 rounded-full border-4 border-orange-500 border-t-transparent" />
+          </div>
+        }
+      >
         <Outlet />
       </Suspense>
     </main>
@@ -135,7 +148,13 @@ const DashboardLayout = () => (
     </Suspense>
     {/* Added padding to offset the fixed Navbar */}
     <div className="flex-1 pt-20">
-      <Suspense fallback={<div className="w-full h-[50vh] flex items-center justify-center"><span className="animate-spin w-8 h-8 rounded-full border-4 border-orange-500 border-t-transparent" /></div>}>
+      <Suspense
+        fallback={
+          <div className="w-full h-[50vh] flex items-center justify-center">
+            <span className="animate-spin w-8 h-8 rounded-full border-4 border-orange-500 border-t-transparent" />
+          </div>
+        }
+      >
         <Outlet />
       </Suspense>
     </div>
@@ -148,7 +167,13 @@ const ProfileLayout = () => (
       <ScrollToTop />
     </Suspense>
     <main className="flex-1 pt-20">
-      <Suspense fallback={<div className="w-full h-[50vh] flex items-center justify-center"><span className="animate-spin w-8 h-8 rounded-full border-4 border-orange-500 border-t-transparent" /></div>}>
+      <Suspense
+        fallback={
+          <div className="w-full h-[50vh] flex items-center justify-center">
+            <span className="animate-spin w-8 h-8 rounded-full border-4 border-orange-500 border-t-transparent" />
+          </div>
+        }
+      >
         <Outlet />
       </Suspense>
     </main>
@@ -191,6 +216,9 @@ const router = createBrowserRouter([
         path: "all-Campaign/campaign-details/:campaignId",
         element: <CampaignDetails />,
       },
+      { path: "settings", element: <SettingsPage /> },
+      { path: "contact", element: <ContactUs /> },
+      { path: "terms-and-conditions", element: <TermsAndCondition /> },
     ],
   },
   {
