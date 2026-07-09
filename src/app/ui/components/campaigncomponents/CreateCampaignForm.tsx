@@ -39,6 +39,7 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
     statusBadge: "In Progress",
     longFormBody: "",
     keyDeliverables: [""],
+    candidates: ["", ""],
   });
 
   const set = (field: string, value: string) =>
@@ -63,6 +64,25 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
       keyDeliverables: prev.keyDeliverables.filter((_, idx) => idx !== i),
     }));
 
+  const setCandidate = (i: number, value: string) =>
+    setForm((prev) => {
+      const updated = [...prev.candidates];
+      updated[i] = value;
+      return { ...prev, candidates: updated };
+    });
+
+  const addCandidate = () =>
+    setForm((prev) => ({
+      ...prev,
+      candidates: [...prev.candidates, ""],
+    }));
+
+  const removeCandidate = (i: number) =>
+    setForm((prev) => ({
+      ...prev,
+      candidates: prev.candidates.filter((_, idx) => idx !== i),
+    }));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -79,7 +99,14 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
         id: uuidv4(),
         creatorId: user.uid,
         keyDeliverables: form.keyDeliverables.filter(Boolean),
+        candidates: form.candidates.filter(Boolean),
       } as Campaign & { creatorId?: string };
+
+      if (form.category === "Election" && (!newCampaign.candidates || newCampaign.candidates.length < 2)) {
+        toast.error("Please provide at least two candidates for the election.");
+        setIsSubmitting(false);
+        return;
+      }
 
       // 1. Save to Firebase Firestore under the user's specific document
       await campaignService.createCampaign(user.uid, newCampaign);
@@ -97,6 +124,7 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
         statusBadge: "In Progress",
         longFormBody: "",
         keyDeliverables: [""],
+        candidates: ["", ""],
       });
 
       toast.success("Campaign launched successfully!");
@@ -136,6 +164,7 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
               { value: "Tech Mentorship", label: "Tech Mentorship" },
               { value: "Business Strategy", label: "Business Strategy" },
               { value: "Community Giving", label: "Community Giving" },
+              { value: "Election", label: "Election" },
             ]}
           />
           <FormInput
@@ -218,6 +247,40 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
             </button>
           </div>
         </FormSection>
+
+        {form.category === "Election" && (
+          <FormSection title="Election Candidates">
+            <div className="flex flex-col gap-2">
+              {form.candidates.map((c, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder={`Candidate ${i + 1} Name`}
+                    value={c}
+                    onChange={(e) => setCandidate(i, e.target.value)}
+                    className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm font-medium text-purple-950 placeholder:text-purple-950/30 focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+                  />
+                  {form.candidates.length > 2 && (
+                    <button
+                      type="button"
+                      onClick={() => removeCandidate(i)}
+                      className="w-8 h-8 shrink-0 rounded-full border border-purple-950/10 hover:border-red-400 hover:text-red-400 text-purple-950/30 flex items-center justify-center text-sm transition-all"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addCandidate}
+                className="text-xs font-bold text-purple-700 self-start hover:text-orange-500 transition-colors pt-1"
+              >
+                + Add another candidate
+              </button>
+            </div>
+          </FormSection>
+        )}
 
         <FormClause
           title="Visibility Notice"
