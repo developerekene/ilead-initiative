@@ -12,6 +12,7 @@ export interface Campaign {
   keyDeliverables: string[];
   candidates?: string[];
   creatorId?: string;
+  votes?: Record<string, number>;
 }
 
 interface SubmissionRecord {
@@ -92,6 +93,16 @@ const campaignSlice = createSlice({
     clearSubmissions(state) {
       state.submissions = [];
     },
+    castVote(state, action: PayloadAction<{ campaignId: string; candidate: string }>) {
+      const { campaignId, candidate } = action.payload;
+      const campaign = state.campaigns.find(c => c.id === campaignId);
+      if (campaign) {
+        if (!campaign.votes) {
+          campaign.votes = {};
+        }
+        campaign.votes[candidate] = (campaign.votes[candidate] || 0) + 1;
+      }
+    },
   },
 });
 
@@ -103,6 +114,7 @@ export const {
   setSubmitting,
   addSubmission,
   clearSubmissions,
+  castVote,
 } = campaignSlice.actions;
 
 export default campaignSlice.reducer;
