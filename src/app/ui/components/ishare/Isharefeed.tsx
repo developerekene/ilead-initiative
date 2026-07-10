@@ -5,6 +5,7 @@ import {
   where,
   orderBy,
   onSnapshot,
+  limit,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import {
@@ -25,6 +26,7 @@ const IShareFeed: React.FC<IShareFeedProps> = ({ onCreatePost }) => {
   const [loading, setLoading] = useState(true);
 
   // Real-time Firestore listener — swaps when toggle changes
+
   useEffect(() => {
     setLoading(true);
     const q = query(
@@ -32,12 +34,22 @@ const IShareFeed: React.FC<IShareFeedProps> = ({ onCreatePost }) => {
       where("type", "==", activeMode),
       where("status", "==", "active"),
       orderBy("timestamp", "desc"),
+      limit(30),
     );
 
-    const unsub = onSnapshot(q, (snap) => {
-      setPosts(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ISharePost));
-      setLoading(false);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setPosts(
+          snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ISharePost),
+        );
+        setLoading(false);
+      },
+      (err) => {
+        console.error("iShare feed listener error:", err);
+        setLoading(false);
+      },
+    );
 
     return () => unsub();
   }, [activeMode]);
