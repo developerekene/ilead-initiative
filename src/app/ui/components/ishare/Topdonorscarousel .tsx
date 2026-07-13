@@ -74,16 +74,7 @@ const TopDonorsCarousel: React.FC = () => {
         setDonors(
           Array.from({ length: 8 }, (_, i) => ({
             userId: `placeholder-${i}`,
-            displayName: [
-              "Amara O.",
-              "Chidi N.",
-              "Kemi A.",
-              "Tunde B.",
-              "Ngozi E.",
-              "Femi L.",
-              "Bola K.",
-              "Yemi R.",
-            ][i],
+            displayName: [""][i],
             photoURL: null,
             offerCount: Math.floor(Math.random() * 8) + 1,
             category: (["skills", "hardware", "mentorship", "other"] as const)[

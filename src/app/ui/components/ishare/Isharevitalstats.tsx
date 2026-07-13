@@ -15,6 +15,8 @@ interface StatItem {
   icon: React.ReactNode;
   color: string;
   bgColor: string;
+  valueColor: string;
+  labelColor: string;
 }
 
 // Animated counter hook
@@ -51,11 +53,14 @@ const StatCard: React.FC<{ stat: StatItem; animate: boolean }> = ({
         {stat.icon}
       </div>
       <div>
-        <p className="text-3xl sm:text-4xl font-black text-purple-950 tracking-tight">
+        <p
+          className={`text-3xl sm:text-4xl font-black tracking-tight ${stat.valueColor}`}
+        >
           {count.toLocaleString()}
           {stat.suffix}
         </p>
-        <p className="text-sm text-purple-950/50 font-semibold mt-1">
+
+        <p className={`text-sm font-semibold mt-1 ${stat.labelColor}`}>
           {stat.label}
         </p>
       </div>
@@ -93,7 +98,7 @@ const IShareVitalStats: React.FC = () => {
         setStats({
           fulfilled: fulfilledSnap.data().count,
           // Mentorship hours estimated: each mentorship post ≈ 2 hrs
-          mentorshipHours: Math.max(450, fulfilledSnap.data().count * 2),
+          mentorshipHours: Math.max(0, fulfilledSnap.data().count * 2),
           equipment: equipSnap.data().count,
         });
       } catch {
@@ -121,8 +126,10 @@ const IShareVitalStats: React.FC = () => {
       label: "Requests Fulfilled",
       value: stats.fulfilled,
       suffix: "+",
-      bgColor: "bg-white",
+      bgColor: "bg-white-600",
       color: "bg-orange-50 text-orange-500",
+      valueColor: "text-purple-950",
+      labelColor: "text-purple-950/50",
       icon: (
         <svg
           className="w-6 h-6"
@@ -144,10 +151,12 @@ const IShareVitalStats: React.FC = () => {
       value: stats.mentorshipHours,
       suffix: " hrs",
       bgColor: "bg-purple-950",
-      color: "bg-white/10 text-white",
+      color: "bg-white/10 text-orange-500",
+      valueColor: "text-white",
+      labelColor: "text-white/70",
       icon: (
         <svg
-          className="w-6 h-6 text-white"
+          className="w-6 h-6 text-orange-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -167,6 +176,8 @@ const IShareVitalStats: React.FC = () => {
       suffix: " systems",
       bgColor: "bg-orange-500",
       color: "bg-white/20 text-white",
+      valueColor: "text-white",
+      labelColor: "text-white/80",
       icon: (
         <svg
           className="w-6 h-6 text-white"

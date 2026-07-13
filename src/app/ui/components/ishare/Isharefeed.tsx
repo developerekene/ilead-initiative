@@ -5,6 +5,7 @@ import {
   where,
   orderBy,
   onSnapshot,
+  limit,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import {
@@ -14,17 +15,40 @@ import {
 } from "../../../utils/Ishareschema";
 import ISharePostCard from "./Isharepostcard";
 import IShareSkeleton from "./Ishareskeleton";
+import { useLocation, useNavigate } from "react-router-dom";
+import { selectIsLoggedIn } from "../../../redux/slices/User";
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 interface IShareFeedProps {
   onCreatePost: (type: PostType) => void;
 }
 
 const IShareFeed: React.FC<IShareFeedProps> = ({ onCreatePost }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isLoggedIn = useSelector(selectIsLoggedIn);
+
   const [activeMode, setActiveMode] = useState<PostType>("offer_give");
   const [posts, setPosts] = useState<ISharePost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Real-time Firestore listener — swaps when toggle changes
+  const isGive = activeMode === "offer_give";
+
+  // ── Auth gate for post creation ──
+  const handleCreatePost = (type: PostType) => {
+    if (!isLoggedIn) {
+      toast.error("You need to be signed in to post.", {
+        style: { background: "#ff4d4f", color: "#fff" },
+      });
+      navigate("/sign-in", { state: { from: location } });
+      return;
+    }
+    onCreatePost(type);
+  };
+
+  // ── Real-time Firestore listener — swaps when toggle changes ──
   useEffect(() => {
     setLoading(true);
     const q = query(
@@ -32,22 +56,47 @@ const IShareFeed: React.FC<IShareFeedProps> = ({ onCreatePost }) => {
       where("type", "==", activeMode),
       where("status", "==", "active"),
       orderBy("timestamp", "desc"),
+      limit(30),
     );
 
-    const unsub = onSnapshot(q, (snap) => {
-      setPosts(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ISharePost));
-      setLoading(false);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setPosts(
+          snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ISharePost),
+        );
+        setLoading(false);
+      },
+      (err) => {
+        console.error("iShare feed listener error:", err);
+        setLoading(false);
+      },
+    );
 
     return () => unsub();
   }, [activeMode]);
 
-  const isGive = activeMode === "offer_give";
+  // Clear search when switching tabs so you don't land on an empty view
+  useEffect(() => {
+    setSearchQuery("");
+  }, [activeMode]);
+
+  // ── Client-side filter over the loaded posts ──
+  const filteredPosts = posts.filter((p) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      p.title.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q) ||
+      (p.resourceType ?? "").toLowerCase().includes(q)
+    );
+  });
 
   return (
     <section className="w-full max-w-7xl mx-auto px-6 md:px-12 py-12">
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
         <div>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-purple-950">
             iShare <span className="text-orange-500">Exchange</span>
@@ -58,26 +107,60 @@ const IShareFeed: React.FC<IShareFeedProps> = ({ onCreatePost }) => {
           </p>
         </div>
 
-        {/* Post creation CTA */}
-        <button
-          onClick={() => onCreatePost(activeMode)}
-          className="shrink-0 bg-orange-500 hover:bg-purple-950 text-white font-black px-6 py-3 rounded-xl text-sm tracking-wide shadow-lg shadow-orange-500/20 hover:shadow-purple-950/20 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center gap-2"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth={2.5}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4.5v15m7.5-7.5h-15"
+        {/* Search + Post CTA */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+          <div className="relative flex-1 lg:w-72">
+            <svg
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-950/30 pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-5.2-5.2m2.2-5.3a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={isGive ? "Search offers..." : "Search requests..."}
+              className="w-full pl-11 pr-10 py-3 rounded-xl border border-purple-950/10 bg-slate-50 text-purple-950 placeholder:text-purple-950/30 font-medium text-sm focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
             />
-          </svg>
-          {isGive ? "Post an Offer" : "Post a Request"}
-        </button>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-purple-950/30 hover:text-purple-950 hover:bg-purple-950/5 transition-all text-xs"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={() => handleCreatePost(activeMode)}
+            className="shrink-0 bg-orange-500 hover:bg-purple-950 text-white font-black px-6 py-3 rounded-xl text-sm tracking-wide shadow-lg shadow-orange-500/20 hover:shadow-purple-950/20 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={2.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
+            {isGive ? "Post an Offer" : "Post a Request"}
+          </button>
+        </div>
       </div>
 
       {/* ── Toggle ── */}
@@ -141,6 +224,15 @@ const IShareFeed: React.FC<IShareFeedProps> = ({ onCreatePost }) => {
         </button>
       </div>
 
+      {/* Result count — only while searching */}
+      {!loading && searchQuery && (
+        <p className="text-xs font-bold text-purple-950/40 mb-5">
+          {filteredPosts.length}{" "}
+          {filteredPosts.length === 1 ? "result" : "results"} for "{searchQuery}
+          "
+        </p>
+      )}
+
       {/* ── Feed Grid ── */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -148,10 +240,14 @@ const IShareFeed: React.FC<IShareFeedProps> = ({ onCreatePost }) => {
             <IShareSkeleton key={i} />
           ))}
         </div>
-      ) : posts.length === 0 ? (
+      ) : filteredPosts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-5 ${isGive ? "bg-orange-50 border border-orange-100" : "bg-purple-50 border border-purple-100"}`}
+            className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-5 ${
+              isGive
+                ? "bg-orange-50 border border-orange-100"
+                : "bg-purple-50 border border-purple-100"
+            }`}
           >
             <svg
               className={`w-8 h-8 ${isGive ? "text-orange-400" : "text-purple-400"}`}
@@ -167,24 +263,51 @@ const IShareFeed: React.FC<IShareFeedProps> = ({ onCreatePost }) => {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-black text-purple-950 mb-2">
-            {isGive ? "No offers yet" : "No requests yet"}
-          </h3>
-          <p className="text-sm text-purple-950/50 font-medium max-w-xs leading-relaxed">
-            {isGive
-              ? "Be the first to offer your skills, hardware, or mentorship to the community."
-              : "No one has posted a need yet. Your request could be the first step toward a solution."}
-          </p>
-          <button
-            onClick={() => onCreatePost(activeMode)}
-            className={`mt-6 font-black px-6 py-3 rounded-xl text-sm tracking-wide transition-all duration-200 ${isGive ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-purple-950 hover:bg-purple-800 text-white"}`}
-          >
-            {isGive ? "+ Post an Offer" : "+ Post a Request"}
-          </button>
+
+          {searchQuery ? (
+            /* No search matches */
+            <>
+              <h3 className="text-lg font-black text-purple-950 mb-2">
+                No matches found
+              </h3>
+              <p className="text-sm text-purple-950/50 font-medium max-w-xs leading-relaxed">
+                Nothing matched "{searchQuery}". Try a different term or clear
+                your search.
+              </p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="mt-6 bg-slate-50 hover:bg-slate-100 border border-purple-950/10 text-purple-950 font-bold px-6 py-3 rounded-xl text-sm transition-all"
+              >
+                Clear search
+              </button>
+            </>
+          ) : (
+            /* Genuinely empty feed */
+            <>
+              <h3 className="text-lg font-black text-purple-950 mb-2">
+                {isGive ? "No offers yet" : "No requests yet"}
+              </h3>
+              <p className="text-sm text-purple-950/50 font-medium max-w-xs leading-relaxed">
+                {isGive
+                  ? "Be the first to offer your skills, hardware, or mentorship to the community."
+                  : "No one has posted a need yet. Your request could be the first step toward a solution."}
+              </p>
+              <button
+                onClick={() => handleCreatePost(activeMode)}
+                className={`mt-6 font-black px-6 py-3 rounded-xl text-sm tracking-wide transition-all duration-200 ${
+                  isGive
+                    ? "bg-orange-500 hover:bg-orange-600 text-white"
+                    : "bg-purple-950 hover:bg-purple-800 text-white"
+                }`}
+              >
+                {isGive ? "+ Post an Offer" : "+ Post a Request"}
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {posts.map((post, i) => (
+          {filteredPosts.map((post, i) => (
             <div
               key={post.id}
               className="animate-fade-in-up"
