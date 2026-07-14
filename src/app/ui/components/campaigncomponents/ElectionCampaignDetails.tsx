@@ -19,6 +19,7 @@ const ElectionCampaignDetails: React.FC = () => {
   const campaign = campaigns.find((c) => c.id === campaignId);
   const [hasVoted, setHasVoted] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -98,24 +99,26 @@ const ElectionCampaignDetails: React.FC = () => {
                 {campaign.longFormBody}
               </p>
             </div>
-            <div>
-              <h3 className="text-xs font-black text-purple-950/40 uppercase tracking-widest mb-4">
-                Core Deliverable Benchmarks
-              </h3>
-              <ul className="space-y-3.5">
-                {campaign.keyDeliverables.map((deliverable, index) => (
-                  <li
-                    key={index}
-                    className="flex items-start gap-3 text-sm sm:text-base text-purple-950/70 font-medium leading-relaxed"
-                  >
-                    <span className="text-orange-500 mt-1 font-bold select-none text-xs shrink-0 bg-orange-50 border border-orange-100 w-5 h-5 rounded-full flex items-center justify-center">
-                      ✓
-                    </span>
-                    <span className="break-words">{deliverable}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {campaign.category !== "Election" && (
+              <div>
+                <h3 className="text-xs font-black text-purple-950/40 uppercase tracking-widest mb-4">
+                  Core Deliverable Benchmarks
+                </h3>
+                <ul className="space-y-3.5">
+                  {campaign.keyDeliverables.map((deliverable, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start gap-3 text-sm sm:text-base text-purple-950/70 font-medium leading-relaxed"
+                    >
+                      <span className="text-orange-500 mt-1 font-bold select-none text-xs shrink-0 bg-orange-50 border border-orange-100 w-5 h-5 rounded-full flex items-center justify-center">
+                        ✓
+                      </span>
+                      <span className="break-words">{deliverable}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Sticky sidebar for Voting */}
@@ -152,7 +155,13 @@ const ElectionCampaignDetails: React.FC = () => {
                         }`}
                       >
                         {campaign.candidatePhotos?.[idx] ? (
-                          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-500/10 shrink-0">
+                          <div 
+                            className="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-500/10 shrink-0 cursor-zoom-in"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPreviewImage(campaign.candidatePhotos![idx]);
+                            }}
+                          >
                             <img src={campaign.candidatePhotos[idx]} alt={candidate} className="w-full h-full object-cover" />
                           </div>
                         ) : (
@@ -201,6 +210,29 @@ const ElectionCampaignDetails: React.FC = () => {
             className="w-full bg-purple-950 hover:bg-orange-500 text-white font-black py-4 px-6 rounded-xl text-center text-sm tracking-wide shadow-lg shadow-purple-950/10 hover:shadow-orange-500/10 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
           />
         </div>
+
+        {/* Image Preview Modal */}
+        {previewImage && (
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-purple-950/80 backdrop-blur-sm p-4 cursor-pointer"
+            onClick={() => setPreviewImage(null)}
+          >
+            <div className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center">
+              <button 
+                onClick={() => setPreviewImage(null)}
+                className="absolute -top-12 right-0 bg-white/20 hover:bg-white/40 text-white rounded-full w-10 h-10 flex items-center justify-center backdrop-blur-md transition-colors font-bold z-[101]"
+              >
+                ✕
+              </button>
+              <img 
+                src={previewImage} 
+                alt="Candidate Preview" 
+                className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl" 
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

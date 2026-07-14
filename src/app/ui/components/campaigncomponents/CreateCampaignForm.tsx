@@ -127,14 +127,27 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
       let validPhotos = form.candidatePhotos;
 
       if (form.category === "Election") {
+        const hasIncomplete = form.candidates.some((c, idx) => (c && !form.candidatePhotos[idx]) || (!c && form.candidatePhotos[idx]));
+        if (hasIncomplete) {
+          toast.error("Please ensure every entered candidate has both a name and a photo.");
+          setIsSubmitting(false);
+          return;
+        }
+
         validCandidates = [];
         validPhotos = [];
         form.candidates.forEach((c, idx) => {
-          if (c) {
+          if (c && form.candidatePhotos[idx]) {
             validCandidates.push(c);
             validPhotos.push(form.candidatePhotos[idx]);
           }
         });
+
+        if (validCandidates.length < 2) {
+          toast.error("Please provide at least two candidates with photos for the election.");
+          setIsSubmitting(false);
+          return;
+        }
       } else {
         validCandidates = form.candidates.filter(Boolean);
       }
@@ -143,19 +156,10 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
         ...form,
         id: uuidv4(),
         creatorId: user.uid,
-        keyDeliverables: form.keyDeliverables.filter(Boolean),
+        keyDeliverables: form.category === "Election" ? [] : form.keyDeliverables.filter(Boolean),
         candidates: validCandidates,
         candidatePhotos: validPhotos,
       } as Campaign & { creatorId?: string };
-
-      if (
-        form.category === "Election" &&
-        (!newCampaign.candidates || newCampaign.candidates.length < 2)
-      ) {
-        toast.error("Please provide at least two candidates for the election.");
-        setIsSubmitting(false);
-        return;
-      }
 
       // 1. Save to Firebase Firestore under the user's specific document
       await campaignService.createCampaign(user.uid, newCampaign);
@@ -236,22 +240,24 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
           onChange={(e) => set("description", e.target.value)}
         />
 
-        <FormRow cols={2}>
-          <FormInput
-            label="Metric Label"
-            required
-            placeholder="e.g., Members Served"
-            value={form.metricLabel}
-            onChange={(e) => set("metricLabel", e.target.value)}
-          />
-          <FormInput
-            label="Metric Value"
-            required
-            placeholder="e.g., 200+ Members"
-            value={form.metricValue}
-            onChange={(e) => set("metricValue", e.target.value)}
-          />
-        </FormRow>
+        {form.category !== "Election" && (
+          <FormRow cols={2}>
+            <FormInput
+              label="Metric Label"
+              required
+              placeholder="e.g., Members Served"
+              value={form.metricLabel}
+              onChange={(e) => set("metricLabel", e.target.value)}
+            />
+            <FormInput
+              label="Metric Value"
+              required
+              placeholder="e.g., 200+ Members"
+              value={form.metricValue}
+              onChange={(e) => set("metricValue", e.target.value)}
+            />
+          </FormRow>
+        )}
 
         <FormDivider label="Detail Page Content" />
 
@@ -266,37 +272,40 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
         />
 
         {/* Key deliverables */}
-        <FormSection title="Key Deliverables">
-          <div className="flex flex-col gap-2">
-            {form.keyDeliverables.map((d, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  placeholder={`Deliverable ${i + 1}`}
-                  value={d}
-                  onChange={(e) => setDeliverable(i, e.target.value)}
-                  className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm font-medium text-purple-950 placeholder:text-purple-950/30 focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
-                />
-                {form.keyDeliverables.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeDeliverable(i)}
-                    className="w-8 h-8 shrink-0 rounded-full border border-purple-950/10 hover:border-red-400 hover:text-red-400 text-purple-950/30 flex items-center justify-center text-sm transition-all"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addDeliverable}
-              className="text-xs font-bold text-purple-700 self-start hover:text-orange-500 transition-colors pt-1"
-            >
-              + Add another deliverable
-            </button>
-          </div>
-        </FormSection>
+        {form.category !== "Election" && (
+          <FormSection title="Key Deliverables">
+            <div className="flex flex-col gap-2">
+              {form.keyDeliverables.map((d, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder={`Deliverable ${i + 1}`}
+                    value={d}
+                    onChange={(e) => setDeliverable(i, e.target.value)}
+                    className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm font-medium text-purple-950 placeholder:text-purple-950/30 focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+                  />
+                  {form.keyDeliverables.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeDeliverable(i)}
+                      className="w-8 h-8 shrink-0 rounded-full border border-purple-950/10 hover:border-red-400 hover:text-red-400 text-purple-950/30 flex items-center justify-center text-sm transition-all"
+                    >
+                      ✕
+
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addDeliverable}
+                className="text-xs font-bold text-purple-700 self-start hover:text-orange-500 transition-colors pt-1"
+              >
+                + Add another deliverable
+              </button>
+            </div>
+          </FormSection>
+        )}
 
         {form.category === "Election" && (
           <FormSection title="Election Candidates">
