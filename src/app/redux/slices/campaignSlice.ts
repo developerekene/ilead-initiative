@@ -11,6 +11,7 @@ export interface Campaign {
   longFormBody: string;
   keyDeliverables: string[];
   candidates?: string[];
+  candidatePhotos?: string[];
   creatorId?: string;
   votes?: Record<string, number>;
 }

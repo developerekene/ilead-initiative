@@ -145,13 +145,24 @@ const ElectionCampaignDetails: React.FC = () => {
                         type="button"
                         onClick={() => handleVote(candidate)}
                         disabled={hasVoted || isVoting}
-                        className={`w-full font-bold py-3.5 px-6 rounded-xl text-center text-sm transition-all duration-300 cursor-pointer ${
+                        className={`w-full flex items-center gap-4 font-bold py-3 px-4 rounded-xl text-left text-sm transition-all duration-300 cursor-pointer ${
                           hasVoted
                             ? "bg-slate-200 text-purple-950/40 cursor-not-allowed border border-slate-300"
                             : "bg-white hover:bg-purple-50 border border-purple-950/10 text-purple-950 shadow-sm hover:shadow-md hover:border-orange-500/20"
                         }`}
                       >
-                        {isVoting ? "Processing..." : `Vote for ${candidate}`}
+                        {campaign.candidatePhotos?.[idx] ? (
+                          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-500/10 shrink-0">
+                            <img src={campaign.candidatePhotos[idx]} alt={candidate} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0 text-xs">
+                            👤
+                          </div>
+                        )}
+                        <span className="flex-1">
+                          {isVoting ? "Processing..." : `Vote for ${candidate}`}
+                        </span>
                       </button>
                       {hasVoted && (
                         <div className="w-full flex justify-between items-center text-xs font-medium text-purple-950/60 px-2">

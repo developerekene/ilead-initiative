@@ -40,6 +40,7 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
     longFormBody: "",
     keyDeliverables: [""],
     candidates: ["", ""],
+    candidatePhotos: ["", ""],
   });
 
   const set = (field: string, value: string) =>
@@ -71,16 +72,44 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
       return { ...prev, candidates: updated };
     });
 
+  const handlePhotoUpload = (
+    i: number,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const maxSizeInBytes = 1.5 * 1024 * 1024;
+      if (file.size > maxSizeInBytes) {
+        toast.error("Image size must be less than 1.5MB.");
+        // Clear the file input
+        e.target.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm((prev) => {
+          const updatedPhotos = [...prev.candidatePhotos];
+          updatedPhotos[i] = reader.result as string;
+          return { ...prev, candidatePhotos: updatedPhotos };
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const addCandidate = () =>
     setForm((prev) => ({
       ...prev,
       candidates: [...prev.candidates, ""],
+      candidatePhotos: [...prev.candidatePhotos, ""],
     }));
 
   const removeCandidate = (i: number) =>
     setForm((prev) => ({
       ...prev,
       candidates: prev.candidates.filter((_, idx) => idx !== i),
+      candidatePhotos: prev.candidatePhotos.filter((_, idx) => idx !== i),
     }));
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,15 +123,35 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
 
     try {
+      let validCandidates = form.candidates;
+      let validPhotos = form.candidatePhotos;
+
+      if (form.category === "Election") {
+        validCandidates = [];
+        validPhotos = [];
+        form.candidates.forEach((c, idx) => {
+          if (c) {
+            validCandidates.push(c);
+            validPhotos.push(form.candidatePhotos[idx]);
+          }
+        });
+      } else {
+        validCandidates = form.candidates.filter(Boolean);
+      }
+
       const newCampaign = {
         ...form,
         id: uuidv4(),
         creatorId: user.uid,
         keyDeliverables: form.keyDeliverables.filter(Boolean),
-        candidates: form.candidates.filter(Boolean),
+        candidates: validCandidates,
+        candidatePhotos: validPhotos,
       } as Campaign & { creatorId?: string };
 
-      if (form.category === "Election" && (!newCampaign.candidates || newCampaign.candidates.length < 2)) {
+      if (
+        form.category === "Election" &&
+        (!newCampaign.candidates || newCampaign.candidates.length < 2)
+      ) {
         toast.error("Please provide at least two candidates for the election.");
         setIsSubmitting(false);
         return;
@@ -125,6 +174,7 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
         longFormBody: "",
         keyDeliverables: [""],
         candidates: ["", ""],
+        candidatePhotos: ["", ""],
       });
 
       toast.success("Campaign launched successfully!");
@@ -252,23 +302,56 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
           <FormSection title="Election Candidates">
             <div className="flex flex-col gap-2">
               {form.candidates.map((c, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    placeholder={`Candidate ${i + 1} Name`}
-                    value={c}
-                    onChange={(e) => setCandidate(i, e.target.value)}
-                    className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm font-medium text-purple-950 placeholder:text-purple-950/30 focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
-                  />
-                  {form.candidates.length > 2 && (
-                    <button
-                      type="button"
-                      onClick={() => removeCandidate(i)}
-                      className="w-8 h-8 shrink-0 rounded-full border border-purple-950/10 hover:border-red-400 hover:text-red-400 text-purple-950/30 flex items-center justify-center text-sm transition-all"
-                    >
-                      ✕
-                    </button>
-                  )}
+                <div
+                  key={i}
+                  className="flex flex-col gap-2 bg-white border border-purple-950/5 p-3 rounded-xl"
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder={`Candidate ${i + 1} Name`}
+                      value={c}
+                      onChange={(e) => setCandidate(i, e.target.value)}
+                      className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm font-medium text-purple-950 placeholder:text-purple-950/30 focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+                    />
+                    {form.candidates.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => removeCandidate(i)}
+                        className="w-8 h-8 shrink-0 rounded-full border border-purple-950/10 hover:border-red-400 hover:text-red-400 text-purple-950/30 flex items-center justify-center text-sm transition-all"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 mt-1">
+                    {form.candidatePhotos[i] ? (
+                      <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-orange-500/20 shrink-0">
+                        <img
+                          src={form.candidatePhotos[i]}
+                          alt={`Candidate ${i + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0 text-xs">
+                        No Pic
+                      </div>
+                    )}
+                    <label className="flex-1 cursor-pointer">
+                      <div className="text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-100 px-3 py-2 rounded-lg text-center transition-colors">
+                        {form.candidatePhotos[i]
+                          ? "Change Photo"
+                          : "Upload Photo"}
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handlePhotoUpload(i, e)}
+                      />
+                    </label>
+                  </div>
                 </div>
               ))}
               <button
