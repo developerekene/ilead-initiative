@@ -69,19 +69,9 @@ const TopDonorsCarousel: React.FC = () => {
           .slice(0, 12);
 
         setDonors(sorted);
-      } catch {
-        // Fallback placeholder donors
-        setDonors(
-          Array.from({ length: 8 }, (_, i) => ({
-            userId: `placeholder-${i}`,
-            displayName: [""][i],
-            photoURL: null,
-            offerCount: Math.floor(Math.random() * 8) + 1,
-            category: (["skills", "hardware", "mentorship", "other"] as const)[
-              i % 4
-            ],
-          })),
-        );
+      } catch (err) {
+        console.error("Top donors fetch failed:", err);
+        setDonors([]);
       } finally {
         setLoading(false);
       }
