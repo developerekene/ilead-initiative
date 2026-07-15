@@ -210,7 +210,7 @@ const Navbar: React.FC = () => {
                     { to: "/saved-campaigns", label: "Saved Campaigns" },
                     { to: "/notifications", label: "Notifications" },
                     { to: "/settings", label: "Settings" },
-                    { to: "/help", label: "Help & Support" },
+                    { to: "/help-and-support", label: "Help & Support" },
                   ].map(({ to, label }) => (
                     <Link
                       key={to}
@@ -335,7 +335,9 @@ const Navbar: React.FC = () => {
                   <p className="font-bold text-purple-950 text-sm truncate">
                     {user?.displayName ?? "Community Member"}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {user?.email}
+                  </p>
                 </div>
               </div>
 
@@ -347,7 +349,7 @@ const Navbar: React.FC = () => {
                 { to: "/saved-campaigns", label: "Saved Campaigns" },
                 { to: "/notifications", label: "Notifications" },
                 { to: "/settings", label: "Settings" },
-                { to: "/help", label: "Help & Support" },
+                { to: "/help-and-support", label: "Help & Support" },
               ].map(({ to, label }) => (
                 <Link
                   key={to}

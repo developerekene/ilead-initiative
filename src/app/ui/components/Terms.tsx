@@ -78,7 +78,7 @@ const Terms: React.FC = () => {
     <main className="w-full bg-white-500">
       {/* HERO HEADER */}
       <section className="relative pt-16 pb-8 overflow-hidden">
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+        <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-100 mb-8 tracking-wide">
             <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
             Legal & Policies
@@ -102,7 +102,7 @@ const Terms: React.FC = () => {
       </section>
 
       {/*  TERMS CONTENT */}
-      <section className="max-w-4xl mx-auto px-6 pb-24">
+      <section className="max-w-6xl mx-auto px-6 pb-24">
         <div className="bg-white border border-purple-950/5 rounded-[2.5rem] p-8 md:p-12 lg:p-16 shadow-xl shadow-purple-950/5">
           {/* Quick navigation */}
           <div className="mb-12 pb-10 border-b border-purple-950/5">
