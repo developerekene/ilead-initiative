@@ -92,7 +92,7 @@ const Campaigns: React.FC<CampaignsProps> = ({
 
                 <div className="flex flex-col gap-3 w-full">
                   <Link
-                    to={`/all-Campaign/campaign-details/${campaign.id}`}
+                    to={campaign.category === "Election" ? `/all-Campaign/election-details/${campaign.id}` : `/all-Campaign/campaign-details/${campaign.id}`}
                     className="w-full bg-purple-50 hover:bg-purple-100 text-purple-950 font-bold py-3 px-4 rounded-xl text-center text-sm transition-all duration-200"
                   >
                     View Campaign

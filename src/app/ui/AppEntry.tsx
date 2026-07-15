@@ -40,6 +40,9 @@ const MembershipPage = lazy(() => import("./pages/MembershipPage"));
 const MyCampaignsPage = lazy(() => import("./pages/MyCampaignsPage"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const HelpAndSupportPage = lazy(() => import("./pages/HelpAndSupportPage"));
+const ElectionCampaignDetails = lazy(
+  () => import("./components/campaigncomponents/ElectionCampaignDetails"),
+);
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -221,6 +224,10 @@ const router = createBrowserRouter([
       { path: "contact", element: <ContactUs /> },
       { path: "terms-and-conditions", element: <TermsAndCondition /> },
       { path: "help-and-support", element: <HelpAndSupportPage /> },
+      {
+        path: "all-Campaign/election-details/:campaignId",
+        element: <ElectionCampaignDetails />,
+      },
     ],
   },
   {
