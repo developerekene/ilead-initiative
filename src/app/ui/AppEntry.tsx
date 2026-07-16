@@ -19,6 +19,7 @@ import { Toaster } from "react-hot-toast";
 import SettingsPage from "./pages/SettingsPage";
 import ContactUs from "./pages/ContactUs";
 import TermsAndCondition from "./pages/TermsAndCondition";
+import ISharePostDetails from "./components/ishare/ISharePostDetails";
 
 const Footer = lazy(() => import("./components/Footer"));
 const JoinCommunity = lazy(() => import("./components/JoinCommunity"));
@@ -211,6 +212,10 @@ const router = createBrowserRouter([
       { path: "sign-in", element: <Login /> },
       { path: "forgot-password", element: <ForgotPassword /> },
       { path: "iShare", element: <IShareView /> },
+      {
+        path: "ishare/post/:postId",
+        element: <ISharePostDetails />,
+      },
       { path: "iTrain", element: <ITrainView /> },
       { path: "about-ilead", element: <AboutUs /> },
       { path: "membership", element: <MembershipPage /> },

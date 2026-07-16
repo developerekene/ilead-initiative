@@ -25,6 +25,7 @@ const FlagPostButton: React.FC<FlagPostButtonProps> = ({ postId }) => {
   const [selected, setSelected] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -40,6 +41,7 @@ const FlagPostButton: React.FC<FlagPostButtonProps> = ({ postId }) => {
   const handleSubmit = async () => {
     if (!selected || !user) return;
     setSubmitting(true);
+    setError(null);
     try {
       await addDoc(collection(db, FLAGS_COLLECTION), {
         postId,
@@ -54,8 +56,9 @@ const FlagPostButton: React.FC<FlagPostButtonProps> = ({ postId }) => {
         setDone(false);
         setSelected("");
       }, 1800);
-    } catch {
-      // silent fail — flag is best-effort
+    } catch (err) {
+      console.error("Flag submission failed:", err);
+      setError("Couldn't submit report. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -126,6 +129,11 @@ const FlagPostButton: React.FC<FlagPostButtonProps> = ({ postId }) => {
                   </button>
                 ))}
               </div>
+              {error && (
+                <p className="text-[11px] text-red-500 font-semibold px-1 mb-2">
+                  {error}
+                </p>
+              )}
               <button
                 onClick={handleSubmit}
                 disabled={!selected || submitting}
