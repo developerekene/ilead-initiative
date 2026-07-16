@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { selectUser } from "../../../redux/slices/User";
+import { addNotification } from "../../../redux/slices/notificationSlice";
+import { v4 as uuidv4 } from "uuid";
 import {
   ISHARE_COLLECTION,
   PostCategory,
@@ -59,6 +61,7 @@ const RESOURCE_TYPES = [
 ];
 
 const INeedModal: React.FC<INeedModalProps> = ({ isOpen, onClose }) => {
+  const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
@@ -119,6 +122,18 @@ const INeedModal: React.FC<INeedModalProps> = ({ isOpen, onClose }) => {
         photoURL: form.anonymous ? null : user.photoURL,
       });
       await addDoc(collection(db, ISHARE_COLLECTION), payload);
+      dispatch(
+        addNotification({
+          id: uuidv4(),
+          caseId: `need-${Date.now()}`,
+          type: "GENERAL",
+          title: "Request Posted!",
+          message: `Your request "${form.title}" is now live. Someone from the community may reach out soon.`,
+          timestamp: "Just now",
+          isUnread: true,
+          senderName: user.displayName || "You",
+        }),
+      );
       setSubmitted(true);
     } catch (e: any) {
       setError(e.message ?? "Something went wrong. Please try again.");
