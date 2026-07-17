@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { RootState } from "../../../redux/store";
-import { castVote } from "../../../redux/slices/campaignSlice";
+import { castVote, updateCampaignItem } from "../../../redux/slices/campaignSlice";
+import { campaignService } from "../../../redux/configuration/services/campaign.service";
 import Button from "../Button";
 import { toast } from "react-hot-toast";
 
@@ -25,6 +26,14 @@ const ElectionCampaignDetails: React.FC = () => {
     window.scrollTo(0, 0);
   }, [campaignId]);
 
+  useEffect(() => {
+    if (user.uid && campaign?.votedBy?.includes(user.uid)) {
+      setHasVoted(true);
+    } else {
+      setHasVoted(false);
+    }
+  }, [campaign, user.uid]);
+
   if (!campaign) {
     return (
       <main className="w-full bg-white min-h-screen flex flex-col items-center justify-center p-6 text-center">
@@ -44,8 +53,8 @@ const ElectionCampaignDetails: React.FC = () => {
     );
   }
 
-  const handleVote = (candidate: string) => {
-    if (!isUserLoggedIn) {
+  const handleVote = async (candidate: string) => {
+    if (!isUserLoggedIn || !user.uid) {
       navigate("/sign-in", { state: { from: location } });
       toast.error(`Authentication required to vote. Let's sign you in.`, {
         style: { background: "#ff4d4f", color: "#fff" },
@@ -53,15 +62,33 @@ const ElectionCampaignDetails: React.FC = () => {
       return;
     }
 
+    if (campaign.votedBy?.includes(user.uid)) {
+      toast.error("You have already voted in this election.");
+      return;
+    }
+
     setIsVoting(true);
-    setTimeout(() => {
-      dispatch(castVote({ campaignId: campaign.id, candidate }));
+    try {
+      const updatedCampaign = { ...campaign };
+      updatedCampaign.votes = { ...(campaign.votes || {}) };
+      updatedCampaign.votes[candidate] = (updatedCampaign.votes[candidate] || 0) + 1;
+      updatedCampaign.votedBy = [...(campaign.votedBy || []), user.uid];
+
+      if (updatedCampaign.creatorId) {
+        await campaignService.updateCampaign(updatedCampaign.creatorId, updatedCampaign);
+      }
+      
+      dispatch(updateCampaignItem(updatedCampaign));
       setHasVoted(true);
-      setIsVoting(false);
       toast.success(`Your vote for ${candidate} has been recorded!`, {
         style: { background: "#4BB543", color: "#fff" },
       });
-    }, 1000);
+    } catch (error) {
+      console.error("Error casting vote:", error);
+      toast.error("Failed to record vote. Please try again.");
+    } finally {
+      setIsVoting(false);
+    }
   };
 
   const totalVotes = campaign.votes ? Object.values(campaign.votes).reduce((a, b) => a + b, 0) : 0;
