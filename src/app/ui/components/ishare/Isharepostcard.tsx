@@ -129,7 +129,7 @@ const ISharePostCard: React.FC<ISharePostCardProps> = ({ post, mode }) => {
             e.stopPropagation();
             goToPost();
           }}
-          className="shrink-0 text-[11px] font-black px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white"
+          className="shrink-0 text-[11px] font-black px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 bg-purple-950/8 hover:bg-purple-950/15 text-purple-950/50 hover:text-purple-950"
         >
           View
           <svg
