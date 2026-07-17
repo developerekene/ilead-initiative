@@ -8,6 +8,8 @@ import {
   selectUser,
   setPlan,
 } from "../../../redux/slices/User";
+import { addNotification } from "../../../redux/slices/notificationSlice";
+import { v4 as uuidv4 } from "uuid";
 import { FaCheck } from "react-icons/fa6";
 import { CiLock } from "react-icons/ci";
 import { TIERS } from "../../../utils/data";
@@ -57,6 +59,18 @@ const MembershipPlan: React.FC = () => {
         billing,
         amount: getPrice(tier.price),
       });
+      dispatch(
+        addNotification({
+          id: uuidv4(),
+          caseId: `upgrade-${Date.now()}`,
+          type: "COMPLETED",
+          title: "Plan Upgraded!",
+          message: `You've successfully upgraded to the ${tier.name} plan. Welcome to the next tier!`,
+          timestamp: "Just now",
+          isUnread: true,
+          senderName: user?.displayName || "You",
+        }),
+      );
       toast.success(`Upgraded to ${tier.name}!`);
     } catch {
       toast.error(
@@ -82,6 +96,19 @@ const MembershipPlan: React.FC = () => {
 
     if (tier.price === 0) {
       authService.handleMembershipPlan("free").catch(() => {});
+      dispatch(
+        addNotification({
+          id: uuidv4(),
+          caseId: `free-plan-${Date.now()}`,
+          type: "GENERAL",
+          title: "Free Plan Activated",
+          message:
+            "You're now on the Free plan. Upgrade anytime to unlock more features.",
+          timestamp: "Just now",
+          isUnread: true,
+          senderName: user?.displayName || "You",
+        }),
+      );
       toast.success("You're now on the Free plan.");
       return;
     }

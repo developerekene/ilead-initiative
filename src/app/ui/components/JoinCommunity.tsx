@@ -10,6 +10,8 @@ import {
   selectIsLoggedIn,
 } from "../../redux/slices/User";
 import { AppDispatch } from "../../redux/store";
+import { addNotification } from "../../redux/slices/notificationSlice";
+import { v4 as uuidv4 } from "uuid";
 import { authService } from "../../redux/configuration/services/auth.service";
 import { FcGoogle } from "react-icons/fc";
 
@@ -158,8 +160,21 @@ const JoinCommunity: React.FC = () => {
         accountType,
       });
 
+      dispatch(
+        addNotification({
+          id: uuidv4(),
+          caseId: `register-${Date.now()}`,
+          type: "GENERAL",
+          title: "Welcome to iLEAD!",
+          message:
+            "Your account has been created successfully. Complete your profile to get started.",
+          timestamp: "Just now",
+          isUnread: true,
+          senderName: formData.firstName || "You",
+        }),
+      );
+
       // authService already dispatches setUser; navigate on success
-      // navigate("/complete-profile", { replace: true });
       navigate(from ?? "/complete-profile", { replace: true });
     } catch (err: unknown) {
       sessionStorage.removeItem("ilead_account_type");
@@ -182,9 +197,19 @@ const JoinCommunity: React.FC = () => {
     dispatch(clearError());
     try {
       const result = await authService.handleGoogleAuth(accountType);
-      // navigate(result?.profileComplete ? "/dashboard" : "/complete-profile", {
-      //   replace: true,
-      // });
+      dispatch(
+        addNotification({
+          id: uuidv4(),
+          caseId: `google-signup-${Date.now()}`,
+          type: "GENERAL",
+          title: "Welcome to iLEAD!",
+          message:
+            "You've signed up with Google successfully. Complete your profile to get started.",
+          timestamp: "Just now",
+          isUnread: true,
+          senderName: "iLEAD",
+        }),
+      );
       navigate(
         from ?? (result?.profileComplete ? "/dashboard" : "/complete-profile"),
         { replace: true },

@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import ReactDOM from "react-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { selectUser } from "../../../redux/slices/User";
+import { addNotification } from "../../../redux/slices/notificationSlice";
+import { v4 as uuidv4 } from "uuid";
 
 const FLAG_REASONS = [
   "Spam or misleading",
@@ -23,6 +25,7 @@ interface FlagPostButtonProps {
 const POPOVER_WIDTH = 240;
 
 const FlagPostButton: React.FC<FlagPostButtonProps> = ({ postId }) => {
+  const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("");
@@ -76,6 +79,19 @@ const FlagPostButton: React.FC<FlagPostButtonProps> = ({ postId }) => {
         createdAt: Timestamp.now(),
         reviewed: false,
       });
+      dispatch(
+        addNotification({
+          id: uuidv4(),
+          caseId: `flag-${postId}`,
+          type: "FLAG_POSTED",
+          title: "Flag Submitted",
+          message:
+            "Thank you. Your report has been received and will be reviewed by our team.",
+          timestamp: "Just now",
+          isUnread: true,
+          senderName: user.displayName || "You",
+        }),
+      );
       setDone(true);
       setTimeout(() => {
         setOpen(false);
