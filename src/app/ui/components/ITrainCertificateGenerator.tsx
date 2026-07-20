@@ -50,7 +50,7 @@ const ITrainCertificateGenerator: React.FC = () => {
         type: "COMPLETED",
         title: "Certificate Generated",
         message: `Your "${metaData.milestoneTrack}" certificate is ready. You can download it now.`,
-        timestamp: "Just now",
+        timestamp: new Date().toISOString(),
         isUnread: true,
         senderName: user?.displayName || metaData.fullName,
       }),

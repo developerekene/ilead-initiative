@@ -492,7 +492,7 @@ const CompleteProfile: React.FC = () => {
           title: "Profile Complete!",
           message:
             "Your profile is now fully set up. You can explore mentorship, iSHARE, and more.",
-          timestamp: "Just now",
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: "iLEAD",
         }),

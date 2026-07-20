@@ -129,7 +129,7 @@ const INeedModal: React.FC<INeedModalProps> = ({ isOpen, onClose }) => {
           type: "GENERAL",
           title: "Request Posted!",
           message: `Your request "${form.title}" is now live. Someone from the community may reach out soon.`,
-          timestamp: "Just now",
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: user.displayName || "You",
         }),

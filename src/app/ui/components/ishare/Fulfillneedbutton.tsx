@@ -47,7 +47,7 @@ const FulfillNeedButton: React.FC<FulfillNeedButtonProps> = ({
           type: "NEED_FULFILLED",
           title: "Need Fulfilled!",
           message: `You've volunteered to help with "${post.title}". The poster will be notified.`,
-          timestamp: "Just now",
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: user.displayName || "You",
         }),

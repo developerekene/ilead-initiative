@@ -126,7 +126,7 @@ const IGiveModal: React.FC<IGiveModalProps> = ({ isOpen, onClose }) => {
           type: "GENERAL",
           title: "Offer Posted!",
           message: `Your "${form.title}" offer is now live on the iSHARE community board.`,
-          timestamp: "Just now",
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: user.displayName || "You",
         }),

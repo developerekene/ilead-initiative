@@ -1,5 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 /* Types */
 
@@ -30,19 +34,48 @@ interface NotificationState {
   error: string | null;
 }
 
-/* Initial State  */
+/* ─── localStorage persistence ─────────────────────── */
 
-const initialState: NotificationState = {
-  items: [],
-  unreadCount: 0,
-  loading: false,
-  error: null,
+const STORAGE_KEY = "ilead_notifications";
+
+const saveToStorage = (items: Notification[]) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    /* storage full or unavailable — silently ignore */
+  }
+};
+
+const loadFromStorage = (): Notification[] => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Notification[];
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {
+    /* corrupted data — start fresh */
+  }
+  return [];
 };
 
 /*  Helpers */
 
 const computeUnread = (items: Notification[]): number =>
   items.filter((n) => n.isUnread).length;
+
+/* Format a timestamp into a human-readable relative string (e.g. "2 minutes ago") */
+export const formatRelativeTime = (isoString: string): string =>
+  dayjs(isoString).fromNow();
+
+/* Hydrate initial state from localStorage so notifications survive refresh */
+const persistedItems = loadFromStorage();
+const initialState: NotificationState = {
+  items: persistedItems,
+  unreadCount: computeUnread(persistedItems),
+  loading: false,
+  error: null,
+};
 
 /*  Slice  */
 
@@ -54,20 +87,22 @@ const notificationSlice = createSlice({
     setNotifications(state, action: PayloadAction<Notification[]>) {
       state.items = action.payload;
       state.unreadCount = computeUnread(action.payload);
+      saveToStorage(state.items);
     },
 
     /* Append a single new notification to the top of the list. */
     addNotification(state, action: PayloadAction<Notification>) {
       state.items.unshift(action.payload);
       state.unreadCount = computeUnread(state.items);
+      saveToStorage(state.items);
     },
-
     /* Mark a single notification as read by its id. */
     markAsRead(state, action: PayloadAction<string>) {
       const target = state.items.find((n) => n.id === action.payload);
       if (target) {
         target.isUnread = false;
         state.unreadCount = computeUnread(state.items);
+        saveToStorage(state.items);
       }
     },
 
@@ -77,18 +112,21 @@ const notificationSlice = createSlice({
         n.isUnread = false;
       });
       state.unreadCount = 0;
+      saveToStorage(state.items);
     },
 
     /* Remove a single notification by its id. */
     removeNotification(state, action: PayloadAction<string>) {
       state.items = state.items.filter((n) => n.id !== action.payload);
       state.unreadCount = computeUnread(state.items);
+      saveToStorage(state.items);
     },
 
     /* Clear the entire notification list. */
     clearNotifications(state) {
       state.items = [];
       state.unreadCount = 0;
+      saveToStorage(state.items);
     },
 
     setLoading(state, action: PayloadAction<boolean>) {

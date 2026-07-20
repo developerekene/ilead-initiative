@@ -66,7 +66,7 @@ const MembershipPlan: React.FC = () => {
           type: "COMPLETED",
           title: "Plan Upgraded!",
           message: `You've successfully upgraded to the ${tier.name} plan. Welcome to the next tier!`,
-          timestamp: "Just now",
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: user?.displayName || "You",
         }),
@@ -104,7 +104,7 @@ const MembershipPlan: React.FC = () => {
           title: "Free Plan Activated",
           message:
             "You're now on the Free plan. Upgrade anytime to unlock more features.",
-          timestamp: "Just now",
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: user?.displayName || "You",
         }),

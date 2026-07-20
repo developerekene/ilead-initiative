@@ -7,6 +7,7 @@ import {
   selectNotifications,
   selectUnreadCount,
   type Notification,
+  formatRelativeTime,
 } from "../../redux/slices/notificationSlice";
 
 const NotificationCenter: React.FC = () => {
@@ -44,7 +45,7 @@ const NotificationCenter: React.FC = () => {
     setIsOpen(false);
 
     // Execute absolute router navigation path redirection logic
-    navigate(`/dashboard/cases/${alert.caseId}`);
+    navigate(`/notifications/${alert.title}/${alert.caseId}`);
   };
 
   const handleMarkAllAsRead = () => {
@@ -207,11 +208,11 @@ const NotificationCenter: React.FC = () => {
                           {alert.title}
                         </h4>
                         <span className="text-[9px] font-medium text-purple-950/40 whitespace-nowrap shrink-0 mt-0.5">
-                          {alert.timestamp}
+                          {formatRelativeTime(alert.timestamp)}
                         </span>
                       </div>
-                      <p className="text-xs text-purple-950/60 font-medium leading-relaxed line-clamp-2">
-                        {alert.message}
+                      <p className="text-xs text-purple-950/60 font-medium leading-relaxed  line-clamp-2">
+                        {formatRelativeTime(alert.timestamp)}
                       </p>
 
                       {/* Actor Meta String Assignment tracking context */}
@@ -229,10 +230,19 @@ const NotificationCenter: React.FC = () => {
             )}
           </div>
 
-          {/* Footer System Status Banner Anchor */}
-          <div className="px-5 py-3.5 bg-slate-50 border-t border-purple-950/5 text-center">
-            <span className="text-[10px] font-black uppercase tracking-wider text-purple-950/30 block">
-              System Node Synced Operational • Secure SSL Endpoints
+          {/* Footer with View All link */}
+          <div className="px-5 py-3 bg-slate-50 border-t border-purple-950/5 flex items-center justify-between">
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                navigate("/notifications");
+              }}
+              className="text-xs font-bold text-orange-500 hover:text-purple-950 transition-colors"
+            >
+              View all notifications
+            </button>
+            <span className="text-[10px] font-black uppercase tracking-wider text-purple-950/30">
+              {notifications.length} total
             </span>
           </div>
         </div>

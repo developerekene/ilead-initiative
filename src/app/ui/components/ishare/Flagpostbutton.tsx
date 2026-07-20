@@ -87,7 +87,7 @@ const FlagPostButton: React.FC<FlagPostButtonProps> = ({ postId }) => {
           title: "Flag Submitted",
           message:
             "Thank you. Your report has been received and will be reviewed by our team.",
-          timestamp: "Just now",
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: user.displayName || "You",
         }),
