@@ -57,7 +57,9 @@ const MembershipPlan: React.FC = () => {
         billing,
         amount: getPrice(tier.price),
       });
-      toast.success(`Upgraded to ${tier.name}!`);
+      toast.success(`Upgraded to ${tier.name}!`, {
+        style: { background: "#4BB543", color: "#fff" },
+      });
     } catch {
       toast.error(
         "Payment succeeded but saving your plan failed. Contact support.",
@@ -82,12 +84,16 @@ const MembershipPlan: React.FC = () => {
 
     if (tier.price === 0) {
       authService.handleMembershipPlan("free").catch(() => {});
-      toast.success("You're now on the Free plan.");
+      toast.success("You're now on the Free plan.", {
+        style: { background: "#4BB543", color: "#fff" },
+      });
       return;
     }
 
     if (!PAYSTACK_KEY) {
-      toast.error("Payment is not configured. Please contact support.");
+      toast.error("Payment is not configured. Please contact support.", {
+        style: { background: "#ff4d4f", color: "#fff" },
+      });
       return;
     }
 

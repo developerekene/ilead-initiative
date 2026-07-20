@@ -70,10 +70,14 @@ const MyCampaignsPage: React.FC = () => {
     try {
       await campaignService.deleteCampaign(userId, campaignToDelete);
       dispatch(removeCampaignItem(campaignToDelete));
-      toast.success("Campaign deleted successfully.");
+      toast.success("Campaign deleted successfully.", {
+        style: { background: "#4BB543", color: "#fff" },
+      });
       setCampaignToDelete(null);
     } catch (error) {
-      toast.error("Failed to delete campaign.");
+      toast.error("Failed to delete campaign.", {
+        style: { background: "#ff4d4f", color: "#fff" },
+      });
     } finally {
       setIsDeleting(false);
     }

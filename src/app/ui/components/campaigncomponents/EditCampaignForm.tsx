@@ -99,11 +99,15 @@ const EditCampaignForm: React.FC<Props> = ({
       await campaignService.updateCampaign(user.uid, updatedCampaign);
       dispatch(updateCampaignItem(updatedCampaign));
 
-      toast.success("Campaign updated successfully!");
+      toast.success("Campaign updated successfully!", {
+        style: { background: "#4BB543", color: "#fff" },
+      });
       onClose();
     } catch (error) {
       console.error("Failed to update campaign", error);
-      toast.error("Failed to update campaign.");
+      toast.error("Failed to update campaign.", {
+        style: { background: "#ff4d4f", color: "#fff" },
+      });
     } finally {
       setIsSubmitting(false);
     }
