@@ -17,6 +17,8 @@ import {
 } from "../../redux/slices/User";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../redux/store";
+import { addNotification } from "../../redux/slices/notificationSlice";
+import { v4 as uuidv4 } from "uuid";
 import { authService } from "../../redux/configuration/services/auth.service";
 
 type AccountType = "individual" | "contributor";
@@ -482,6 +484,19 @@ const CompleteProfile: React.FC = () => {
     try {
       await authService.updateUserInformation(profileData);
       dispatch(setProfileComplete(true));
+      dispatch(
+        addNotification({
+          id: uuidv4(),
+          caseId: `profile-${Date.now()}`,
+          type: "COMPLETED",
+          title: "Profile Complete!",
+          message:
+            "Your profile is now fully set up. You can explore mentorship, iSHARE, and more.",
+          timestamp: "Just now",
+          isUnread: true,
+          senderName: "iLEAD",
+        }),
+      );
       sessionStorage.removeItem("ilead_account_type");
       sessionStorage.removeItem("ilead_reg_data");
       setIsDone(true);

@@ -5,6 +5,9 @@ import {
   type Campaign,
 } from "../../../redux/slices/campaignSlice";
 import { selectUser } from "../../../redux/slices/User";
+import {
+  addNotification,
+} from "../../../redux/slices/notificationSlice";
 import { v4 as uuidv4 } from "uuid";
 import toast from "react-hot-toast";
 import { campaignService } from "../../../redux/configuration/services/campaign.service";
@@ -174,6 +177,20 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
 
       // 2. If Firebase succeeds, save to Redux State so the UI updates instantly
       dispatch(addCampaign(newCampaign));
+
+      // 2.5. Dispatch a notification so the bell lights up
+      dispatch(
+        addNotification({
+          id: uuidv4(),
+          caseId: newCampaign.id,
+          type: "NEW_CAMPAIGN",
+          title: "Campaign Launched",
+          message: `"${newCampaign.title}" has been published and is now live on the platform.`,
+          timestamp: "Just now",
+          isUnread: true,
+          senderName: user.displayName || user.firstName || "You",
+        }),
+      );
 
       // 3. Reset Form & Close Modal
       setForm({
