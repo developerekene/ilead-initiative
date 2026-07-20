@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { selectUser } from "../../../redux/slices/User";
+import { addNotification } from "../../../redux/slices/notificationSlice";
+import { v4 as uuidv4 } from "uuid";
 import { ISHARE_COLLECTION, ISharePost } from "../../../utils/Ishareschema";
 
 interface FulfillNeedButtonProps {
@@ -14,6 +16,7 @@ const FulfillNeedButton: React.FC<FulfillNeedButtonProps> = ({
   post,
   onMatched,
 }) => {
+  const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -37,6 +40,18 @@ const FulfillNeedButton: React.FC<FulfillNeedButtonProps> = ({
         status: "pending_match",
         matchedUserId: user.uid,
       });
+      dispatch(
+        addNotification({
+          id: uuidv4(),
+          caseId: post.id,
+          type: "NEED_FULFILLED",
+          title: "Need Fulfilled!",
+          message: `You've volunteered to help with "${post.title}". The poster will be notified.`,
+          timestamp: "Just now",
+          isUnread: true,
+          senderName: user.displayName || "You",
+        }),
+      );
       setConfirmed(true);
       setShowConfirm(false);
       onMatched?.();
