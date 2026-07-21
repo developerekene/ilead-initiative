@@ -80,7 +80,7 @@ const TopDonorsCarousel: React.FC = () => {
   }, []);
 
   // Double donors array for seamless loop
-  const displayDonors = [...donors, ...donors];
+  const displayDonors = [...donors];
 
   const getInitials = (name: string | null) => {
     if (!name) return "?";
