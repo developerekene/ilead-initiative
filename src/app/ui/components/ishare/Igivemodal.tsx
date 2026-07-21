@@ -125,10 +125,16 @@ const IGiveModal: React.FC<IGiveModalProps> = ({ isOpen, onClose }) => {
           caseId: `give-${Date.now()}`,
           type: "GENERAL",
           title: "Offer Posted!",
-          message: `Your "${form.title}" offer is now live on the iSHARE community board.`,
-          timestamp: "Just now",
+          message: ` ${form.title}`,
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: user.displayName || "You",
+          metadata: {
+            "Offer Title": form.title,
+            "Resource Type": form.resourceType,
+            Category: form.category,
+            Description: form.description,
+          },
         }),
       );
       setSubmitted(true);

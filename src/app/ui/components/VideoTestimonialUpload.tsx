@@ -123,7 +123,7 @@ const VideoTestimonialUpload: React.FC = () => {
               title: "Testimonial Uploaded",
               message:
                 "Your video testimony has been processed and is now part of the community showcase.",
-              timestamp: "Just now",
+              timestamp: new Date().toISOString(),
               isUnread: true,
               senderName: "iLEAD",
             }),

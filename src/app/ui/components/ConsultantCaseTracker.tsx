@@ -89,7 +89,7 @@ const ConsultantCaseTracker: React.FC = () => {
         type: label as NotificationType,
         title: `Case ${nextStatus === "Active Mentorship" ? "Accepted" : nextStatus === "Completed Tracks" ? "Completed" : "Updated"}`,
         message: `Student case ${caseId} (${caseItem?.studentName || "Unknown"}) moved to "${nextStatus}".`,
-        timestamp: "Just now",
+        timestamp: new Date().toISOString(),
         isUnread: true,
         senderName: user?.displayName || "Consultant",
       }),
