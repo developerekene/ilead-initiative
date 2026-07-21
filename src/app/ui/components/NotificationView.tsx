@@ -87,7 +87,7 @@ const NotificationView: React.FC = () => {
     if (alert.isUnread) {
       dispatch(markAsRead(alert.id));
     }
-    navigate(`/dashboard/cases/${alert.caseId}`);
+    navigate(`/notifications/${alert.id}`);
   };
 
   const handleDelete = (e: React.MouseEvent, id: string) => {

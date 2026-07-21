@@ -25,6 +25,8 @@ export interface Notification {
   timestamp: string;
   isUnread: boolean;
   senderName: string;
+  /** Optional structured metadata for the detail view (e.g. title, category, description, resourceType) */
+  metadata?: Record<string, string>;
 }
 
 interface NotificationState {

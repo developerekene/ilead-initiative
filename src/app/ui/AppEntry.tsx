@@ -45,6 +45,9 @@ const ElectionCampaignDetails = lazy(
   () => import("./components/campaigncomponents/ElectionCampaignDetails"),
 );
 const NotificationView = lazy(() => import("./components/NotificationView"));
+const NotificationDetails = lazy(
+  () => import("./components/NotificationDetails"),
+);
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -235,6 +238,10 @@ const router = createBrowserRouter([
         element: <ElectionCampaignDetails />,
       },
       { path: "notifications", element: <NotificationView /> },
+      {
+        path: "notifications/:notificationId",
+        element: <NotificationDetails />,
+      },
     ],
   },
   {

@@ -186,10 +186,17 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
           caseId: newCampaign.id,
           type: "NEW_CAMPAIGN",
           title: "Campaign Launched",
-          message: `"${newCampaign.title}" has been published and is now live on the platform.`,
+          message: `${newCampaign.title}`,
           timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: user.displayName || user.firstName || "You",
+          metadata: {
+            "Campaign Title": newCampaign.title,
+            Category: newCampaign.category,
+            Description: newCampaign.description,
+            "Metric Label": newCampaign.metricLabel,
+            "Metric Value": newCampaign.metricValue,
+          },
         }),
       );
 

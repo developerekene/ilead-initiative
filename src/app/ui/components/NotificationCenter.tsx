@@ -45,7 +45,7 @@ const NotificationCenter: React.FC = () => {
     setIsOpen(false);
 
     // Execute absolute router navigation path redirection logic
-    navigate(`/notifications/${alert.title}/${alert.caseId}`);
+    navigate(`/notifications/${alert.id}`);
   };
 
   const handleMarkAllAsRead = () => {
@@ -173,60 +173,69 @@ const NotificationCenter: React.FC = () => {
                 </p>
               </div>
             ) : (
-              notifications.map((alert) => {
-                const meta = getTypeStyles(alert.type);
-                return (
-                  <div
-                    key={alert.id}
-                    onClick={() => handleNotificationClick(alert)}
-                    className={`p-4 transition-all flex gap-3 items-start cursor-pointer hover:bg-slate-50 relative ${
-                      alert.isUnread ? "bg-orange-50/20" : "bg-white"
-                    }`}
-                  >
-                    {/* Dynamic unread horizontal highlight layout pin */}
-                    {alert.isUnread && (
-                      <div className="absolute top-5 left-1 w-1.5 h-1.5 rounded-full bg-orange-500" />
-                    )}
-
-                    {/* Status Meta Graphic Indicator Wrapper */}
+              <>
+                {notifications.slice(0, 3).map((alert) => {
+                  const meta = getTypeStyles(alert.type);
+                  return (
                     <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border ${meta.bg} ${meta.border} ${meta.text}`}
+                      key={alert.id}
+                      onClick={() => handleNotificationClick(alert)}
+                      className={`p-4 transition-all flex gap-3 items-start cursor-pointer hover:bg-slate-50 relative ${
+                        alert.isUnread ? "bg-orange-50/20" : "bg-white"
+                      }`}
                     >
-                      {meta.icon}
-                    </div>
+                      {/* Dynamic unread horizontal highlight layout pin */}
+                      {alert.isUnread && (
+                        <div className="absolute top-5 left-1 w-1.5 h-1.5 rounded-full bg-orange-500" />
+                      )}
 
-                    {/* Content Structural Text Parameters */}
-                    <div className="flex-1 space-y-0.5">
-                      <div className="flex justify-between items-start gap-2">
-                        <h4
-                          className={`text-xs font-black tracking-tight leading-snug ${
-                            alert.isUnread
-                              ? "text-purple-950"
-                              : "text-purple-950/80"
-                          }`}
-                        >
-                          {alert.title}
-                        </h4>
-                        <span className="text-[9px] font-medium text-purple-950/40 whitespace-nowrap shrink-0 mt-0.5">
-                          {formatRelativeTime(alert.timestamp)}
-                        </span>
+                      {/* Status Meta Graphic Indicator Wrapper */}
+                      <div
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border ${meta.bg} ${meta.border} ${meta.text}`}
+                      >
+                        {meta.icon}
                       </div>
-                      <p className="text-xs text-purple-950/60 font-medium leading-relaxed  line-clamp-2">
-                        {formatRelativeTime(alert.timestamp)}
-                      </p>
 
-                      {/* Actor Meta String Assignment tracking context */}
-                      <div className="pt-1 flex items-center gap-1.5 text-[10px] text-purple-950/40 font-bold uppercase tracking-wide">
-                        <span>By: {alert.senderName}</span>
-                        <span>•</span>
-                        <span className="text-purple-950/30">
-                          Ref ID: {alert.caseId}
-                        </span>
+                      {/* Content Structural Text Parameters */}
+                      <div className="flex-1 space-y-0.5">
+                        <div className="flex justify-between items-start gap-2">
+                          <h4
+                            className={`text-xs font-black tracking-tight leading-snug ${
+                              alert.isUnread
+                                ? "text-purple-950"
+                                : "text-purple-950/80"
+                            }`}
+                          >
+                            {alert.title}
+                          </h4>
+                          <span className="text-[9px] font-medium text-purple-950/40 whitespace-nowrap shrink-0 mt-0.5">
+                            {formatRelativeTime(alert.timestamp)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-purple-950/60 font-medium leading-relaxed  line-clamp-2">
+                          {alert.message}
+                        </p>
+
+                        {/* Actor Meta String Assignment tracking context */}
+                        <div className="pt-1 flex items-center gap-1.5 text-[10px] text-purple-950/40 font-bold uppercase tracking-wide">
+                          <span>By: {alert.senderName}</span>
+                          <span>•</span>
+                          <span className="text-purple-950/30">
+                            Ref ID: {alert.caseId}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                  );
+                })}
+                {notifications.length > 3 && (
+                  <div className="px-4 py-3 text-center">
+                    <span className="text-[10px] font-bold text-purple-950/40 uppercase tracking-wide">
+                      +{notifications.length - 3} more
+                    </span>
                   </div>
-                );
-              })
+                )}
+              </>
             )}
           </div>
 

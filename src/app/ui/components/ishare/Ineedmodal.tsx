@@ -128,10 +128,16 @@ const INeedModal: React.FC<INeedModalProps> = ({ isOpen, onClose }) => {
           caseId: `need-${Date.now()}`,
           type: "GENERAL",
           title: "Request Posted!",
-          message: `Your request "${form.title}" is now live. Someone from the community may reach out soon.`,
+          message: ` ${form.title}`,
           timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: user.displayName || "You",
+          metadata: {
+            "Request Title": form.title,
+            "Resource Type": form.resourceType,
+            Category: form.category,
+            Description: form.description,
+          },
         }),
       );
       setSubmitted(true);
