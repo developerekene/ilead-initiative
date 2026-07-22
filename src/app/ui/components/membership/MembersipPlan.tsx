@@ -114,7 +114,9 @@ const MembershipPlan: React.FC = () => {
     }
 
     if (!PAYSTACK_KEY) {
-      toast.error("Payment is not configured. Please contact support.");
+      toast.error("Payment is not configured. Please contact support.", {
+        style: { background: "#ff4d4f", color: "#fff" },
+      });
       return;
     }
 

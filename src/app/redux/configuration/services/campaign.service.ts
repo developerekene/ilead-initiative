@@ -1,13 +1,51 @@
 import {
   doc,
   updateDoc,
-  arrayUnion,
   collection,
   getDocs,
   getDoc,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { Campaign } from "../../slices/campaignSlice";
+
+const serializeCampaign = (campaign: any) => {
+  // Deep clone to remove undefined values, which can also crash Firestore
+  const clean = JSON.parse(JSON.stringify(campaign));
+  
+  const toJSONString = (val: any) => {
+    if (typeof val === 'string') return val; // Already a string
+    if (Array.isArray(val)) return JSON.stringify(val);
+    if (val && typeof val === 'object') return JSON.stringify(Object.values(val));
+    return "[]";
+  };
+
+  return {
+    ...clean,
+    keyDeliverables: toJSONString(clean.keyDeliverables),
+    candidates: toJSONString(clean.candidates),
+    candidatePhotos: toJSONString(clean.candidatePhotos),
+    votedBy: toJSONString(clean.votedBy),
+  };
+};
+
+const deserializeCampaign = (data: any): Campaign => {
+  const parseJSON = (val: any) => {
+    if (!val) return [];
+    if (typeof val === 'string') {
+      try { return JSON.parse(val); } catch { return []; }
+    }
+    if (Array.isArray(val)) return val;
+    return Object.values(val);
+  };
+  
+  return {
+    ...data,
+    keyDeliverables: parseJSON(data.keyDeliverables),
+    candidates: parseJSON(data.candidates),
+    candidatePhotos: parseJSON(data.candidatePhotos),
+    votedBy: parseJSON(data.votedBy),
+  } as Campaign;
+};
 
 export class CampaignService {
   async createCampaign(
@@ -17,9 +55,21 @@ export class CampaignService {
     try {
       if (!userId) throw new Error("User ID is required to save a campaign.");
       const userDocRef = doc(db, "users", userId);
-      await updateDoc(userDocRef, {
-        campaigns: arrayUnion(campaignData),
-      });
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        const rawCampaigns = userDoc.data().campaigns || [];
+        // Ensure that we filter out any multidimensional arrays or non-objects from the existing data
+        const validCampaigns = Array.isArray(rawCampaigns) 
+          ? rawCampaigns.filter(c => c && typeof c === 'object' && !Array.isArray(c))
+          : [];
+        
+        // Serialize existing campaigns to fix any old data that has raw arrays
+        const serializedExisting = validCampaigns.map(c => serializeCampaign(c as Campaign));
+
+        await updateDoc(userDocRef, {
+          campaigns: [...serializedExisting, serializeCampaign(campaignData)],
+        });
+      }
     } catch (error) {
       console.error("Error adding campaign to user document:", error);
       throw error;
@@ -33,7 +83,8 @@ export class CampaignService {
       usersSnap.forEach((doc) => {
         const userData = doc.data();
         if (userData.campaigns && Array.isArray(userData.campaigns)) {
-          allCampaigns = [...allCampaigns, ...userData.campaigns];
+          const deserialized = userData.campaigns.map(deserializeCampaign);
+          allCampaigns = [...allCampaigns, ...deserialized];
         }
       });
       return allCampaigns;
@@ -52,8 +103,9 @@ export class CampaignService {
       const userDoc = await getDoc(userDocRef);
       if (userDoc.exists()) {
         const campaigns = userDoc.data().campaigns || [];
-        const updatedArray = campaigns.map((c: Campaign) =>
-          c.id === updatedCampaign.id ? updatedCampaign : c,
+        const serializedUpdate = serializeCampaign(updatedCampaign);
+        const updatedArray = campaigns.map((c: any) =>
+          c.id === updatedCampaign.id ? serializedUpdate : serializeCampaign(c as Campaign),
         );
         await updateDoc(userDocRef, { campaigns: updatedArray });
       }
@@ -69,9 +121,9 @@ export class CampaignService {
       const userDoc = await getDoc(userDocRef);
       if (userDoc.exists()) {
         const campaigns = userDoc.data().campaigns || [];
-        const filteredArray = campaigns.filter(
-          (c: Campaign) => c.id !== campaignId,
-        );
+        const filteredArray = campaigns
+          .filter((c: any) => c.id !== campaignId)
+          .map((c: any) => serializeCampaign(c as Campaign));
         await updateDoc(userDocRef, { campaigns: filteredArray });
       }
     } catch (error) {

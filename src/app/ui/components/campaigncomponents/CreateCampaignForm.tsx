@@ -83,7 +83,9 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
     if (file) {
       const maxSizeInBytes = 1.5 * 1024 * 1024;
       if (file.size > maxSizeInBytes) {
-        toast.error("Image size must be less than 1.5MB.");
+        toast.error("Image size must be less than 1.5MB.", {
+          style: { background: "#ff4d4f", color: "#fff" },
+        });
         // Clear the file input
         e.target.value = "";
         return;
@@ -119,7 +121,9 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
     e.preventDefault();
 
     if (!user?.uid) {
-      toast.error("You must be logged in to create a campaign.");
+      toast.error("You must be logged in to create a campaign.", {
+        style: { background: "#ff4d4f", color: "#fff" },
+      });
       return;
     }
 
@@ -132,7 +136,9 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
       if (form.category === "Election") {
         const hasIncomplete = form.candidates.some((c, idx) => (c && !form.candidatePhotos[idx]) || (!c && form.candidatePhotos[idx]));
         if (hasIncomplete) {
-          toast.error("Please ensure every entered candidate has both a name and a photo.");
+          toast.error("Please ensure every entered candidate has both a name and a photo.", {
+            style: { background: "#ff4d4f", color: "#fff" },
+          });
           setIsSubmitting(false);
           return;
         }
@@ -147,7 +153,9 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
         });
 
         if (validCandidates.length < 2) {
-          toast.error("Please provide at least two candidates with photos for the election.");
+          toast.error("Please provide at least two candidates with photos for the election.", {
+            style: { background: "#ff4d4f", color: "#fff" },
+          });
           setIsSubmitting(false);
           return;
         }
@@ -198,11 +206,15 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
         candidatePhotos: ["", ""],
       });
 
-      toast.success("Campaign launched successfully!");
+      toast.success("Campaign launched successfully!", {
+        style: { background: "#4BB543", color: "#fff" },
+      });
       onClose();
     } catch (error) {
       console.error("Failed to launch campaign", error);
-      toast.error("Failed to launch campaign. Please try again.");
+      toast.error("Failed to launch campaign. Please try again.", {
+        style: { background: "#ff4d4f", color: "#fff" },
+      });
     } finally {
       setIsSubmitting(false);
     }
