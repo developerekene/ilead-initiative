@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { RootState } from "../../../redux/store";
-import { castVote } from "../../../redux/slices/campaignSlice";
+import { updateCampaignItem, setCampaigns } from "../../../redux/slices/campaignSlice";
+import { campaignService } from "../../../redux/configuration/services/campaign.service";
 import Button from "../Button";
 import { toast } from "react-hot-toast";
 
@@ -18,12 +19,51 @@ const ElectionCampaignDetails: React.FC = () => {
 
   const campaign = campaigns.find((c) => c.id === campaignId);
   const [hasVoted, setHasVoted] = useState(false);
-  const [isVoting, setIsVoting] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(!campaign);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [campaignId]);
+
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const fetchedCampaigns = await campaignService.fetchAllCampaigns();
+        dispatch(setCampaigns(fetchedCampaigns));
+      } catch (error) {
+        console.error("Error fetching campaigns:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (!campaign) {
+      fetchCampaigns();
+    } else {
+      setIsLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (user.uid && campaign?.votedBy?.includes(user.uid)) {
+      setHasVoted(true);
+    } else {
+      setHasVoted(false);
+    }
+  }, [campaign, user.uid]);
+
+  if (isLoading) {
+    return (
+      <main className="w-full bg-white min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 border-4 border-purple-950/20 border-t-purple-950 rounded-full animate-spin mb-4"></div>
+        <h2 className="text-xl font-black text-purple-950 tracking-tight">
+          Loading Campaign...
+        </h2>
+      </main>
+    );
+  }
 
   if (!campaign) {
     return (
@@ -44,8 +84,8 @@ const ElectionCampaignDetails: React.FC = () => {
     );
   }
 
-  const handleVote = (candidate: string) => {
-    if (!isUserLoggedIn) {
+  const handleVote = async (candidate: string) => {
+    if (!isUserLoggedIn || !user.uid) {
       navigate("/sign-in", { state: { from: location } });
       toast.error(`Authentication required to vote. Let's sign you in.`, {
         style: { background: "#ff4d4f", color: "#fff" },
@@ -53,15 +93,33 @@ const ElectionCampaignDetails: React.FC = () => {
       return;
     }
 
-    setIsVoting(true);
-    setTimeout(() => {
-      dispatch(castVote({ campaignId: campaign.id, candidate }));
-      setHasVoted(true);
-      setIsVoting(false);
-      toast.success(`Your vote for ${candidate} has been recorded!`, {
-        style: { background: "#4BB543", color: "#fff" },
+    if (campaign.votedBy?.includes(user.uid)) {
+      toast.error("You have already voted in this election.", {
+        style: { background: "#ff4d4f", color: "#fff" },
       });
-    }, 1000);
+      return;
+    }
+    
+    // Optimistic UI Update
+    const previousCampaignState = { ...campaign };
+    const updatedCampaign = { ...campaign };
+    updatedCampaign.votes = { ...(campaign.votes || {}) };
+    updatedCampaign.votes[candidate] = (updatedCampaign.votes[candidate] || 0) + 1;
+    updatedCampaign.votedBy = [...(campaign.votedBy || []), user.uid];
+
+    dispatch(updateCampaignItem(updatedCampaign));
+    setHasVoted(true);
+
+    try {
+      if (updatedCampaign.creatorId) {
+        await campaignService.updateCampaign(updatedCampaign.creatorId, updatedCampaign);
+      }
+    } catch (error) {
+      console.error("Error casting vote:", error);
+      // Revert Optimistic Update silently on failure
+      dispatch(updateCampaignItem(previousCampaignState));
+      setHasVoted(false);
+    }
   };
 
   const totalVotes = campaign.votes ? Object.values(campaign.votes).reduce((a, b) => a + b, 0) : 0;
@@ -147,7 +205,7 @@ const ElectionCampaignDetails: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleVote(candidate)}
-                        disabled={hasVoted || isVoting}
+                        disabled={hasVoted}
                         className={`w-full flex items-center gap-4 font-bold py-3 px-4 rounded-xl text-left text-sm transition-all duration-300 cursor-pointer ${
                           hasVoted
                             ? "bg-slate-200 text-purple-950/40 cursor-not-allowed border border-slate-300"
@@ -170,7 +228,7 @@ const ElectionCampaignDetails: React.FC = () => {
                           </div>
                         )}
                         <span className="flex-1">
-                          {isVoting ? "Processing..." : `Vote for ${candidate}`}
+                          {`Vote for ${candidate}`}
                         </span>
                       </button>
                       {hasVoted && (
