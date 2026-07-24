@@ -60,7 +60,7 @@ const RESOURCE_TYPES = [
   "Access / Connection",
 ];
 
-const IGiveModal: React.FC<IGiveModalProps> = ({ isOpen, onClose }) => {
+const JoinWorkshop: React.FC<IGiveModalProps> = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [step, setStep] = useState<Step>(1);
@@ -404,4 +404,4 @@ const IGiveModal: React.FC<IGiveModalProps> = ({ isOpen, onClose }) => {
   );
 };
 
-export default IGiveModal;
+export default JoinWorkshop;
