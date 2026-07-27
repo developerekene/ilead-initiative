@@ -1,21 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { signOut } from "firebase/auth";
-import { auth } from "../../firebase";
+import { useSelector } from "react-redux";
 import {
   selectUser,
   selectIsLoggedIn,
-  clearUser,
 } from "../../redux/slices/User";
-import type { AppDispatch } from "../../redux/store";
 import NotificationCenter from "./NotificationCenter";
 import { authService } from "../../redux/configuration/services/auth.service";
-import { error } from "console";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
 
   const user = useSelector(selectUser);
   const isLoggedIn = useSelector(selectIsLoggedIn);

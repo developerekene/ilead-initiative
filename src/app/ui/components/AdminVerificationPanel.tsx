@@ -218,13 +218,13 @@ const AdminVerificationPanel: React.FC = () => {
                                                 <span className="text-[10px] text-purple-950/40 font-medium block">Official Verification Proof Doc / Academic Record</span>
                                             </div>
                                         </div>
-                                        <a
-                                            href="#"
+                                        <button
+                                            type="button"
                                             onClick={(e) => e.preventDefault()}
                                             className="text-[11px] font-black text-orange-500 hover:text-purple-900 underline shrink-0 tracking-wide"
                                         >
                                             View Asset
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

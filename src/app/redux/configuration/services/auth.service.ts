@@ -10,17 +10,6 @@ import { auth, db } from "../../../firebase";
 import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { store } from "../../store";
 import { clearUser, setPlan, setUser } from "../../slices/User";
-import { resolve } from "path";
-import { error } from "console";
-
-interface RegistrationInput {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword?: string;
-  accountType?: string;
-}
 
 const generateUniqueId = (): string => {
   return Math.random().toString(36).substr(2, 9);
@@ -102,8 +91,7 @@ export class AuthService {
     } finally {
     }
   }
-  //Google sign-in / sign-up
-  //Used for both JoinCommunity (new accounts) and Login (returning users).
+ 
   async handleGoogleAuth(accountType?: string): Promise<any> {
     try {
       const credential = await signInWithPopup(auth, googleProvider);

@@ -11,7 +11,6 @@ import ImpactCounter from "../components/ImpactCounter";
 import ITrainCertificateGenerator from "../components/ITrainCertificateGenerator";
 import ITrainScheduler from "../components/ITrainScheduler";
 import ITrainVideoVault from "../components/ITrainVideoVault";
-import SessionFeedbackModal from "../components/SessionFeedbackModal";
 import StudyHabitsAssessment from "../components/StudyHabitsAssessment";
 import VideoTestimonialUpload from "../components/VideoTestimonialUpload";
 import { useLocation, useNavigate } from "react-router-dom";

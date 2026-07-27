@@ -2,13 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
-  doc,
-  updateDoc,
   serverTimestamp,
   WithFieldValue,
   DocumentData,
 } from "firebase/firestore";
-import { db } from "../../firebase";
 import {
   selectUser,
   selectIsLoggedIn,
