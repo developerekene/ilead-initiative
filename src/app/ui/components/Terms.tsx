@@ -144,7 +144,7 @@ const Terms: React.FC = () => {
               community and its members. If you have any questions, please don't
               hesitate to{" "}
               <a
-                href="#"
+                href="/contact"
                 className="text-orange-500 hover:text-purple-700 font-bold underline transition-colors"
               >
                 reach out to us

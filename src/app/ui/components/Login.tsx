@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { GoogleAuthProvider } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../../firebase";
 import {
   setUser,
   setLoading,
@@ -55,8 +52,6 @@ const EyeClosedIcon = () => (
   </svg>
 );
 
-const googleProvider = new GoogleAuthProvider();
-
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -79,49 +74,6 @@ const Login: React.FC = () => {
     setLocalError(null);
     dispatch(clearError());
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  //Rehydrate Redux from Firestore after any sign-in method
-  const hydrateUser = async (
-    uid: string,
-    fallback: { email: string; displayName: string; photoURL: string | null },
-  ) => {
-    try {
-      const snap = await getDoc(doc(db, "users", uid));
-      if (snap.exists()) {
-        const data = snap.data();
-        const primary = data?.user?.primaryInformation ?? {};
-        dispatch(
-          setUser({
-            uid,
-            email: primary.email ?? fallback.email,
-            firstName: primary.firstName ?? "",
-            lastName: primary.lastName ?? "",
-            displayName:
-              `${primary.firstName ?? ""} ${primary.lastName ?? ""}`.trim() ||
-              fallback.displayName,
-            isLoggedIn: true,
-            profileComplete: data?.profileComplete ?? false,
-            photoURL: fallback.photoURL,
-          }),
-        );
-        return data?.profileComplete ?? false;
-      }
-    } catch (err) {
-      console.warn("Login: Firestore hydration failed", err);
-    }
-    // Firestore unavailable — set minimal state so the user isn't blocked
-    dispatch(
-      setUser({
-        uid,
-        email: fallback.email,
-        displayName: fallback.displayName,
-        isLoggedIn: true,
-        profileComplete: false,
-        photoURL: fallback.photoURL,
-      }),
-    );
-    return false;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
