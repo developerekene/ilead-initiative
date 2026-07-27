@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import AcademicConsultationForm from "../components/AcademicConsultationForm";
 import AdminVerificationPanel from "../components/AdminVerificationPanel";
 import CgpaSimulator from "../components/CgpaSimulator";
@@ -14,8 +14,31 @@ import ITrainVideoVault from "../components/ITrainVideoVault";
 import SessionFeedbackModal from "../components/SessionFeedbackModal";
 import StudyHabitsAssessment from "../components/StudyHabitsAssessment";
 import VideoTestimonialUpload from "../components/VideoTestimonialUpload";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectIsLoggedIn } from "../../redux/slices/User";
+import toast from "react-hot-toast";
+import JoinWorkshop from "../components/itrain/JoinWorkshop";
 
 const ITrainView = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isLoggedIn = useSelector(selectIsLoggedIn);
+
+  const [joinWorkshopOpen, setJoinWorkshopOpen] = useState(false);
+
+  const handleCreatePost = (type: string) => {
+    if (!isLoggedIn) {
+      toast.error("You need to be signed in to post.", {
+        style: { background: "#ff4d4f", color: "#fff" },
+      });
+      navigate("/sign-in", { state: { from: location } });
+      return;
+    }
+
+    if (type === "Join a Workshop") setJoinWorkshopOpen(true);
+    else setJoinWorkshopOpen(false);
+  };
   return (
     <div>
       <Hero
@@ -27,7 +50,8 @@ const ITrainView = () => {
         buttonOneText="Join a Workshop"
         buttonTwoText="Speak with a Consultant"
         btnOneNavigation="/"
-        btnTwoNavigation="/"
+        btnTwoNavigation="https://calendly.com/stellaeneh302/30min"
+        btnOneOnClick={() => handleCreatePost("Join a Workshop")}
       />
       <ILearnOnboarding />
       <ImpactCounter />
@@ -43,6 +67,10 @@ const ITrainView = () => {
       <ConsultantCaseTracker />
       <AdminVerificationPanel />
       {/* <SessionFeedbackModal /> */}
+      <JoinWorkshop
+        isOpen={joinWorkshopOpen}
+        onClose={() => setJoinWorkshopOpen(false)}
+      />
     </div>
   );
 };

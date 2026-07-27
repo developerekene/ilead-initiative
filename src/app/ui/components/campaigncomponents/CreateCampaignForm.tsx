@@ -5,9 +5,7 @@ import {
   type Campaign,
 } from "../../../redux/slices/campaignSlice";
 import { selectUser } from "../../../redux/slices/User";
-import {
-  addNotification,
-} from "../../../redux/slices/notificationSlice";
+import { addNotification } from "../../../redux/slices/notificationSlice";
 import { v4 as uuidv4 } from "uuid";
 import toast from "react-hot-toast";
 import { campaignService } from "../../../redux/configuration/services/campaign.service";
@@ -134,11 +132,18 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
       let validPhotos = form.candidatePhotos;
 
       if (form.category === "Election") {
-        const hasIncomplete = form.candidates.some((c, idx) => (c && !form.candidatePhotos[idx]) || (!c && form.candidatePhotos[idx]));
+        const hasIncomplete = form.candidates.some(
+          (c, idx) =>
+            (c && !form.candidatePhotos[idx]) ||
+            (!c && form.candidatePhotos[idx]),
+        );
         if (hasIncomplete) {
-          toast.error("Please ensure every entered candidate has both a name and a photo.", {
-            style: { background: "#ff4d4f", color: "#fff" },
-          });
+          toast.error(
+            "Please ensure every entered candidate has both a name and a photo.",
+            {
+              style: { background: "#ff4d4f", color: "#fff" },
+            },
+          );
           setIsSubmitting(false);
           return;
         }
@@ -153,9 +158,12 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
         });
 
         if (validCandidates.length < 2) {
-          toast.error("Please provide at least two candidates with photos for the election.", {
-            style: { background: "#ff4d4f", color: "#fff" },
-          });
+          toast.error(
+            "Please provide at least two candidates with photos for the election.",
+            {
+              style: { background: "#ff4d4f", color: "#fff" },
+            },
+          );
           setIsSubmitting(false);
           return;
         }
@@ -167,7 +175,10 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
         ...form,
         id: uuidv4(),
         creatorId: user.uid,
-        keyDeliverables: form.category === "Election" ? [] : form.keyDeliverables.filter(Boolean),
+        keyDeliverables:
+          form.category === "Election"
+            ? []
+            : form.keyDeliverables.filter(Boolean),
         candidates: validCandidates,
         candidatePhotos: validPhotos,
       } as Campaign & { creatorId?: string };
@@ -185,10 +196,17 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
           caseId: newCampaign.id,
           type: "NEW_CAMPAIGN",
           title: "Campaign Launched",
-          message: `"${newCampaign.title}" has been published and is now live on the platform.`,
-          timestamp: "Just now",
+          message: `${newCampaign.title}`,
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: user.displayName || user.firstName || "You",
+          metadata: {
+            "Campaign Title": newCampaign.title,
+            Category: newCampaign.category,
+            Description: newCampaign.description,
+            "Metric Label": newCampaign.metricLabel,
+            "Metric Value": newCampaign.metricValue,
+          },
         }),
       );
 
@@ -320,7 +338,6 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
                       className="w-8 h-8 shrink-0 rounded-full border border-purple-950/10 hover:border-red-400 hover:text-red-400 text-purple-950/30 flex items-center justify-center text-sm transition-all"
                     >
                       ✕
-
                     </button>
                   )}
                 </div>

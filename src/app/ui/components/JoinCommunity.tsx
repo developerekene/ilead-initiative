@@ -168,7 +168,7 @@ const JoinCommunity: React.FC = () => {
           title: "Welcome to iLEAD!",
           message:
             "Your account has been created successfully. Complete your profile to get started.",
-          timestamp: "Just now",
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: formData.firstName || "You",
         }),
@@ -205,7 +205,7 @@ const JoinCommunity: React.FC = () => {
           title: "Welcome to iLEAD!",
           message:
             "You've signed up with Google successfully. Complete your profile to get started.",
-          timestamp: "Just now",
+          timestamp: new Date().toISOString(),
           isUnread: true,
           senderName: "iLEAD",
         }),
