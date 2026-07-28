@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../redux/slices/User";
+import { selectUser } from "../../../redux/slices/User";
 import {
   addNotification,
   type NotificationType,
-} from "../../redux/slices/notificationSlice";
+} from "../../../redux/slices/notificationSlice";
 import { v4 as uuidv4 } from "uuid";
 
 interface StudentCase {
