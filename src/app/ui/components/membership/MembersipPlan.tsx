@@ -6,7 +6,6 @@ import {
   selectIsLoggedIn,
   selectUserPlan,
   selectUser,
-  setPlan,
 } from "../../../redux/slices/User";
 import { addNotification } from "../../../redux/slices/notificationSlice";
 import { v4 as uuidv4 } from "uuid";

@@ -1,12 +1,10 @@
 import React, { useState, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../../redux/slices/User";
+import { useDispatch } from "react-redux";
 import { addNotification } from "../../../redux/slices/notificationSlice";
 import { v4 as uuidv4 } from "uuid";
 
 const VideoTestimonialUpload: React.FC = () => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Core file & submission states

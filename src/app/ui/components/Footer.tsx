@@ -49,24 +49,24 @@ const Footer: React.FC = () => {
             divides and elevate humanity.
           </p>
           <div className="flex gap-3">
-            <a
-              href="#"
-              className="w-10 h-10 rounded-full bg-purple-50 hover:bg-orange-500 text-purple-950 hover:text-white flex items-center justify-center font-bold text-sm transition-all duration-300"
+            <button
+              type="button"
+              className="w-10 h-10 rounded-full bg-purple-50 hover:bg-orange-500 text-purple-950 hover:text-white flex items-center justify-center font-bold text-sm transition-all duration-300 cursor-pointer"
             >
               𝕏
-            </a>
-            <a
-              href="#"
-              className="w-10 h-10 rounded-full bg-purple-50 hover:bg-orange-500 text-purple-950 hover:text-white flex items-center justify-center font-bold text-sm transition-all duration-300"
+            </button>
+            <button
+              type="button"
+              className="w-10 h-10 rounded-full bg-purple-50 hover:bg-orange-500 text-purple-950 hover:text-white flex items-center justify-center font-bold text-sm transition-all duration-300 cursor-pointer"
             >
               in
-            </a>
-            <a
-              href="#"
-              className="w-10 h-10 rounded-full bg-purple-50 hover:bg-orange-500 text-purple-950 hover:text-white flex items-center justify-center font-bold text-sm transition-all duration-300"
+            </button>
+            <button
+              type="button"
+              className="w-10 h-10 rounded-full bg-purple-50 hover:bg-orange-500 text-purple-950 hover:text-white flex items-center justify-center font-bold text-sm transition-all duration-300 cursor-pointer"
             >
               IG
-            </a>
+            </button>
           </div>
         </div>
 

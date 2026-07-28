@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import AcademicConsultationForm from "../components/itrain/AcademicConsultationForm";
 import Hero from "../components/home/Hero";
-
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectIsLoggedIn } from "../../redux/slices/User";

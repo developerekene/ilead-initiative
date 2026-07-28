@@ -5,11 +5,10 @@ import {
   Outlet,
   Link,
 } from "react-router-dom";
-import { Provider, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { onAuthStateChanged } from "firebase/auth";
-import { store } from "../redux/store";
 import { auth } from "../firebase";
-import { setUser, clearUser, setProfileComplete } from "../redux/slices/User";
+import { setUser, clearUser } from "../redux/slices/User";
 import { SerializedUser } from "../redux/slices/User";
 import { AppDispatch } from "../redux/store";
 import { doc, getDoc } from "firebase/firestore";
@@ -63,7 +62,6 @@ const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
           if (snap.exists()) {
             const data = snap.data();
             const primary = data?.user?.primaryInformation ?? {};
-            const secondary = data?.user?.secondaryInformation ?? {};
 
             dispatch(
               setUser({
