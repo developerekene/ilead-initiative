@@ -8,7 +8,7 @@ import {
   type SerializedUser,
 } from "../../redux/slices/User";
 
-/* ─── Plan badge helper ────────────────────────────── */
+/*  Plan badge helper  */
 
 const PLAN_META: Record<string, { label: string; color: string }> = {
   free: {
@@ -26,7 +26,7 @@ const PLAN_META: Record<string, { label: string; color: string }> = {
   },
 };
 
-/* ─── Initials avatar generator ────────────────────── */
+/*  Initials avatar generator  */
 
 const getInitials = (user: SerializedUser): string => {
   if (user.displayName) {
@@ -39,7 +39,7 @@ const getInitials = (user: SerializedUser): string => {
   );
 };
 
-/* ─── Component ────────────────────────────────────── */
+/*  Component */
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ const Profile: React.FC = () => {
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const currentPlan = useSelector(selectUserPlan);
 
-  /* ── Redirect if not logged in ─────────────────── */
+  /*  Redirect if not logged in  */
   if (!isLoggedIn) {
     navigate("/sign-in");
     return null;
@@ -58,7 +58,7 @@ const Profile: React.FC = () => {
 
   return (
     <div className="w-full bg-white text-purple-950 min-h-screen font-sans overflow-x-hidden">
-      {/* ─── HERO ─── */}
+      {/*  HERO  */}
       <section className="max-w-6xl mx-auto px-6 pt-16 md:pt-24 pb-12 border-b border-purple-950/5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-8 space-y-4">
@@ -93,10 +93,10 @@ const Profile: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── PROFILE CONTENT ─── */}
+      {/*  PROFILE CONTENT  */}
       <section className="max-w-6xl mx-auto px-6 py-12 md:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
-          {/* ── LEFT: Main info ── */}
+          {/*  LEFT: Main info  */}
           <div className="lg:col-span-7 space-y-8">
             <div className="bg-slate-50/40 border border-purple-950/[0.02] rounded-[2rem] p-6 sm:p-8 md:p-10 space-y-6">
               <div>
@@ -162,7 +162,7 @@ const Profile: React.FC = () => {
             </div>
           </div>
 
-          {/* ── RIGHT: Sidebar ── */}
+          {/*  RIGHT: Sidebar  */}
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-slate-50/60 border border-purple-950/[0.03] rounded-2xl p-5 sm:p-6 space-y-4">
               <h3 className="text-xs font-black text-purple-950 uppercase tracking-wider">
