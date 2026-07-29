@@ -52,10 +52,6 @@ const ITrainView = () => {
       {/* <ConsultantCaseTracker /> */}
       {/* <AdminVerificationPanel /> */}
       {/* <SessionFeedbackModal /> */}
-      {/* <JoinWorkshop
-        isOpen={joinWorkshopOpen}
-        onClose={() => setJoinWorkshopOpen(false)}
-      /> */}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { MembershipTier } from "./types";
+import { MembershipTier, WorkshopTypes } from "./types";
 
 export const TIERS: MembershipTier[] = [
   {
@@ -102,5 +102,123 @@ export const TIERS: MembershipTier[] = [
       "Dedicated account support",
     ],
     locked: [],
+  },
+];
+
+export const workshops: WorkshopTypes[] = [
+  {
+    id: "1",
+    title: "Mastering Effective Study Techniques",
+    category: "Study Skills",
+    description:
+      "Learn practical study techniques, memory retention strategies, and time management methods that improve academic performance.",
+    instructor: "Dr. Sarah Johnson",
+    instructorRole: "Academic Success Coach",
+    date: "August 12, 2026",
+    time: "4:00 PM",
+    duration: "2 Hours",
+    location: "Zoom",
+    mode: "Online",
+    image:
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55e?auto=format&fit=crop&w=1200&q=80",
+    seats: 100,
+    enrolled: 72,
+    price: "Free",
+    level: "Beginner",
+    tags: ["Study Habits", "Time Management", "Productivity"],
+    status: "Open",
+    registrationDeadline: "August 10, 2026",
+  },
+  {
+    id: "2",
+    title: "CGPA Planning & Academic Roadmap",
+    category: "Academic Planning",
+    description:
+      "Create a personalized CGPA roadmap and learn how to strategically improve your academic performance each semester.",
+    instructor: "Prof. Michael Adams",
+    instructorRole: "Academic Consultant",
+    date: "August 18, 2026",
+    time: "2:00 PM",
+    duration: "3 Hours",
+    location: "Knowledge City Hall",
+    mode: "Hybrid",
+    image:
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+    seats: 80,
+    enrolled: 65,
+    price: "Free",
+    level: "Intermediate",
+    tags: ["CGPA", "Planning", "University"],
+    status: "Open",
+    registrationDeadline: "August 16, 2026",
+  },
+  {
+    id: "3",
+    title: "Exam Preparation Bootcamp",
+    category: "Exam Success",
+    description:
+      "Prepare effectively for examinations using proven revision methods, mock tests, and confidence-building strategies.",
+    instructor: "Grace Williams",
+    instructorRole: "Learning Strategist",
+    date: "August 25, 2026",
+    time: "10:00 AM",
+    duration: "4 Hours",
+    location: "Zoom",
+    mode: "Online",
+    image:
+      "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80",
+    seats: 150,
+    enrolled: 143,
+    price: "Free",
+    level: "Beginner",
+    tags: ["Exams", "Revision", "Productivity"],
+    status: "Almost Full",
+    registrationDeadline: "August 23, 2026",
+  },
+  {
+    id: "4",
+    title: "Research Writing & Final Year Projects",
+    category: "Research",
+    description:
+      "Understand how to choose research topics, structure projects, cite references correctly, and avoid plagiarism.",
+    instructor: "Dr. Emmanuel Peters",
+    instructorRole: "Research Mentor",
+    date: "September 2, 2026",
+    time: "3:00 PM",
+    duration: "2.5 Hours",
+    location: "D'roid Training Centre",
+    mode: "Physical",
+    image:
+      "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1200&q=80",
+    seats: 60,
+    enrolled: 28,
+    price: "$10",
+    level: "Intermediate",
+    tags: ["Research", "Projects", "Writing"],
+    status: "Open",
+    registrationDeadline: "August 31, 2026",
+  },
+  {
+    id: "5",
+    title: "Career Readiness for Final-Year Students",
+    category: "Career Development",
+    description:
+      "Build a winning CV, optimize LinkedIn, prepare for interviews, and transition successfully into the workplace.",
+    instructor: "Olivia Brown",
+    instructorRole: "Career Coach",
+    date: "September 9, 2026",
+    time: "5:00 PM",
+    duration: "2 Hours",
+    location: "Zoom",
+    mode: "Online",
+    image:
+      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80",
+    seats: 120,
+    enrolled: 58,
+    price: "Free",
+    level: "Beginner",
+    tags: ["Career", "CV", "LinkedIn", "Interview"],
+    status: "Open",
+    registrationDeadline: "September 7, 2026",
   },
 ];
