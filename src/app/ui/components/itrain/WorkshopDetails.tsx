@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectIsLoggedIn } from "../../../redux/slices/User";
 import toast from "react-hot-toast";
 import { workshops } from "../../../utils/data";
-import { WorkshopTypes } from "../../../utils/types";
+import WorkshopRegistrationForm from "./Workshopregistrationform";
+import SeatsBar from "./SeatsBar";
 
 const STATUS_STYLES: Record<string, string> = {
   Open: "text-green-600 bg-green-50 border-green-200",
@@ -26,30 +27,13 @@ const LEVEL_STYLES: Record<string, string> = {
   Advanced: "text-red-600 bg-red-50 border-red-100",
 };
 
-const SeatsBar: React.FC<{ workshop: WorkshopTypes }> = ({ workshop }) => {
-  const pct = Math.min((workshop.enrolled / workshop.seats) * 100, 100);
-  return (
-    <div>
-      <div className="flex justify-between text-xs font-semibold text-purple-950/50 mb-2">
-        <span>{workshop.enrolled} registered</span>
-        <span>{workshop.seats - workshop.enrolled} seats remaining</span>
-      </div>
-      <div className="h-2 bg-purple-950/5 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all ${
-            pct >= 90 ? "bg-orange-500" : "bg-purple-700"
-          }`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-};
-
 const WorkshopDetails: React.FC = () => {
   const { workshopId } = useParams<{ workshopId: string }>();
   const navigate = useNavigate();
   const isLoggedIn = useSelector(selectIsLoggedIn);
+
+  // ── Registration panel ──
+  const [registrationOpen, setRegistrationOpen] = useState(false);
 
   const workshop = workshops.find((w) => w.id === workshopId);
 
@@ -90,6 +74,7 @@ const WorkshopDetails: React.FC = () => {
   const canRegister =
     workshop.status !== "Closed" && workshop.status !== "Completed";
 
+  // ── Auth-gated: open slide-in form instead of toast stub ──
   const handleRegister = () => {
     if (!isLoggedIn) {
       toast.error("Sign in to register for this workshop.", {
@@ -100,12 +85,9 @@ const WorkshopDetails: React.FC = () => {
       });
       return;
     }
-    toast.success("You're registered! Check your email for details.", {
-      style: { background: "#1e1b4b", color: "#fff" },
-    });
+    setRegistrationOpen(true);
   };
 
-  // Related workshops (same category, excluding current)
   const related = workshops
     .filter((w) => w.category === workshop.category && w.id !== workshop.id)
     .slice(0, 2);
@@ -121,7 +103,6 @@ const WorkshopDetails: React.FC = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-purple-950/80 via-purple-950/30 to-transparent" />
 
-        {/* Back link */}
         <div className="absolute top-6 left-6 md:left-12">
           <Link
             to="/iTrain/workshops"
@@ -144,7 +125,6 @@ const WorkshopDetails: React.FC = () => {
           </Link>
         </div>
 
-        {/* Overlay badges */}
         <div className="absolute top-6 right-6 md:right-12 flex gap-2">
           <span
             className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border ${MODE_STYLES[workshop.mode]}`}
@@ -158,7 +138,6 @@ const WorkshopDetails: React.FC = () => {
           </span>
         </div>
 
-        {/* Title over image */}
         <div className="absolute bottom-0 left-0 right-0 px-6 md:px-12 pb-8">
           <span className="text-xs font-bold text-orange-400 tracking-wider uppercase mb-2 block">
             {workshop.category}
@@ -172,9 +151,8 @@ const WorkshopDetails: React.FC = () => {
       {/* ── Body ── */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* ── Left column: content ── */}
+          {/* Left column */}
           <div className="lg:col-span-2 space-y-10">
-            {/* Status + tags row */}
             <div className="flex flex-wrap items-center gap-2">
               <span
                 className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border flex items-center gap-1 ${STATUS_STYLES[workshop.status]}`}
@@ -192,7 +170,6 @@ const WorkshopDetails: React.FC = () => {
               ))}
             </div>
 
-            {/* Description */}
             <div>
               <p className="text-xs font-black uppercase tracking-widest text-purple-950/40 mb-3">
                 About this workshop
@@ -202,7 +179,6 @@ const WorkshopDetails: React.FC = () => {
               </p>
             </div>
 
-            {/* What you'll learn */}
             <div>
               <p className="text-xs font-black uppercase tracking-widest text-purple-950/40 mb-4">
                 What you'll learn
@@ -233,7 +209,6 @@ const WorkshopDetails: React.FC = () => {
               </ul>
             </div>
 
-            {/* Facilitator */}
             <div>
               <p className="text-xs font-black uppercase tracking-widest text-purple-950/40 mb-4">
                 Your Facilitator
@@ -263,7 +238,6 @@ const WorkshopDetails: React.FC = () => {
               </div>
             </div>
 
-            {/* Related workshops */}
             {related.length > 0 && (
               <div>
                 <p className="text-xs font-black uppercase tracking-widest text-purple-950/40 mb-4">
@@ -296,10 +270,9 @@ const WorkshopDetails: React.FC = () => {
             )}
           </div>
 
-          {/* ── Right column: registration card ── */}
+          {/* Right column: sticky registration card */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 bg-white border border-purple-950/8 rounded-[2rem] p-7 shadow-xl shadow-purple-950/5 space-y-5">
-              {/* Price */}
               <div className="text-center pb-5 border-b border-purple-950/5">
                 <p className="text-3xl font-black text-purple-950">
                   {workshop.price}
@@ -309,7 +282,6 @@ const WorkshopDetails: React.FC = () => {
                 </p>
               </div>
 
-              {/* Details list */}
               <ul className="space-y-3.5 text-sm">
                 {[
                   {
@@ -364,12 +336,10 @@ const WorkshopDetails: React.FC = () => {
                 ))}
               </ul>
 
-              {/* Seats */}
               <div className="pt-4 border-t border-purple-950/5">
                 <SeatsBar workshop={workshop} />
               </div>
 
-              {/* Register button */}
               {canRegister ? (
                 <button
                   onClick={handleRegister}
@@ -394,6 +364,13 @@ const WorkshopDetails: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Slide-in registration form ── */}
+      <WorkshopRegistrationForm
+        isOpen={registrationOpen}
+        onClose={() => setRegistrationOpen(false)}
+        workshop={workshop}
+      />
     </div>
   );
 };
