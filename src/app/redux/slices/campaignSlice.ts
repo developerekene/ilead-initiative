@@ -5,8 +5,8 @@ export interface Campaign {
   title: string;
   category: "Tech Mentorship" | "Business Strategy" | "Community Giving" | "Election";
   description: string;
-  metricLabel: string;
-  metricValue: string;
+  metricLabel?: string;
+  metricValue?: string;
   statusBadge: string;
   longFormBody: string;
   keyDeliverables: string[];
@@ -15,6 +15,10 @@ export interface Campaign {
   creatorId?: string;
   votes?: Record<string, number>;
   votedBy?: string[];
+  volunteersCount?: number;
+  supportersCount?: number;
+  volunteeredBy?: string[];
+  backedBy?: string[];
 }
 
 interface SubmissionRecord {
@@ -26,26 +30,6 @@ interface SubmissionRecord {
   dateRegistered: string;
 }
 
-const INITIAL_CAMPAIGNS: Campaign[] = [
-  {
-    id: "you-are-not-alone-2026",
-    title: 'The "You Are Not Alone" Network',
-    category: "Community Giving",
-    description:
-      "Providing proactive professional check-ins, direct technical workspace assistance, and collaborative safety nets for engineers breaking out of extreme isolation.",
-    metricLabel: "Active Peers Connected",
-    metricValue: "850+ Members",
-    statusBadge: "Always Open",
-    longFormBody:
-      "Isolation is one of the silent killers of technical excellence and personal well-being. The 'You Are Not Alone' Network creates a consistent framework of real human validation for software engineers and digital creators. By facilitating weekly mental health check-ins, providing unblocked technical code reviews, and creating shared spaces for safe, unfiltered growth, we establish a robust human foundation beneath technical development layers.",
-    keyDeliverables: [
-      "24/7 technical SOS channel for immediate engineering roadblocks",
-      "Bi-weekly interactive peer circles breaking down developer burnout",
-      "Direct matched mentorship pairing senior engineering leaders with breaking talent",
-    ],
-  },
-];
-
 interface CampaignState {
   campaigns: Campaign[];
   submissions: SubmissionRecord[];
@@ -53,7 +37,7 @@ interface CampaignState {
 }
 
 const initialState: CampaignState = {
-  campaigns: INITIAL_CAMPAIGNS,
+  campaigns: [],
   submissions: [],
   isSubmitting: false,
 };
@@ -66,14 +50,7 @@ const campaignSlice = createSlice({
       state.campaigns.push(action.payload);
     },
     setCampaigns(state, action: PayloadAction<Campaign[]>) {
-      const dbCampaigns = action.payload;
-      const combined = [...INITIAL_CAMPAIGNS];
-      dbCampaigns.forEach((dbC) => {
-        if (!combined.find((c) => c.id === dbC.id)) {
-          combined.push(dbC);
-        }
-      });
-      state.campaigns = combined;
+      state.campaigns = action.payload;
     },
     updateCampaignItem(state, action: PayloadAction<Campaign>) {
       const index = state.campaigns.findIndex(

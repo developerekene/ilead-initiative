@@ -84,7 +84,7 @@ export class AuthService {
             profileComplete: false,
           }),
         );
-      }
+      } 
     } catch (error) {
       console.error("Error during user registration:", error);
       throw error;
