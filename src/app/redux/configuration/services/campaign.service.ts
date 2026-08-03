@@ -9,11 +9,10 @@ import { db } from "../../../firebase";
 import { Campaign } from "../../slices/campaignSlice";
 
 const serializeCampaign = (campaign: any) => {
-  // Deep clone to remove undefined values, which can also crash Firestore
   const clean = JSON.parse(JSON.stringify(campaign));
   
   const toJSONString = (val: any) => {
-    if (typeof val === 'string') return val; // Already a string
+    if (typeof val === 'string') return val; 
     if (Array.isArray(val)) return JSON.stringify(val);
     if (val && typeof val === 'object') return JSON.stringify(Object.values(val));
     return "[]";
