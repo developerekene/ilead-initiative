@@ -24,6 +24,8 @@ const serializeCampaign = (campaign: any) => {
     candidates: toJSONString(clean.candidates),
     candidatePhotos: toJSONString(clean.candidatePhotos),
     votedBy: toJSONString(clean.votedBy),
+    volunteeredBy: toJSONString(clean.volunteeredBy),
+    backedBy: toJSONString(clean.backedBy),
   };
 };
 
@@ -37,12 +39,19 @@ const deserializeCampaign = (data: any): Campaign => {
     return Object.values(val);
   };
   
+  const parsedVolunteeredBy = parseJSON(data.volunteeredBy);
+  const parsedBackedBy = parseJSON(data.backedBy);
+
   return {
     ...data,
     keyDeliverables: parseJSON(data.keyDeliverables),
     candidates: parseJSON(data.candidates),
     candidatePhotos: parseJSON(data.candidatePhotos),
     votedBy: parseJSON(data.votedBy),
+    volunteeredBy: parsedVolunteeredBy,
+    backedBy: parsedBackedBy,
+    volunteersCount: typeof data.volunteersCount === 'number' ? data.volunteersCount : parsedVolunteeredBy.length,
+    supportersCount: typeof data.supportersCount === 'number' ? data.supportersCount : parsedBackedBy.length,
   } as Campaign;
 };
 

@@ -82,12 +82,27 @@ const Campaigns: React.FC<CampaignsProps> = ({
 
               <div>
                 <div className="flex justify-between items-center pt-5 border-t border-purple-950/5 mb-6 text-sm">
-                  <span className="text-purple-950/50 font-medium truncate">
-                    {campaign.metricLabel}
-                  </span>
-                  <span className="text-purple-950 font-black tracking-tight bg-purple-50/50 px-2.5 py-1 rounded-md">
-                    {campaign.metricValue}
-                  </span>
+                  {campaign.category === "Election" ? (
+                    <>
+                      <span className="text-purple-950/50 font-medium truncate">
+                        Candidates
+                      </span>
+                      <span className="text-purple-950 font-black tracking-tight bg-purple-50/50 px-2.5 py-1 rounded-md">
+                        {campaign.candidates?.length || 0} Registered
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-purple-950/50 font-medium truncate">
+                        Community Reach
+                      </span>
+                      <span className="text-purple-950 font-black tracking-tight bg-purple-50/50 px-2.5 py-1 rounded-md">
+                        {(campaign.volunteersCount ?? campaign.volunteeredBy?.length ?? 0) +
+                          (campaign.supportersCount ?? campaign.backedBy?.length ?? 0)}{" "}
+                        Active
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-3 w-full">
