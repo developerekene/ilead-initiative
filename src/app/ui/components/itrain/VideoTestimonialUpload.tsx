@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useDispatch } from "react-redux";
-import { addNotification } from "../../redux/slices/notificationSlice";
+import { addNotification } from "../../../redux/slices/notificationSlice";
 import { v4 as uuidv4 } from "uuid";
 
 const VideoTestimonialUpload: React.FC = () => {

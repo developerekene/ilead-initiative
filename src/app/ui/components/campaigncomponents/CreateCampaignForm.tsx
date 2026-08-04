@@ -35,8 +35,6 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
     title: "",
     category: "Tech Mentorship" as Campaign["category"],
     description: "",
-    metricLabel: "",
-    metricValue: "",
     statusBadge: "In Progress",
     longFormBody: "",
     keyDeliverables: [""],
@@ -204,8 +202,6 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
             "Campaign Title": newCampaign.title,
             Category: newCampaign.category,
             Description: newCampaign.description,
-            "Metric Label": newCampaign.metricLabel,
-            "Metric Value": newCampaign.metricValue,
           },
         }),
       );
@@ -215,8 +211,6 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
         title: "",
         category: "Tech Mentorship",
         description: "",
-        metricLabel: "",
-        metricValue: "",
         statusBadge: "In Progress",
         longFormBody: "",
         keyDeliverables: [""],
@@ -286,25 +280,6 @@ const CreateCampaignForm: React.FC<Props> = ({ isOpen, onClose }) => {
           value={form.description}
           onChange={(e) => set("description", e.target.value)}
         />
-
-        {form.category !== "Election" && (
-          <FormRow cols={2}>
-            <FormInput
-              label="Metric Label"
-              required
-              placeholder="e.g., Members Served"
-              value={form.metricLabel}
-              onChange={(e) => set("metricLabel", e.target.value)}
-            />
-            <FormInput
-              label="Metric Value"
-              required
-              placeholder="e.g., 200+ Members"
-              value={form.metricValue}
-              onChange={(e) => set("metricValue", e.target.value)}
-            />
-          </FormRow>
-        )}
 
         <FormDivider label="Detail Page Content" />
 

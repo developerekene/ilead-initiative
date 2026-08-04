@@ -37,8 +37,6 @@ const EditCampaignForm: React.FC<Props> = ({
     title: "",
     category: "Tech Mentorship" as Campaign["category"],
     description: "",
-    metricLabel: "",
-    metricValue: "",
     statusBadge: "In Progress",
     longFormBody: "",
     keyDeliverables: [""],
@@ -50,8 +48,6 @@ const EditCampaignForm: React.FC<Props> = ({
         title: campaignToEdit.title,
         category: campaignToEdit.category,
         description: campaignToEdit.description,
-        metricLabel: campaignToEdit.metricLabel,
-        metricValue: campaignToEdit.metricValue,
         statusBadge: campaignToEdit.statusBadge,
         longFormBody: campaignToEdit.longFormBody,
         keyDeliverables: campaignToEdit.keyDeliverables?.length
@@ -155,21 +151,6 @@ const EditCampaignForm: React.FC<Props> = ({
           value={form.description}
           onChange={(e) => set("description", e.target.value)}
         />
-
-        <FormRow cols={2}>
-          <FormInput
-            label="Metric Label"
-            required
-            value={form.metricLabel}
-            onChange={(e) => set("metricLabel", e.target.value)}
-          />
-          <FormInput
-            label="Metric Value"
-            required
-            value={form.metricValue}
-            onChange={(e) => set("metricValue", e.target.value)}
-          />
-        </FormRow>
 
         <FormDivider label="Detail Page Content" />
 

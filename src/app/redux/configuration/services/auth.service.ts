@@ -91,7 +91,7 @@ export class AuthService {
     } finally {
     }
   }
- 
+
   async handleGoogleAuth(accountType?: string): Promise<any> {
     try {
       const credential = await signInWithPopup(auth, googleProvider);
@@ -317,6 +317,53 @@ export class AuthService {
       store.dispatch(setPlan(planId as any));
     } catch (error) {
       console.error("Error updating membership plan:", error);
+      throw error;
+    }
+  }
+
+  async handleWorkshopRegistration(
+    workshopId: string,
+    workshopTitle: string,
+    registrationData: Record<string, any>,
+  ): Promise<void> {
+    try {
+      const currentUser = await this.getCurrentUser();
+      const userId = currentUser.uid;
+      const userDoc = doc(db, "users", userId);
+      const snapshot = await getDoc(userDoc);
+      if (!snapshot.exists()) throw new Error("User not found");
+
+      const currentData = snapshot.data();
+      const existingRegistrations =
+        currentData?.user?.workshopRegistrations ?? [];
+
+      // Guard against double-registering for the same workshop
+      const alreadyRegistered = existingRegistrations.some(
+        (reg: any) => reg.workshopId === workshopId,
+      );
+      if (alreadyRegistered) {
+        throw new Error("You are already registered for this workshop");
+      }
+
+      const registrationRecord = {
+        workshopId,
+        workshopTitle,
+        ...registrationData,
+        registeredAt: new Date().toISOString(),
+      };
+
+      // nested under the `user` map using dot-notation paths,
+
+      const writePayload: Record<string, any> = {
+        "user.workshopRegistrations": [
+          ...existingRegistrations,
+          registrationRecord,
+        ],
+      };
+
+      await updateDoc(userDoc, writePayload);
+    } catch (error) {
+      console.error("Error registering for workshop:", error);
       throw error;
     }
   }
