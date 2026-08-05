@@ -49,6 +49,8 @@ const NotificationView = lazy(() => import("./components/NotificationView"));
 const NotificationDetails = lazy(
   () => import("./components/NotificationDetails"),
 );
+const Profile = lazy(() => import("./pages/Profile"));
+const SavedCampaign = lazy(() => import("./pages/SavedCampaign"));
 
 const AuthListener: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -245,6 +247,8 @@ const router = createBrowserRouter([
         path: "notifications/:notificationId",
         element: <NotificationDetails />,
       },
+      { path: "profile", element: <Profile /> },
+      { path: "saved-campaigns", element: <SavedCampaign /> },
     ],
   },
   {
