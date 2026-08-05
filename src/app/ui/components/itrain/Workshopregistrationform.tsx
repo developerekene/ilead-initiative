@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../../../redux/slices/User";
 import { FormPanel } from "../formcomponent/FormComponents";
 import { WorkshopTypes } from "../../../utils/types";
+import { authService } from "../../../redux/configuration/services/auth.service";
 import toast from "react-hot-toast";
 
 interface WorkshopRegistrationFormProps {
@@ -45,17 +46,15 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    // Step 1 — Personal details
     fullName: user?.displayName ?? "",
     email: user?.email ?? "",
     phone: "",
-    // Step 2 — Academic context
     institution: "",
     studyLevel: "",
     department: "",
-    // Step 3 — Expectations
     heardAbout: "",
     expectation: "",
     agreeToTerms: false,
@@ -68,6 +67,7 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
     setStep(1);
     setLoading(false);
     setSubmitted(false);
+    setError(null);
     setForm({
       fullName: user?.displayName ?? "",
       email: user?.email ?? "",
@@ -86,7 +86,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
     onClose();
   };
 
-  // Validation per step
   const canProceedStep1 =
     form.fullName.trim().length >= 2 &&
     form.email.trim().includes("@") &&
@@ -102,12 +101,26 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
 
   const handleSubmit = async () => {
     setLoading(true);
+    setError(null);
     try {
-      // Stub — replace with your Firestore write or API call
-      await new Promise((res) => setTimeout(res, 1000));
+      await authService.handleWorkshopRegistration(
+        workshop.id,
+        workshop.title,
+        {
+          fullName: form.fullName.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          institution: form.institution.trim(),
+          studyLevel: form.studyLevel,
+          department: form.department.trim(),
+          heardAbout: form.heardAbout,
+          expectation: form.expectation.trim(),
+        },
+      );
       setSubmitted(true);
-    } catch {
-      toast.error("Registration failed. Please try again.");
+    } catch (e: any) {
+      console.error("Workshop registration failed:", e);
+      setError("Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -122,7 +135,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
       badgeVariant="purple"
     >
       {submitted ? (
-        // ── Success ──
         <div className="flex flex-col items-center text-center py-6">
           <div className="w-16 h-16 rounded-full bg-purple-50 border-2 border-purple-100 flex items-center justify-center mb-5 text-3xl">
             🎓
@@ -140,7 +152,7 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
             {workshop.location}
           </p>
           <div className="bg-purple-50 border border-purple-100 rounded-2xl px-5 py-4 text-xs font-medium text-purple-950/60 leading-relaxed mb-7 max-w-xs">
-            A confirmation has been noted. The facilitator will share joining
+            Your registration has been saved. The facilitator will share joining
             details before the session.
           </div>
           <button
@@ -164,7 +176,7 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
             ))}
           </div>
 
-          {/* Workshop mini-summary — visible on all steps */}
+          {/* Workshop mini-summary */}
           <div className="flex items-center gap-3 bg-slate-50 border border-purple-950/5 rounded-2xl px-4 py-3">
             <img
               src={workshop.image}
@@ -187,7 +199,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
               <p className="text-xs font-black uppercase tracking-widest text-purple-950/40">
                 Your Details
               </p>
-
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-0.5">
                   Full Name <span className="text-orange-500">*</span>
@@ -200,7 +211,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
                   className={INPUT_CLS}
                 />
               </div>
-
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-0.5">
                   Email Address <span className="text-orange-500">*</span>
@@ -213,7 +223,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
                   className={INPUT_CLS}
                 />
               </div>
-
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-0.5">
                   Phone Number <span className="text-orange-500">*</span>
@@ -235,7 +244,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
               <p className="text-xs font-black uppercase tracking-widest text-purple-950/40">
                 Academic Background
               </p>
-
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-0.5">
                   Institution <span className="text-orange-500">*</span>
@@ -248,7 +256,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
                   className={INPUT_CLS}
                 />
               </div>
-
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-2 pl-0.5">
                   Study Level <span className="text-orange-500">*</span>
@@ -270,7 +277,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
                   ))}
                 </div>
               </div>
-
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-0.5">
                   Department / Field
@@ -295,7 +301,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
               <p className="text-xs font-black uppercase tracking-widest text-purple-950/40">
                 Almost There
               </p>
-
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-2 pl-0.5">
                   How did you hear about this?{" "}
@@ -318,7 +323,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
                   ))}
                 </div>
               </div>
-
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-0.5">
                   What do you hope to gain?{" "}
@@ -336,8 +340,6 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
                   {form.expectation.length < 10 && "(min 10)"}
                 </span>
               </div>
-
-              {/* Consent */}
               <div className="bg-purple-50 border border-purple-100 rounded-2xl p-4">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
@@ -353,6 +355,13 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
                   </span>
                 </label>
               </div>
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-sm font-semibold text-red-600">
+              {error}
             </div>
           )}
 
