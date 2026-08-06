@@ -323,20 +323,27 @@ const PartnerAndSponsor: React.FC = () => {
         </button>
       </div>
 
-      {/* ─── LIST ─── */}
-      <section className="max-w-6xl mx-auto px-6  pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full text-current">
-          {/* facilitator cards */}
-          <div>
-            <div className="mb-6">
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-purple-950 mb-2">
+      {/* ─── DIRECTORY ─── */}
+      <section className="max-w-6xl mx-auto px-6 pb-24">
+        {/* Facilitators */}
+        <section className="mb-20">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-purple-950">
                 {TYPE_META.Facilitator.icon} Facilitators
               </h2>
-              <span className="inline-flex items-center gap-2 text-[10px] font-black text-purple-950/50 uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                {facilitators.length} Registered
-              </span>
+              <p className="text-sm text-purple-950/55 font-medium mt-1.5">
+                Skill mentors and guides shaping the learning journeys of our
+                community.
+              </p>
             </div>
+            <span className="inline-flex items-center gap-2 text-[11px] font-black text-purple-950/50 uppercase tracking-widest bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 self-start sm:self-auto">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+              {facilitators.length} Registered
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {facilitators.map((entity) => (
               <div
                 key={entity.id}
@@ -391,18 +398,27 @@ const PartnerAndSponsor: React.FC = () => {
               </div>
             ))}
           </div>
+        </section>
 
-          <div>
-            <div className="mb-6">
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-purple-950 mb-2">
+        {/* Sponsors */}
+        <section className="mb-20">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-purple-950">
                 {TYPE_META.Sponsor.icon} Sponsors
               </h2>
-              <span className="inline-flex items-center gap-2 text-[10px] font-black text-purple-950/50 uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                {sponsors.length} Registered
-              </span>
+              <p className="text-sm text-purple-950/55 font-medium mt-1.5">
+                Organizations investing resources to power scholarships, tools,
+                and events.
+              </p>
             </div>
+            <span className="inline-flex items-center gap-2 text-[11px] font-black text-purple-950/50 uppercase tracking-widest bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 self-start sm:self-auto">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+              {sponsors.length} Registered
+            </span>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {sponsors.map((entity) => (
               <div
                 key={entity.id}
@@ -458,18 +474,27 @@ const PartnerAndSponsor: React.FC = () => {
 
             {/* sponsor cards */}
           </div>
+        </section>
 
-          <div>
-            <div className="mb-6">
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-purple-950 mb-2">
+        {/* Partners */}
+        <section>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-purple-950">
                 {TYPE_META.Partner.icon} Partners
               </h2>
-              <span className="inline-flex items-center gap-2 text-[10px] font-black text-purple-950/50 uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                {partners.length} Registered
-              </span>
+              <p className="text-sm text-purple-950/55 font-medium mt-1.5">
+                Mission-aligned collaborators building long-term impact
+                alongside iLEAD.
+              </p>
             </div>
+            <span className="inline-flex items-center gap-2 text-[11px] font-black text-purple-950/50 uppercase tracking-widest bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 self-start sm:self-auto">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+              {partners.length} Registered
+            </span>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {partners.map((entity) => (
               <div
                 key={entity.id}
@@ -520,10 +545,8 @@ const PartnerAndSponsor: React.FC = () => {
                 </button>
               </div>
             ))}
-
-            {/* partner cards */}
           </div>
-        </div>
+        </section>
       </section>
 
       {/* ─── SIDE DRAWER FORM ─── */}
