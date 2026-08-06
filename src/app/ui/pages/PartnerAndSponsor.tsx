@@ -164,13 +164,15 @@ const PartnerAndSponsor: React.FC = () => {
   const set = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  const filteredEntities = entities.filter((e) => e.type === selectedType);
+  // const filteredEntities = entities.filter((e) => e.type === selectedType);
 
-  const openForm = (type: EntityType) => {
-    setSelectedType(type);
-    setForm({ ...DEFAULT_FORMS[type] });
-    setIsPanelOpen(true);
-  };
+  const facilitators = entities.filter(
+    (entity) => entity.type === "Facilitator",
+  );
+
+  const sponsors = entities.filter((entity) => entity.type === "Sponsor");
+
+  const partners = entities.filter((entity) => entity.type === "Partner");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -251,7 +253,17 @@ const PartnerAndSponsor: React.FC = () => {
   const handleRemove = (id: string) => {
     const updated = entities.filter((e) => e.id !== id);
     setEntities(updated);
-    saveEntities(updated);
+    // Persist the removal to localStorage — fully clear the key when empty,
+    // otherwise save the pruned list.
+    if (updated.length === 0) {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+    } else {
+      saveEntities(updated);
+    }
     toast("Entry removed.", { icon: "🗑️" });
   };
 
@@ -288,78 +300,51 @@ const PartnerAndSponsor: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* ─── TOOLBAR ─── */}
-      <section className="max-w-6xl mx-auto px-6 pt-8 pb-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-          {/* Type dropdown */}
-          <div className="relative sm:w-64">
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value as EntityType)}
-              className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm font-semibold text-purple-950 focus:outline-none focus:border-orange-500 transition-all appearance-none cursor-pointer pr-10"
-            >
-              <option value="Facilitator">Facilitators</option>
-              <option value="Sponsor">Sponsors</option>
-              <option value="Partner">Partners</option>
-            </select>
-            <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-purple-950/30">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path
-                  d="M3 5l4 4 4-4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-          </div>
-
-          {/* Add button */}
-          <button
-            onClick={() => openForm(selectedType)}
-            className="inline-flex items-center justify-center gap-2 bg-purple-950 hover:bg-purple-900 text-white font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all duration-200 shadow-lg"
+      {/* Participate CTA */}
+      <div className="flex justify-end mt-14 mr-0 md:mr-6 lg:mr-12">
+        <button
+          onClick={() => setIsPanelOpen(true)}
+          className="inline-flex items-center justify-center gap-2 bg-purple-950 hover:bg-purple-900 text-white font-black text-xs uppercase tracking-wider py-3 px-8 rounded-xl transition-all duration-200 shadow-lg shadow-purple-950/10 hover:-translate-y-0.5"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-            Add {selectedType}
-          </button>
-        </div>
-      </section>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 4.5v15m7.5-7.5h-15"
+            />
+          </svg>
+          Participate
+        </button>
+      </div>
 
       {/* ─── LIST ─── */}
-      <section className="max-w-6xl mx-auto px-6 py-8 pb-24">
-        {filteredEntities.length === 0 ? (
-          <div className="bg-slate-50/40 border border-purple-950/[0.02] rounded-[2.5rem] p-16 text-center space-y-4">
-            <span className="text-5xl block">{meta.icon}</span>
-            <h2 className="text-xl font-black text-purple-950 tracking-tight">
-              No {selectedType.toLowerCase()}s listed yet
-            </h2>
-            <p className="text-sm text-purple-950/60 font-medium max-w-md mx-auto">
-              Click "Add {selectedType}" to register the first one.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEntities.map((entity) => (
+      <section className="max-w-6xl mx-auto px-6  pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full text-current">
+          {/* facilitator cards */}
+          <div>
+            <div className="mb-6">
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-purple-950 mb-2">
+                {TYPE_META.Facilitator.icon} Facilitators
+              </h2>
+              <span className="inline-flex items-center gap-2 text-[10px] font-black text-purple-950/50 uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                {facilitators.length} Registered
+              </span>
+            </div>
+            {facilitators.map((entity) => (
               <div
                 key={entity.id}
-                className="group bg-white border border-purple-950/5 rounded-[2rem] p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 hover:border-orange-500/20 hover:shadow-xl hover:-translate-y-1"
+                className="group bg-white mb-3 border border-purple-950/5 rounded-[2rem] p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 hover:border-orange-500/20 hover:shadow-xl hover:-translate-y-1"
               >
                 <div>
                   {/* Header */}
+
                   <div className="flex justify-between items-center mb-5">
                     <span
                       className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg border ${meta.color}`}
@@ -376,11 +361,6 @@ const PartnerAndSponsor: React.FC = () => {
                   </div>
 
                   {/* Name / org */}
-                  <h3 className="text-lg sm:text-xl font-black text-purple-950 leading-snug mb-4 group-hover:text-purple-700 transition-colors break-words">
-                    {entity.type === "Facilitator"
-                      ? (entity as Facilitator).fullName
-                      : (entity as Sponsor | Partner).organization}
-                  </h3>
 
                   {/* Display fields */}
                   <div className="space-y-2.5 mb-6">
@@ -411,7 +391,139 @@ const PartnerAndSponsor: React.FC = () => {
               </div>
             ))}
           </div>
-        )}
+
+          <div>
+            <div className="mb-6">
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-purple-950 mb-2">
+                {TYPE_META.Sponsor.icon} Sponsors
+              </h2>
+              <span className="inline-flex items-center gap-2 text-[10px] font-black text-purple-950/50 uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                {sponsors.length} Registered
+              </span>
+            </div>
+
+            {sponsors.map((entity) => (
+              <div
+                key={entity.id}
+                className="group bg-white mb-3 border border-purple-950/5 rounded-[2rem] p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 hover:border-orange-500/20 hover:shadow-xl hover:-translate-y-1"
+              >
+                <div>
+                  {/* Header */}
+                  <div className="flex justify-between items-center mb-5">
+                    <span
+                      className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg border ${meta.color}`}
+                    >
+                      {meta.icon} {entity.type}
+                    </span>
+                    <span className="text-[10px] text-purple-950/30 font-medium">
+                      {new Date(entity.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Name / org */}
+
+                  {/* Display fields */}
+                  <div className="space-y-2.5 mb-6">
+                    {DISPLAY_FIELDS[entity.type].map((field) => {
+                      const value = entity[field as keyof Entity] as string;
+                      if (!value) return null;
+                      return (
+                        <div key={field as string}>
+                          <span className="text-[10px] font-black text-purple-950/40 uppercase tracking-widest block">
+                            {FIELD_LABELS[field as string]}
+                          </span>
+                          <span className="text-xs font-semibold text-purple-950/70 block mt-0.5">
+                            {value}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Remove */}
+                <button
+                  onClick={() => handleRemove(entity.id)}
+                  className="w-full bg-white border border-purple-950/10 hover:border-red-300 hover:bg-red-50 text-purple-950/50 hover:text-red-600 font-bold py-2.5 px-4 rounded-xl text-center text-xs transition-all duration-200"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+
+            {/* sponsor cards */}
+          </div>
+
+          <div>
+            <div className="mb-6">
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-purple-950 mb-2">
+                {TYPE_META.Partner.icon} Partners
+              </h2>
+              <span className="inline-flex items-center gap-2 text-[10px] font-black text-purple-950/50 uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                {partners.length} Registered
+              </span>
+            </div>
+
+            {partners.map((entity) => (
+              <div
+                key={entity.id}
+                className="group bg-white mb-3 border border-purple-950/5 rounded-[2rem] p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 hover:border-orange-500/20 hover:shadow-xl hover:-translate-y-1"
+              >
+                <div>
+                  {/* Header */}
+                  <div className="flex justify-between items-center mb-5">
+                    <span
+                      className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg border ${meta.color}`}
+                    >
+                      {meta.icon} {entity.type}
+                    </span>
+                    <span className="text-[10px] text-purple-950/30 font-medium">
+                      {new Date(entity.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Display fields */}
+                  <div className="space-y-2.5 mb-6">
+                    {DISPLAY_FIELDS[entity.type].map((field) => {
+                      const value = entity[field as keyof Entity] as string;
+                      if (!value) return null;
+                      return (
+                        <div key={field as string}>
+                          <span className="text-[10px] font-black text-purple-950/40 uppercase tracking-widest block">
+                            {FIELD_LABELS[field as string]}
+                          </span>
+                          <span className="text-xs font-semibold text-purple-950/70 block mt-0.5">
+                            {value}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Remove */}
+                <button
+                  onClick={() => handleRemove(entity.id)}
+                  className="w-full bg-white border border-purple-950/10 hover:border-red-300 hover:bg-red-50 text-purple-950/50 hover:text-red-600 font-bold py-2.5 px-4 rounded-xl text-center text-xs transition-all duration-200"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+
+            {/* partner cards */}
+          </div>
+        </div>
       </section>
 
       {/* ─── SIDE DRAWER FORM ─── */}
@@ -422,6 +534,28 @@ const PartnerAndSponsor: React.FC = () => {
         badge={`${meta.icon} ${selectedType}`}
         badgeVariant="orange"
       >
+        <div className="relative sm:w-64">
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value as EntityType)}
+            className="w-full bg-slate-50 border border-purple-950/10 rounded-xl px-4 py-3 text-sm font-semibold text-purple-950 focus:outline-none focus:border-orange-500 transition-all appearance-none cursor-pointer pr-10"
+          >
+            <option value="Facilitator">Facilitators</option>
+            <option value="Sponsor">Sponsors</option>
+            <option value="Partner">Partners</option>
+          </select>
+          <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-purple-950/30">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path
+                d="M3 5l4 4 4-4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           {selectedType === "Facilitator" && (
             <>
