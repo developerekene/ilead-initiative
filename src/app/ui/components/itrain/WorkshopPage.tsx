@@ -12,6 +12,7 @@ import {
 } from "../../../redux/slices/workshopSlice";
 import { authService } from "../../../redux/configuration/services/auth.service";
 import CreateWorkshopForm from "./CreateWorkshopForm";
+import { IoSearchOutline } from "react-icons/io5";
 
 const STATUS_STYLES: Record<string, string> = {
   Open: "text-green-600 bg-green-50 border-green-200",
@@ -92,19 +93,12 @@ const WorkshopPage: React.FC = () => {
             Hands-on workshops designed by practitioners, for students who want
             more than a degree.
           </p>
-          {isLoggedIn && (
-            <button
-              onClick={() => setCreateWorkshopOpen(true)}
-              className="text-xs font-bold text-purple-950/60 hover:text-purple-950 underline underline-offset-4 transition-colors"
-            >
-              + Create a Workshop
-            </button>
-          )}
         </div>
 
         {/* Search + filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="relative flex-1">
+            {/* <IoSearchOutline /> */}
             <svg
               className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-950/30 pointer-events-none"
               fill="none"
@@ -131,6 +125,16 @@ const WorkshopPage: React.FC = () => {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-950/30 hover:text-purple-950 text-xs"
               >
                 ✕
+              </button>
+            )}
+          </div>
+          <div>
+            {isLoggedIn && (
+              <button
+                onClick={() => setCreateWorkshopOpen(true)}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-black px-8 py-3.5 rounded-xl text-sm tracking-wide transition-all shadow-md shadow-orange-500/30 "
+              >
+                + Create a Workshop
               </button>
             )}
           </div>
