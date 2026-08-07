@@ -108,29 +108,6 @@ export const TIERS: MembershipTier[] = [
 export const workshops: WorkshopTypes[] = [
   {
     id: "1",
-    title: "Mastering Effective Study Techniques",
-    category: "Study Skills",
-    description:
-      "Learn practical study techniques, memory retention strategies, and time management methods that improve academic performance.",
-    instructor: "Dr. Sarah Johnson",
-    instructorRole: "Academic Success Coach",
-    date: "August 12, 2026",
-    time: "4:00 PM",
-    duration: "2 Hours",
-    location: "Zoom",
-    mode: "Online",
-    image:
-      "https://images.unsplash.com/photo-1522202176988-66273c2fd55e?auto=format&fit=crop&w=1200&q=80",
-    seats: 100,
-    enrolled: 72,
-    price: "Free",
-    level: "Beginner",
-    tags: ["Study Habits", "Time Management", "Productivity"],
-    status: "Open",
-    registrationDeadline: "August 10, 2026",
-  },
-  {
-    id: "2",
     title: "CGPA Planning & Academic Roadmap",
     category: "Academic Planning",
     description:
@@ -153,7 +130,7 @@ export const workshops: WorkshopTypes[] = [
     registrationDeadline: "August 16, 2026",
   },
   {
-    id: "3",
+    id: "2",
     title: "Exam Preparation Bootcamp",
     category: "Exam Success",
     description:
@@ -176,7 +153,7 @@ export const workshops: WorkshopTypes[] = [
     registrationDeadline: "August 23, 2026",
   },
   {
-    id: "4",
+    id: "3",
     title: "Research Writing & Final Year Projects",
     category: "Research",
     description:
@@ -197,28 +174,5 @@ export const workshops: WorkshopTypes[] = [
     tags: ["Research", "Projects", "Writing"],
     status: "Open",
     registrationDeadline: "August 31, 2026",
-  },
-  {
-    id: "5",
-    title: "Career Readiness for Final-Year Students",
-    category: "Career Development",
-    description:
-      "Build a winning CV, optimize LinkedIn, prepare for interviews, and transition successfully into the workplace.",
-    instructor: "Olivia Brown",
-    instructorRole: "Career Coach",
-    date: "September 9, 2026",
-    time: "5:00 PM",
-    duration: "2 Hours",
-    location: "Zoom",
-    mode: "Online",
-    image:
-      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80",
-    seats: 120,
-    enrolled: 58,
-    price: "Free",
-    level: "Beginner",
-    tags: ["Career", "CV", "LinkedIn", "Interview"],
-    status: "Open",
-    registrationDeadline: "September 7, 2026",
   },
 ];

@@ -1,12 +1,17 @@
-import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectIsLoggedIn } from "../../../redux/slices/User";
 import toast from "react-hot-toast";
 import AcademicConsultationForm from "./AcademicConsultationForm";
-import { workshops } from "../../../utils/data";
 import { WorkshopTypes } from "../../../utils/types";
 import SeatsBar from "./SeatsBar";
+import {
+  selectWorkshops,
+  selectWorkshopsLoading,
+} from "../../../redux/slices/workshopSlice";
+import { authService } from "../../../redux/configuration/services/auth.service";
+import CreateWorkshopForm from "./CreateWorkshopForm";
 
 const STATUS_STYLES: Record<string, string> = {
   Open: "text-green-600 bg-green-50 border-green-200",
@@ -29,11 +34,19 @@ const LEVEL_STYLES: Record<string, string> = {
 };
 
 const WorkshopPage: React.FC = () => {
+  const workshops = useSelector(selectWorkshops);
+  const loading = useSelector(selectWorkshopsLoading);
+
   const navigate = useNavigate();
   const location = useLocation();
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [createWorkshopOpen, setCreateWorkshopOpen] = useState(false);
+
+  useEffect(() => {
+    authService.fetchWorkshops();
+  }, []);
 
   const categories = [
     "All",
@@ -79,6 +92,14 @@ const WorkshopPage: React.FC = () => {
             Hands-on workshops designed by practitioners, for students who want
             more than a degree.
           </p>
+          {isLoggedIn && (
+            <button
+              onClick={() => setCreateWorkshopOpen(true)}
+              className="text-xs font-bold text-purple-950/60 hover:text-purple-950 underline underline-offset-4 transition-colors"
+            >
+              + Create a Workshop
+            </button>
+          )}
         </div>
 
         {/* Search + filters */}
@@ -287,12 +308,6 @@ const WorkshopPage: React.FC = () => {
 
                   {/* Actions */}
                   <div className="flex flex-col gap-3">
-                    <Link
-                      to={`/iTrain/workshops/${workshop.id}`}
-                      className="w-full bg-purple-50 hover:bg-purple-100 text-purple-950 font-bold py-3 px-4 rounded-xl text-center text-sm transition-all duration-200"
-                    >
-                      View Workshop
-                    </Link>
                     {workshop.status !== "Closed" &&
                       workshop.status !== "Completed" && (
                         <button
@@ -300,7 +315,7 @@ const WorkshopPage: React.FC = () => {
                           className="w-full bg-purple-950 hover:bg-orange-500 text-white font-black py-3 px-4 rounded-xl text-sm tracking-wide transition-all duration-200"
                         >
                           {workshop.status === "Almost Full"
-                            ? "Register — Almost Full!"
+                            ? "Register (Almost Full!)"
                             : "Register Now"}
                         </button>
                       )}
@@ -323,7 +338,7 @@ const WorkshopPage: React.FC = () => {
             — you handle the value.
           </p>
           <button
-            onClick={() => navigate("/contact")}
+            onClick={() => navigate("/about-ilead/partners-and-sponsors")}
             className="bg-orange-500 hover:bg-orange-600 text-white font-black px-8 py-3.5 rounded-xl text-sm tracking-wide transition-all shadow-md shadow-orange-500/30"
           >
             Apply to Facilitate
@@ -331,6 +346,10 @@ const WorkshopPage: React.FC = () => {
         </div>
       </div>
       <AcademicConsultationForm />
+      <CreateWorkshopForm
+        isOpen={createWorkshopOpen}
+        onClose={() => setCreateWorkshopOpen(false)}
+      />
     </div>
   );
 };

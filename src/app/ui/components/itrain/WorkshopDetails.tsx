@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectIsLoggedIn } from "../../../redux/slices/User";
 import toast from "react-hot-toast";
-import { workshops } from "../../../utils/data";
+import {
+  selectWorkshopById,
+  selectWorkshopsLoading,
+  selectWorkshopsError,
+} from "../../../redux/slices/workshopSlice";
+import { authService } from "../../../redux/configuration/services/auth.service";
 import WorkshopRegistrationForm from "./Workshopregistrationform";
 import SeatsBar from "./SeatsBar";
 
@@ -32,12 +37,75 @@ const WorkshopDetails: React.FC = () => {
   const navigate = useNavigate();
   const isLoggedIn = useSelector(selectIsLoggedIn);
 
+  const workshop = useSelector(selectWorkshopById(workshopId ?? ""));
+  const loading = useSelector(selectWorkshopsLoading);
+  const fetchError = useSelector(selectWorkshopsError);
+
+  // Tracks whether a fetch attempt has actually completed, so the
+  // "not found" screen can't render before fetchWorkshops() has even
+  // had a chance to run on first mount (loading starts false)
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+
   // ── Registration panel ──
   const [registrationOpen, setRegistrationOpen] = useState(false);
 
-  const workshop = workshops.find((w) => w.id === workshopId);
+  useEffect(() => {
+    if (!workshop) {
+      authService.fetchWorkshops().finally(() => setHasAttemptedFetch(true));
+    } else {
+      setHasAttemptedFetch(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const retryFetch = () => {
+    setHasAttemptedFetch(false);
+    authService.fetchWorkshops().finally(() => setHasAttemptedFetch(true));
+  };
 
   if (!workshop) {
+    if (loading || !hasAttemptedFetch) {
+      return (
+        <div className="max-w-3xl mx-auto px-6 md:px-12 py-24 text-center text-purple-950/40 font-medium">
+          Loading workshop...
+        </div>
+      );
+    }
+
+    if (fetchError) {
+      return (
+        <div className="max-w-3xl mx-auto px-6 md:px-12 py-24 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-5">
+            <svg
+              className="w-8 h-8 text-red-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-black text-purple-950 mb-2">
+            Couldn't load this workshop
+          </h1>
+          <p className="text-sm text-purple-950/50 font-medium mb-8">
+            {fetchError}
+          </p>
+          <button
+            onClick={retryFetch}
+            className="bg-orange-500 hover:bg-purple-950 text-white font-black px-6 py-3 rounded-xl text-sm tracking-wide transition-all"
+          >
+            Try Again
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-3xl mx-auto px-6 md:px-12 py-24 text-center">
         <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-5">
@@ -87,10 +155,6 @@ const WorkshopDetails: React.FC = () => {
     }
     setRegistrationOpen(true);
   };
-
-  const related = workshops
-    .filter((w) => w.category === workshop.category && w.id !== workshop.id)
-    .slice(0, 2);
 
   return (
     <div className="min-h-screen bg-white">
@@ -237,37 +301,6 @@ const WorkshopDetails: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {related.length > 0 && (
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-purple-950/40 mb-4">
-                  More in {workshop.category}
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {related.map((w) => (
-                    <Link
-                      key={w.id}
-                      to={`/iTrain/workshops/${w.id}`}
-                      className="flex items-start gap-3 bg-slate-50 border border-purple-950/5 rounded-2xl p-4 hover:border-orange-500/20 hover:shadow-md transition-all group"
-                    >
-                      <img
-                        src={w.image}
-                        alt={w.title}
-                        className="w-14 h-14 rounded-xl object-cover shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <p className="text-sm font-black text-purple-950 group-hover:text-purple-700 line-clamp-2 leading-snug">
-                          {w.title}
-                        </p>
-                        <p className="text-[11px] text-purple-950/40 font-medium mt-1">
-                          {w.date}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Right column: sticky registration card */}
@@ -365,7 +398,6 @@ const WorkshopDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Slide-in registration form ── */}
       <WorkshopRegistrationForm
         isOpen={registrationOpen}
         onClose={() => setRegistrationOpen(false)}
