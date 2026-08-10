@@ -49,7 +49,7 @@ const NotificationView = lazy(() => import("./components/NotificationView"));
 const NotificationDetails = lazy(
   () => import("./components/NotificationDetails"),
 );
-const Profile = lazy(() => import("./pages/Profile"));
+const MyContribution = lazy(() => import("./pages/MyContribution"));
 const SavedCampaign = lazy(() => import("./pages/SavedCampaign"));
 const PartnerAndSponsor = lazy(() => import("./pages/PartnerAndSponsor"));
 
@@ -248,7 +248,7 @@ const router = createBrowserRouter([
         path: "notifications/:notificationId",
         element: <NotificationDetails />,
       },
-      { path: "profile", element: <Profile /> },
+      { path: "my-contributions", element: <MyContribution /> },
       { path: "saved-campaigns", element: <SavedCampaign /> },
       {
         path: "/about-ilead/partners-and-sponsors",

@@ -1,10 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import {
-  selectUser,
-  selectIsLoggedIn,
-} from "../../redux/slices/User";
+import { selectUser, selectIsLoggedIn } from "../../redux/slices/User";
 import NotificationCenter from "./NotificationCenter";
 import { authService } from "../../redux/configuration/services/auth.service";
 
@@ -198,7 +195,6 @@ const Navbar: React.FC = () => {
                   </div>
 
                   {[
-                    { to: "/profile", label: "My Profile" },
                     { to: "/dashboard", label: "Dashboard" },
                     { to: "/my-contributions", label: "My Contributions" },
                     { to: "/saved-campaigns", label: "Saved Campaigns" },
@@ -337,7 +333,6 @@ const Navbar: React.FC = () => {
 
               {/* Profile Links */}
               {[
-                { to: "/profile", label: "My Profile" },
                 { to: "/dashboard", label: "Dashboard" },
                 { to: "/my-contributions", label: "My Contributions" },
                 { to: "/saved-campaigns", label: "Saved Campaigns" },
