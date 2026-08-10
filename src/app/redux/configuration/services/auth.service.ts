@@ -6,10 +6,32 @@ import {
   signInWithPopup,
   signOut,
 } from "firebase/auth";
+
 import { auth, db } from "../../../firebase";
-import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  runTransaction,
+  setDoc,
+  updateDoc,
+  addDoc,
+} from "firebase/firestore";
 import { store } from "../../store";
 import { clearUser, setPlan, setUser } from "../../slices/User";
+import {
+  setWorkshops,
+  addWorkshop,
+  setWorkshopsLoading,
+  setWorkshopsError,
+  setWorkshopEnrolled,
+  setRegistering,
+  setRegisterError,
+  setCreatingWorkshop,
+  setCreateError,
+} from "../../slices/workshopSlice";
+import { WorkshopTypes } from "../../../utils/types";
 
 const generateUniqueId = (): string => {
   return Math.random().toString(36).substr(2, 9);
@@ -321,11 +343,72 @@ export class AuthService {
     }
   }
 
+  async handleCreateWorkshop(
+    workshopData: Omit<WorkshopTypes, "id" | "enrolled">,
+  ): Promise<string> {
+    store.dispatch(setCreatingWorkshop(true));
+    store.dispatch(setCreateError(null));
+    try {
+      // Require an authenticated user, same as every other write path.
+      // NOTE: this only checks that *someone* is signed in — it does
+      // not check facilitator/admin role, since no role field exists
+      // on SerializedUser yet. Anyone logged in can currently create
+      // a workshop. Flag this to Stella before shipping if that's not
+      // the intended access model.
+      await this.getCurrentUser();
+
+      const newWorkshopDoc = {
+        ...workshopData,
+        enrolled: 0,
+      };
+
+      const docRef = await addDoc(collection(db, "workshops"), newWorkshopDoc);
+
+      const createdWorkshop: WorkshopTypes = {
+        id: docRef.id,
+        ...newWorkshopDoc,
+      };
+
+      store.dispatch(addWorkshop(createdWorkshop));
+      return docRef.id;
+    } catch (error: any) {
+      console.error("Error creating workshop:", error);
+      store.dispatch(
+        setCreateError(error?.message ?? "Failed to create workshop"),
+      );
+      throw error;
+    } finally {
+      store.dispatch(setCreatingWorkshop(false));
+    }
+  }
+
+  async fetchWorkshops(): Promise<void> {
+    store.dispatch(setWorkshopsLoading(true));
+    store.dispatch(setWorkshopsError(null));
+    try {
+      const snapshot = await getDocs(collection(db, "workshops"));
+      const workshops = snapshot.docs.map(
+        (d) => ({ id: d.id, ...d.data() }) as WorkshopTypes,
+      );
+      store.dispatch(setWorkshops(workshops));
+    } catch (error: any) {
+      console.error("Error fetching workshops:", error);
+      store.dispatch(
+        setWorkshopsError(error?.message ?? "Failed to load workshops"),
+      );
+      throw error;
+    } finally {
+      store.dispatch(setWorkshopsLoading(false));
+    }
+  }
+
   async handleWorkshopRegistration(
     workshopId: string,
     workshopTitle: string,
     registrationData: Record<string, any>,
   ): Promise<void> {
+    store.dispatch(setRegistering({ workshopId, value: true }));
+    store.dispatch(setRegisterError({ workshopId, error: null }));
     try {
       const currentUser = await this.getCurrentUser();
       const userId = currentUser.uid;
@@ -352,8 +435,6 @@ export class AuthService {
         registeredAt: new Date().toISOString(),
       };
 
-      // nested under the `user` map using dot-notation paths,
-
       const writePayload: Record<string, any> = {
         "user.workshopRegistrations": [
           ...existingRegistrations,
@@ -362,9 +443,35 @@ export class AuthService {
       };
 
       await updateDoc(userDoc, writePayload);
-    } catch (error) {
+      const workshopRef = doc(db, "workshops", workshopId);
+      const newEnrolled = await runTransaction(db, async (transaction) => {
+        const workshopSnap = await transaction.get(workshopRef);
+        if (!workshopSnap.exists()) throw new Error("Workshop not found");
+
+        const workshopData = workshopSnap.data() as WorkshopTypes;
+        if (workshopData.enrolled >= workshopData.seats) {
+          throw new Error("This workshop is full");
+        }
+
+        const updatedEnrolled = workshopData.enrolled + 1;
+        transaction.update(workshopRef, { enrolled: updatedEnrolled });
+        return updatedEnrolled;
+      });
+
+      store.dispatch(
+        setWorkshopEnrolled({ workshopId, enrolled: newEnrolled }),
+      );
+    } catch (error: any) {
       console.error("Error registering for workshop:", error);
+      store.dispatch(
+        setRegisterError({
+          workshopId,
+          error: error?.message ?? "Registration failed. Please try again.",
+        }),
+      );
       throw error;
+    } finally {
+      store.dispatch(setRegistering({ workshopId, value: false }));
     }
   }
 }
