@@ -325,7 +325,7 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
               </div>
               <div>
                 <label className="text-xs font-bold text-purple-950/70 block mb-1.5 pl-0.5">
-                  What do you hope to gain?{" "}
+                  What do you hope to gain?
                   <span className="text-orange-500">*</span>
                 </label>
                 <textarea
@@ -336,7 +336,7 @@ const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({
                   className={`${INPUT_CLS} resize-none leading-relaxed`}
                 />
                 <span className="text-[11px] text-purple-950/30 pl-0.5 mt-1 block">
-                  {form.expectation.length} chars{" "}
+                  {form.expectation.length} chars
                   {form.expectation.length < 10 && "(min 10)"}
                 </span>
               </div>

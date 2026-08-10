@@ -1,12 +1,18 @@
-import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectIsLoggedIn } from "../../../redux/slices/User";
 import toast from "react-hot-toast";
 import AcademicConsultationForm from "./AcademicConsultationForm";
-import { workshops } from "../../../utils/data";
 import { WorkshopTypes } from "../../../utils/types";
 import SeatsBar from "./SeatsBar";
+import {
+  selectWorkshops,
+  selectWorkshopsLoading,
+} from "../../../redux/slices/workshopSlice";
+import { authService } from "../../../redux/configuration/services/auth.service";
+import CreateWorkshopForm from "./CreateWorkshopForm";
+import { IoSearchOutline } from "react-icons/io5";
 
 const STATUS_STYLES: Record<string, string> = {
   Open: "text-green-600 bg-green-50 border-green-200",
@@ -29,11 +35,19 @@ const LEVEL_STYLES: Record<string, string> = {
 };
 
 const WorkshopPage: React.FC = () => {
+  const workshops = useSelector(selectWorkshops);
+  const loading = useSelector(selectWorkshopsLoading);
+
   const navigate = useNavigate();
   const location = useLocation();
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [createWorkshopOpen, setCreateWorkshopOpen] = useState(false);
+
+  useEffect(() => {
+    authService.fetchWorkshops();
+  }, []);
 
   const categories = [
     "All",
@@ -84,6 +98,7 @@ const WorkshopPage: React.FC = () => {
         {/* Search + filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="relative flex-1">
+            {/* <IoSearchOutline /> */}
             <svg
               className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-950/30 pointer-events-none"
               fill="none"
@@ -110,6 +125,16 @@ const WorkshopPage: React.FC = () => {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-950/30 hover:text-purple-950 text-xs"
               >
                 ✕
+              </button>
+            )}
+          </div>
+          <div>
+            {isLoggedIn && (
+              <button
+                onClick={() => setCreateWorkshopOpen(true)}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-black px-8 py-3.5 rounded-xl text-sm tracking-wide transition-all shadow-md shadow-orange-500/30 "
+              >
+                + Create a Workshop
               </button>
             )}
           </div>
@@ -287,12 +312,6 @@ const WorkshopPage: React.FC = () => {
 
                   {/* Actions */}
                   <div className="flex flex-col gap-3">
-                    <Link
-                      to={`/iTrain/workshops/${workshop.id}`}
-                      className="w-full bg-purple-50 hover:bg-purple-100 text-purple-950 font-bold py-3 px-4 rounded-xl text-center text-sm transition-all duration-200"
-                    >
-                      View Workshop
-                    </Link>
                     {workshop.status !== "Closed" &&
                       workshop.status !== "Completed" && (
                         <button
@@ -300,7 +319,7 @@ const WorkshopPage: React.FC = () => {
                           className="w-full bg-purple-950 hover:bg-orange-500 text-white font-black py-3 px-4 rounded-xl text-sm tracking-wide transition-all duration-200"
                         >
                           {workshop.status === "Almost Full"
-                            ? "Register — Almost Full!"
+                            ? "Register (Almost Full!)"
                             : "Register Now"}
                         </button>
                       )}
@@ -323,7 +342,7 @@ const WorkshopPage: React.FC = () => {
             — you handle the value.
           </p>
           <button
-            onClick={() => navigate("/contact")}
+            onClick={() => navigate("/about-ilead/partners-and-sponsors")}
             className="bg-orange-500 hover:bg-orange-600 text-white font-black px-8 py-3.5 rounded-xl text-sm tracking-wide transition-all shadow-md shadow-orange-500/30"
           >
             Apply to Facilitate
@@ -331,6 +350,10 @@ const WorkshopPage: React.FC = () => {
         </div>
       </div>
       <AcademicConsultationForm />
+      <CreateWorkshopForm
+        isOpen={createWorkshopOpen}
+        onClose={() => setCreateWorkshopOpen(false)}
+      />
     </div>
   );
 };
