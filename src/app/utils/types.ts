@@ -36,3 +36,26 @@ export interface WorkshopTypes {
   status: "Open" | "Almost Full" | "Closed" | "Completed" | "Coming Soon";
   registrationDeadline: string;
 }
+
+// consultant directory types
+export const EXPERTISE_OPTIONS = [
+  "University Know-How",
+  "CGPA Strategies",
+  "Career Path Guidance",
+  "Study Habits",
+] as const;
+
+export type ExpertiseArea = (typeof EXPERTISE_OPTIONS)[number];
+
+export interface ConsultantTypes {
+  id: string;
+  userId: string;
+  name: string;
+  role: string;
+  institution: string;
+  expertise: ExpertiseArea[];
+  impactHours: number;
+  avatar: string;
+  bio: string;
+  isVerified: boolean;
+}

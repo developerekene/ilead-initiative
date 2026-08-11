@@ -5,6 +5,19 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectIsLoggedIn } from "../../redux/slices/User";
 import toast from "react-hot-toast";
+import ILearnOnboarding from "../components/itrain/ILearnOnboarding";
+import ImpactCounter from "../components/itrain/ImpactCounter";
+import StudyHabitsAssessment from "../components/itrain/StudyHabitsAssessment";
+import CgpaSimulator from "../components/itrain/CgpaSimulator";
+import ConsultantDirectory from "../components/itrain/ConsultantDirectory";
+import ITrainScheduler from "../components/itrain/ITrainScheduler";
+import ITrainVideoVault from "../components/itrain/ITrainVideoVault";
+import ITrainCertificateGenerator from "../components/itrain/ITrainCertificateGenerator";
+import VideoTestimonialUpload from "../components/itrain/VideoTestimonialUpload";
+import EarnedCertificateOrangeView from "../components/itrain/EarnedCertificateView";
+import ConsultantCaseTracker from "../components/itrain/ConsultantCaseTracker";
+import AdminVerificationPanel from "../components/AdminVerificationPanel";
+import SessionFeedbackModal from "../components/SessionFeedbackModal";
 
 const ITrainView = () => {
   const navigate = useNavigate();
@@ -38,19 +51,19 @@ const ITrainView = () => {
         btnOneNavigation="/iTrain/workshops"
         btnTwoNavigation="/iTrain/consultation"
       />
-      {/* <ILearnOnboarding /> */}
-      {/* <ImpactCounter /> */}
-      {/* <StudyHabitsAssessment /> */}
+      <ILearnOnboarding />
+      <ImpactCounter />
+      <StudyHabitsAssessment />
       {/* <CgpaSimulator /> */}
       <AcademicConsultationForm />
-      {/* <ConsultantDirectory /> */}
-      {/* <ITrainScheduler /> */}
-      {/* <ITrainVideoVault /> */}
-      {/* <VideoTestimonialUpload /> */}
-      {/* <ITrainCertificateGenerator /> */}
-      {/* <EarnedCertificateOrangeView /> */}
-      {/* <ConsultantCaseTracker /> */}
-      {/* <AdminVerificationPanel /> */}
+      <ConsultantDirectory />
+      <ITrainScheduler />
+      <ITrainVideoVault />
+      <VideoTestimonialUpload />
+      <ITrainCertificateGenerator />
+      <EarnedCertificateOrangeView />
+      <ConsultantCaseTracker />
+      <AdminVerificationPanel />
       {/* <SessionFeedbackModal /> */}
     </div>
   );

@@ -21,6 +21,7 @@ import TermsAndCondition from "./pages/TermsAndCondition";
 import ISharePostDetails from "./components/ishare/ISharePostDetails";
 import WorkshopPage from "./components/itrain/WorkshopPage";
 import WorkshopDetails from "./components/itrain/WorkshopDetails";
+import ConsultationPage from "./components/itrain/ConsultationPage";
 
 const Footer = lazy(() => import("./components/Footer"));
 const JoinCommunity = lazy(() => import("./components/JoinCommunity"));
@@ -226,6 +227,7 @@ const router = createBrowserRouter([
       { path: "iTrain", element: <ITrainView /> },
       { path: "iTrain/workshops", element: <WorkshopPage /> },
       { path: "iTrain/workshops/:workshopId", element: <WorkshopDetails /> },
+      { path: "/iTrain/consultation", element: <ConsultationPage /> },
 
       { path: "about-ilead", element: <AboutUs /> },
       { path: "membership", element: <MembershipPage /> },

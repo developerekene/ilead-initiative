@@ -18,6 +18,7 @@ import {
   updateDoc,
   addDoc,
 } from "firebase/firestore";
+
 import { store } from "../../store";
 import { clearUser, setPlan, setUser } from "../../slices/User";
 import {
@@ -31,7 +32,16 @@ import {
   setCreatingWorkshop,
   setCreateError,
 } from "../../slices/workshopSlice";
-import { WorkshopTypes } from "../../../utils/types";
+import { WorkshopTypes, ConsultantTypes } from "../../../utils/types";
+
+import {
+  setConsultants,
+  addConsultant,
+  setConsultantsLoading,
+  setConsultantsError,
+  setCreatingConsultant,
+  setCreateConsultantError,
+} from "../../slices/consultantSlice";
 
 const generateUniqueId = (): string => {
   return Math.random().toString(36).substr(2, 9);
@@ -349,12 +359,6 @@ export class AuthService {
     store.dispatch(setCreatingWorkshop(true));
     store.dispatch(setCreateError(null));
     try {
-      // Require an authenticated user, same as every other write path.
-      // NOTE: this only checks that *someone* is signed in — it does
-      // not check facilitator/admin role, since no role field exists
-      // on SerializedUser yet. Anyone logged in can currently create
-      // a workshop. Flag this to Stella before shipping if that's not
-      // the intended access model.
       await this.getCurrentUser();
 
       const newWorkshopDoc = {
@@ -472,6 +476,73 @@ export class AuthService {
       throw error;
     } finally {
       store.dispatch(setRegistering({ workshopId, value: false }));
+    }
+  }
+
+  async fetchConsultants(): Promise<void> {
+    store.dispatch(setConsultantsLoading(true));
+    store.dispatch(setConsultantsError(null));
+    try {
+      const snapshot = await getDocs(collection(db, "consultants"));
+      const consultants = snapshot.docs.map(
+        (d) => ({ id: d.id, ...d.data() }) as ConsultantTypes,
+      );
+      store.dispatch(setConsultants(consultants));
+    } catch (error: any) {
+      console.error("Error fetching consultants:", error);
+      store.dispatch(
+        setConsultantsError(error?.message ?? "Failed to load consultants"),
+      );
+      throw error;
+    } finally {
+      store.dispatch(setConsultantsLoading(false));
+    }
+  }
+
+  async handleConsultantRegistration(
+    consultantData: Pick<
+      ConsultantTypes,
+      "name" | "role" | "institution" | "expertise" | "bio" | "avatar"
+    >,
+  ): Promise<string> {
+    store.dispatch(setCreatingConsultant(true));
+    store.dispatch(setCreateConsultantError(null));
+    try {
+      const currentUser = await this.getCurrentUser();
+      const userId = currentUser.uid;
+
+      const consultantDoc = doc(db, "consultants", userId);
+      const existingSnapshot = await getDoc(consultantDoc);
+      if (existingSnapshot.exists()) {
+        throw new Error("You already have a consultant profile");
+      }
+
+      const newConsultant: Omit<ConsultantTypes, "id"> = {
+        userId,
+        ...consultantData,
+        impactHours: 0,
+        isVerified: false,
+      };
+
+      await setDoc(consultantDoc, newConsultant);
+
+      const createdConsultant: ConsultantTypes = {
+        id: userId,
+        ...newConsultant,
+      };
+
+      store.dispatch(addConsultant(createdConsultant));
+      return userId;
+    } catch (error: any) {
+      console.error("Error registering as consultant:", error);
+      store.dispatch(
+        setCreateConsultantError(
+          error?.message ?? "Failed to submit consultant profile",
+        ),
+      );
+      throw error;
+    } finally {
+      store.dispatch(setCreatingConsultant(false));
     }
   }
 }
