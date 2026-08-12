@@ -4,6 +4,7 @@ import campaignReducer from "./slices/campaignSlice";
 import membershipReducer from "./slices/Membershipslice";
 import notificationReducer from "./slices/notificationSlice";
 import workshopReducer from "./slices/workshopSlice";
+import consultantReducer from "./slices/consultantSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     membership: membershipReducer,
     notification: notificationReducer,
     workshops: workshopReducer,
+    consultants: consultantReducer,
   },
 });
 
