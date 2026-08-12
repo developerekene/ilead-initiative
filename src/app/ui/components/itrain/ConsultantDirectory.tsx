@@ -1,86 +1,35 @@
-import React, { useState, useMemo } from "react";
-
-// Types corresponding to the ITRAIN core framework metadata structures
-interface Consultant {
-  id: string;
-  name: string;
-  role: string;
-  institution: string;
-  expertise: (
-    | "University Know-How"
-    | "CGPA Strategies"
-    | "Career Path Guidance"
-    | "Study Habits"
-  )[];
-  impactHours: number;
-  avatar: string;
-  bio: string;
-  isVerified: boolean;
-}
-
-const MOCK_CONSULTANTS: Consultant[] = [
-  {
-    id: "consultant-1",
-    name: "Dr. Arinze Okoye",
-    role: "Academic Path Advisor",
-    institution: "Imperial College London Alum",
-    expertise: ["University Know-How", "CGPA Strategies"],
-    impactHours: 450,
-    avatar:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-    bio: "Specializing in transition architectures for upcoming undergraduate STEM students looking to protect their cumulative track metrics early.",
-    isVerified: true,
-  },
-  {
-    id: "consultant-2",
-    name: "Sarah Jenkins",
-    role: "Strategic Learning Consultant",
-    institution: "Independent Coach",
-    expertise: ["Study Habits", "Career Path Guidance"],
-    impactHours: 320,
-    avatar:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80",
-    bio: "Helping secondary school students build hyper-focused study systems and make long-term discipline choices before college applications open.",
-    isVerified: true,
-  },
-  {
-    id: "consultant-3",
-    name: "David Vance",
-    role: "Admissions Operations Expert",
-    institution: "Oxford Strategy Mentor",
-    expertise: ["University Know-How", "Career Path Guidance"],
-    impactHours: 610,
-    avatar:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80",
-    bio: "Demystifying university interview systems and entry selections. Dedicated to guiding community builders toward high-leverage degrees.",
-    isVerified: true,
-  },
-  {
-    id: "consultant-4",
-    name: "Chidi Nwachukwu",
-    role: "Grade Recovery Strategist",
-    institution: "Ecosystem Educator",
-    expertise: ["CGPA Strategies", "Study Habits"],
-    impactHours: 180,
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
-    bio: "Focused purely on grade calculation strategies and reverse-engineering study regimens to repair sliding performance indexes.",
-    isVerified: true,
-  },
-];
-
-const EXPERTISE_FILTERS = [
-  "University Know-How",
-  "CGPA Strategies",
-  "Career Path Guidance",
-  "Study Habits",
-] as const;
+import React, { useEffect, useState, useMemo } from "react";
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import { selectIsLoggedIn } from "../../../redux/slices/User";
+import {
+  selectConsultants,
+  selectConsultantsLoading,
+  selectConsultantsError,
+} from "../../../redux/slices/consultantSlice";
+import { authService } from "../../../redux/configuration/services/auth.service";
+import { EXPERTISE_OPTIONS } from "../../../utils/types";
+import ConsultantRegistrationForm from "./ConsultantRegistrationForm";
+import { useNavigate } from "react-router-dom";
 
 const ConsultantDirectory: React.FC = () => {
+  const consultants = useSelector(selectConsultants);
+  const loading = useSelector(selectConsultantsLoading);
+  const fetchError = useSelector(selectConsultantsError);
+  const isLoggedIn = useSelector(selectIsLoggedIn);
+  const navigate = useNavigate();
+
   // Search and Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+
+  // Registration panel
+  const [registrationOpen, setRegistrationOpen] = useState(false);
+
+  useEffect(() => {
+    authService.fetchConsultants();
+  }, []);
 
   // Dynamic Filter Toggle Handler
   const handleFilterToggle = (filter: string) => {
@@ -91,9 +40,19 @@ const ConsultantDirectory: React.FC = () => {
     );
   };
 
+  const handleBecomeConsultant = () => {
+    if (!isLoggedIn) {
+      toast.error("Sign in to register as a consultant.", {
+        style: { background: "#ff4d4f", color: "#fff" },
+      });
+      return;
+    }
+    setRegistrationOpen(true);
+  };
+
   // Client-side execution layer filtering data without structural page refresh
   const filteredConsultants = useMemo(() => {
-    return MOCK_CONSULTANTS.filter((consultant) => {
+    return consultants.filter((consultant) => {
       const matchesSearch =
         consultant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         consultant.role.toLowerCase().includes(searchQuery.toLowerCase());
@@ -104,7 +63,7 @@ const ConsultantDirectory: React.FC = () => {
 
       return matchesSearch && matchesFilters;
     });
-  }, [searchQuery, selectedFilters]);
+  }, [consultants, searchQuery, selectedFilters]);
 
   // Reusable Inside Filter Component to eliminate code duplication
   const FilterContent = () => (
@@ -114,7 +73,7 @@ const ConsultantDirectory: React.FC = () => {
           Filter by Competency
         </h4>
         <div className="flex flex-col gap-2.5">
-          {EXPERTISE_FILTERS.map((filter) => {
+          {EXPERTISE_OPTIONS.map((filter) => {
             const isChecked = selectedFilters.includes(filter);
             return (
               <button
@@ -163,14 +122,22 @@ const ConsultantDirectory: React.FC = () => {
   return (
     <section className="w-full bg-white max-w-7xl mx-auto px-6 md:px-12 py-12">
       {/* Header Block */}
-      <div className="mb-12">
-        <h2 className="text-2xl sm:text-3xl font-black text-purple-950 tracking-tight">
-          Consultant <span className="text-orange-500">Directory</span>
-        </h2>
-        <p className="text-sm sm:text-base text-purple-950/50 font-medium mt-1">
-          Connect with verified academic minds to map out your grades,
-          trajectory, and focus.
-        </p>
+      <div className="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-black text-purple-950 tracking-tight">
+            Consultant <span className="text-orange-500">Directory</span>
+          </h2>
+          <p className="text-sm sm:text-base text-purple-950/50 font-medium mt-1">
+            Connect with verified academic minds to map out your grades,
+            trajectory, and focus.
+          </p>
+        </div>
+        <button
+          onClick={handleBecomeConsultant}
+          className="shrink-0 bg-purple-950 hover:bg-orange-500 text-white font-black px-6 py-3 rounded-xl text-sm tracking-wide transition-all duration-200"
+        >
+          + Become a Consultant
+        </button>
       </div>
 
       {/* Global Search and Layout Control Strip */}
@@ -231,7 +198,23 @@ const ConsultantDirectory: React.FC = () => {
 
         {/* Main Directory Output Column */}
         <main className="md:col-span-8 lg:col-span-9 grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-          {filteredConsultants.length > 0 ? (
+          {loading ? (
+            <div className="col-span-full py-16 text-center text-purple-950/40 font-medium">
+              Loading consultants...
+            </div>
+          ) : fetchError ? (
+            <div className="col-span-full py-16 text-center bg-red-50 rounded-[2rem] border border-red-100">
+              <p className="text-sm font-semibold text-red-600 mb-4">
+                {fetchError}
+              </p>
+              <button
+                onClick={() => authService.fetchConsultants()}
+                className="bg-purple-950 hover:bg-orange-500 text-white font-black px-6 py-2.5 rounded-xl text-xs tracking-wide transition-all"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : filteredConsultants.length > 0 ? (
             filteredConsultants.map((consultant) => (
               <div
                 key={consultant.id}
@@ -242,7 +225,11 @@ const ConsultantDirectory: React.FC = () => {
                   <div className="flex gap-4 items-start mb-5">
                     <div className="relative shrink-0">
                       <img
-                        src={consultant.avatar}
+                        src={
+                          consultant.avatar ||
+                          "https://api.dicebear.com/7.x/initials/svg?seed=" +
+                            encodeURIComponent(consultant.name)
+                        }
                         alt={consultant.name}
                         className="w-14 h-14 rounded-2xl object-cover border border-purple-950/5"
                       />
@@ -308,7 +295,12 @@ const ConsultantDirectory: React.FC = () => {
                       {consultant.impactHours} hrs gifted
                     </span>
                   </div>
-                  <button className="bg-purple-950 hover:bg-orange-500 text-white font-black py-2.5 px-4 rounded-xl text-xs tracking-wide shadow-md transition-all duration-200 cursor-pointer transform hover:-translate-y-0.5">
+                  <button
+                    onClick={() =>
+                      navigate(`/iTrain/consultants/${consultant.id}`)
+                    }
+                    className="bg-purple-950 hover:bg-orange-500 text-white font-black py-2.5 px-4 rounded-xl text-xs tracking-wide shadow-md transition-all duration-200 cursor-pointer transform hover:-translate-y-0.5"
+                  >
                     View Consultant Profile
                   </button>
                 </div>
@@ -317,8 +309,9 @@ const ConsultantDirectory: React.FC = () => {
           ) : (
             <div className="col-span-full py-16 text-center bg-slate-50 rounded-[2rem] border border-dashed border-purple-950/10">
               <p className="text-sm font-semibold text-purple-950/40">
-                No consultants match your current combination of search terms or
-                competencies.
+                {consultants.length === 0
+                  ? "No consultants yet — be the first to join the directory."
+                  : "No consultants match your current combination of search terms or competencies."}
               </p>
             </div>
           )}
@@ -360,8 +353,64 @@ const ConsultantDirectory: React.FC = () => {
           </div>
         </div>
       )}
+
+      <ConsultantRegistrationForm
+        isOpen={registrationOpen}
+        onClose={() => setRegistrationOpen(false)}
+      />
     </section>
   );
 };
 
 export default ConsultantDirectory;
+
+// const MOCK_CONSULTANTS: Consultant[] = [
+//   {
+//     id: "consultant-1",
+//     name: "Dr. Arinze Okoye",
+//     role: "Academic Path Advisor",
+//     institution: "Imperial College London Alum",
+//     expertise: ["University Know-How", "CGPA Strategies"],
+//     impactHours: 450,
+//     avatar:
+//       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+//     bio: "Specializing in transition architectures for upcoming undergraduate STEM students looking to protect their cumulative track metrics early.",
+//     isVerified: true,
+//   },
+//   {
+//     id: "consultant-2",
+//     name: "Sarah Jenkins",
+//     role: "Strategic Learning Consultant",
+//     institution: "Independent Coach",
+//     expertise: ["Study Habits", "Career Path Guidance"],
+//     impactHours: 320,
+//     avatar:
+//       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80",
+//     bio: "Helping secondary school students build hyper-focused study systems and make long-term discipline choices before college applications open.",
+//     isVerified: true,
+//   },
+//   {
+//     id: "consultant-3",
+//     name: "David Vance",
+//     role: "Admissions Operations Expert",
+//     institution: "Oxford Strategy Mentor",
+//     expertise: ["University Know-How", "Career Path Guidance"],
+//     impactHours: 610,
+//     avatar:
+//       "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80",
+//     bio: "Demystifying university interview systems and entry selections. Dedicated to guiding community builders toward high-leverage degrees.",
+//     isVerified: true,
+//   },
+//   {
+//     id: "consultant-4",
+//     name: "Chidi Nwachukwu",
+//     role: "Grade Recovery Strategist",
+//     institution: "Ecosystem Educator",
+//     expertise: ["CGPA Strategies", "Study Habits"],
+//     impactHours: 180,
+//     avatar:
+//       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+//     bio: "Focused purely on grade calculation strategies and reverse-engineering study regimens to repair sliding performance indexes.",
+//     isVerified: true,
+//   },
+// ];

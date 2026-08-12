@@ -502,7 +502,14 @@ export class AuthService {
   async handleConsultantRegistration(
     consultantData: Pick<
       ConsultantTypes,
-      "name" | "role" | "institution" | "expertise" | "bio" | "avatar"
+      | "role"
+      | "institution"
+      | "yearsOfExperience"
+      | "expertise"
+      | "bio"
+      | "avatar"
+      | "socialLinks"
+      | "calendlyLink"
     >,
   ): Promise<string> {
     store.dispatch(setCreatingConsultant(true));
@@ -517,8 +524,15 @@ export class AuthService {
         throw new Error("You already have a consultant profile");
       }
 
+      const userDoc = doc(db, "users", userId);
+      const userSnapshot = await getDoc(userDoc);
+      if (!userSnapshot.exists()) throw new Error("User profile not found");
+      const primaryInfo = userSnapshot.data()?.user?.primaryInformation;
+
       const newConsultant: Omit<ConsultantTypes, "id"> = {
         userId,
+        name: `${primaryInfo?.firstName ?? ""} ${primaryInfo?.lastName ?? ""}`.trim(),
+        email: primaryInfo?.email ?? "",
         ...consultantData,
         impactHours: 0,
         isVerified: false,

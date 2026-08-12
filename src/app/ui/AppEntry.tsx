@@ -22,6 +22,7 @@ import ISharePostDetails from "./components/ishare/ISharePostDetails";
 import WorkshopPage from "./components/itrain/WorkshopPage";
 import WorkshopDetails from "./components/itrain/WorkshopDetails";
 import ConsultationPage from "./components/itrain/ConsultationPage";
+import ConsultantDetails from "./components/itrain/ConsultantDetails";
 
 const Footer = lazy(() => import("./components/Footer"));
 const JoinCommunity = lazy(() => import("./components/JoinCommunity"));
@@ -227,7 +228,11 @@ const router = createBrowserRouter([
       { path: "iTrain", element: <ITrainView /> },
       { path: "iTrain/workshops", element: <WorkshopPage /> },
       { path: "iTrain/workshops/:workshopId", element: <WorkshopDetails /> },
-      { path: "/iTrain/consultation", element: <ConsultationPage /> },
+      { path: "/iTrain/consultants", element: <ConsultationPage /> },
+      {
+        path: "/iTrain/consultants/:consultantId",
+        element: <ConsultantDetails />,
+      },
 
       { path: "about-ilead", element: <AboutUs /> },
       { path: "membership", element: <MembershipPage /> },

@@ -49,7 +49,7 @@ const ITrainView = () => {
         buttonOneText="Join a Workshop"
         buttonTwoText="Speak with a Consultant"
         btnOneNavigation="/iTrain/workshops"
-        btnTwoNavigation="/iTrain/consultation"
+        btnTwoNavigation="/iTrain/consultants"
       />
       <ILearnOnboarding />
       <ImpactCounter />

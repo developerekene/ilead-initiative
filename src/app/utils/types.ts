@@ -47,15 +47,27 @@ export const EXPERTISE_OPTIONS = [
 
 export type ExpertiseArea = (typeof EXPERTISE_OPTIONS)[number];
 
+export interface ConsultantSocialLinks {
+  linkedin?: string;
+  twitter?: string;
+  instagram?: string;
+  website?: string;
+}
+
 export interface ConsultantTypes {
   id: string;
   userId: string;
   name: string;
+  email: string;
+  // Professional info
   role: string;
   institution: string;
+  yearsOfExperience: number;
   expertise: ExpertiseArea[];
-  impactHours: number;
-  avatar: string;
   bio: string;
+  avatar: string;
+  socialLinks: ConsultantSocialLinks;
+  calendlyLink: string;
+  impactHours: number;
   isVerified: boolean;
 }

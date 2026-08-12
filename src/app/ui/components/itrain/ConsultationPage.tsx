@@ -16,13 +16,6 @@ const ConsultationPage = () => {
             opportunities, overcome challenges, and turn ambitious ideas into
             measurable results.
           </p>
-
-          <button
-            // onClick={() => setCreateWorkshopOpen(true)}
-            className="mt-10 bg-orange-500 hover:bg-orange-600 text-white font-black px-8 py-3.5 rounded-xl text-sm tracking-wide transition-all shadow-md shadow-orange-500/30 "
-          >
-            + Register as a consultant
-          </button>
         </div>
       </div>
       <ConsultantDirectory />
