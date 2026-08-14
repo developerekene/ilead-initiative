@@ -34,6 +34,11 @@ const Login = lazy(() => import("./components/Login"));
 const ForgotPassword = lazy(() => import("./components/ForgotPassword"));
 const IShareView = lazy(() => import("./pages/IShareView"));
 const ITrainView = lazy(() => import("./pages/ITrainView"));
+const TechMentorship = lazy(() => import("./pages/TechMentorship"));
+const BusinessStrategy = lazy(() => import("./BusinessStrategy"));
+const CrossClassInteraction = lazy(() => import("./pages/CrossClassInteraction"));
+const ILEADVision = lazy(() => import("./pages/iLEADVision"));
+const CultureOfGiving = lazy(() => import("./pages/CultureofGiving"));
 const CompleteProfile = lazy(() => import("./components/Completeprofile"));
 const CampaignDetails = lazy(
   () => import("./components/campaigncomponents/CampaignDetails"),
@@ -226,6 +231,9 @@ const router = createBrowserRouter([
         element: <ISharePostDetails />,
       },
       { path: "iTrain", element: <ITrainView /> },
+      { path: "tech-mentorship", element: <TechMentorship /> },
+      { path: "business-strategy", element: <BusinessStrategy /> },
+      { path: "peer-exchange", element: <CrossClassInteraction /> },
       { path: "iTrain/workshops", element: <WorkshopPage /> },
       { path: "iTrain/workshops/:workshopId", element: <WorkshopDetails /> },
       { path: "/iTrain/consultants", element: <ConsultationPage /> },
@@ -235,6 +243,8 @@ const router = createBrowserRouter([
       },
 
       { path: "about-ilead", element: <AboutUs /> },
+      { path: "vision", element: <ILEADVision /> },
+      { path: "selfless-giving", element: <CultureOfGiving /> },
       { path: "membership", element: <MembershipPage /> },
       { path: "all-Campaign", element: <CampaignPage /> },
       { path: "privacy-policy", element: <PrivacyPolicy /> },
