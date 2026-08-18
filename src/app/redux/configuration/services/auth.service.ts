@@ -41,6 +41,7 @@ import {
   setConsultantsError,
   setCreatingConsultant,
   setCreateConsultantError,
+  updateConsultant,
 } from "../../slices/consultantSlice";
 
 const generateUniqueId = (): string => {
@@ -552,6 +553,55 @@ export class AuthService {
       store.dispatch(
         setCreateConsultantError(
           error?.message ?? "Failed to submit consultant profile",
+        ),
+      );
+      throw error;
+    } finally {
+      store.dispatch(setCreatingConsultant(false));
+    }
+  }
+
+  async handleUpdateConsultant(
+    updateData: Partial<
+      Pick<
+        ConsultantTypes,
+        | "role"
+        | "institution"
+        | "yearsOfExperience"
+        | "expertise"
+        | "bio"
+        | "avatar"
+        | "socialLinks"
+        | "calendlyLink"
+      >
+    >,
+  ): Promise<void> {
+    store.dispatch(setCreatingConsultant(true));
+    store.dispatch(setCreateConsultantError(null));
+    try {
+      const currentUser = await this.getCurrentUser();
+      const userId = currentUser.uid;
+
+      const consultantDoc = doc(db, "consultants", userId);
+      const snapshot = await getDoc(consultantDoc);
+      if (!snapshot.exists()) {
+        throw new Error("No consultant profile found to update");
+      }
+
+      await updateDoc(consultantDoc, updateData);
+
+      const updated: ConsultantTypes = {
+        ...(snapshot.data() as ConsultantTypes),
+        id: userId,
+        ...updateData,
+      };
+
+      store.dispatch(updateConsultant(updated));
+    } catch (error: any) {
+      console.error("Error updating consultant profile:", error);
+      store.dispatch(
+        setCreateConsultantError(
+          error?.message ?? "Failed to update your profile",
         ),
       );
       throw error;
