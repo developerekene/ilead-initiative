@@ -153,7 +153,7 @@ const Footer: React.FC = () => {
               Honor Code
             </Link>
             <Link
-              to="/privacy"
+              to="/privacy-policy"
               className="text-sm font-medium text-purple-950/60 hover:text-orange-500 transition-colors duration-200"
             >
               Privacy Charter

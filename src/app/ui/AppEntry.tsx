@@ -36,9 +36,14 @@ const IShareView = lazy(() => import("./pages/IShareView"));
 const ITrainView = lazy(() => import("./pages/ITrainView"));
 const TechMentorship = lazy(() => import("./pages/TechMentorship"));
 const BusinessStrategy = lazy(() => import("./BusinessStrategy"));
-const CrossClassInteraction = lazy(() => import("./pages/CrossClassInteraction"));
+const CrossClassInteraction = lazy(
+  () => import("./pages/CrossClassInteraction"),
+);
 const ILEADVision = lazy(() => import("./pages/iLEADVision"));
 const CultureOfGiving = lazy(() => import("./pages/CultureofGiving"));
+const HumanImpact = lazy(() => import("./pages/HumanImpact"));
+const GetInvolved = lazy(() => import("./pages/GetInvolved"));
+const HonorCode = lazy(() => import("./pages/HonorCode"));
 const CompleteProfile = lazy(() => import("./components/Completeprofile"));
 const CampaignDetails = lazy(
   () => import("./components/campaigncomponents/CampaignDetails"),
@@ -245,6 +250,9 @@ const router = createBrowserRouter([
       { path: "about-ilead", element: <AboutUs /> },
       { path: "vision", element: <ILEADVision /> },
       { path: "selfless-giving", element: <CultureOfGiving /> },
+      { path: "impact-stories", element: <HumanImpact /> },
+      { path: "support", element: <GetInvolved /> },
+      { path: "community-guidelines", element: <HonorCode /> },
       { path: "membership", element: <MembershipPage /> },
       { path: "all-Campaign", element: <CampaignPage /> },
       { path: "privacy-policy", element: <PrivacyPolicy /> },
