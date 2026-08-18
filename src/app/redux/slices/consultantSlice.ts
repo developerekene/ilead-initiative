@@ -45,6 +45,15 @@ const consultantSlice = createSlice({
     setCreateConsultantError(state, action: PayloadAction<string | null>) {
       state.createError = action.payload;
     },
+
+    updateConsultant(state, action: PayloadAction<ConsultantTypes>) {
+      const index = state.consultants.findIndex(
+        (c) => c.id === action.payload.id,
+      );
+      if (index !== -1) {
+        state.consultants[index] = action.payload;
+      }
+    },
   },
 });
 
@@ -55,6 +64,7 @@ export const {
   setConsultantsError,
   setCreatingConsultant,
   setCreateConsultantError,
+  updateConsultant,
 } = consultantSlice.actions;
 
 // Selectors

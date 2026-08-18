@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { selectUser } from "../../../redux/slices/User";
 import {
   selectConsultantById,
   selectConsultantsLoading,
   selectConsultantsError,
 } from "../../../redux/slices/consultantSlice";
 import { authService } from "../../../redux/configuration/services/auth.service";
+import ConsultantRegistrationForm from "./ConsultantRegistrationForm";
 
 const ConsultantDetails: React.FC = () => {
   const { consultantId } = useParams<{ consultantId: string }>();
   const consultant = useSelector(selectConsultantById(consultantId ?? ""));
   const loading = useSelector(selectConsultantsLoading);
   const fetchError = useSelector(selectConsultantsError);
+  const currentUser = useSelector(selectUser);
 
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     if (!consultant) {
@@ -76,6 +80,8 @@ const ConsultantDetails: React.FC = () => {
     );
   }
 
+  const isOwner = !!currentUser?.uid && currentUser.uid === consultant.userId;
+
   const socials = [
     {
       key: "linkedin",
@@ -102,25 +108,49 @@ const ConsultantDetails: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-14">
-        <Link
-          to="/iTrain/consultants"
-          className="flex items-center gap-1.5 text-purple-950/50 hover:text-purple-950 font-bold text-sm transition-colors mb-8 w-fit"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth={2.5}
+        <div className="flex items-center justify-between mb-8">
+          <Link
+            to="/iTrain/consultants"
+            className="flex items-center gap-1.5 text-purple-950/50 hover:text-purple-950 font-bold text-sm transition-colors w-fit"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 19.5L8.25 12l7.5-7.5"
-            />
-          </svg>
-          Back to Directory
-        </Link>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={2.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5L8.25 12l7.5-7.5"
+              />
+            </svg>
+            Back to Directory
+          </Link>
+
+          {isOwner && (
+            <button
+              onClick={() => setEditOpen(true)}
+              className="flex items-center gap-1.5 text-xs font-bold text-purple-950/60 hover:text-purple-950 bg-slate-50 border border-purple-950/10 hover:border-purple-950/20 px-4 py-2.5 rounded-xl transition-colors"
+            >
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"
+                />
+              </svg>
+              Edit Profile
+            </button>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Left column: profile */}
@@ -279,6 +309,15 @@ const ConsultantDetails: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Edit panel: only mounted for the profile owner ── */}
+      {isOwner && (
+        <ConsultantRegistrationForm
+          isOpen={editOpen}
+          onClose={() => setEditOpen(false)}
+          existingConsultant={consultant}
+        />
+      )}
     </div>
   );
 };

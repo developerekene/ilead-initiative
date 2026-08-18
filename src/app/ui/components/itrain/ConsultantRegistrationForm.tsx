@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectUser, selectIsLoggedIn } from "../../../redux/slices/User";
 import { FormPanel } from "../formcomponent/FormComponents";
 import { authService } from "../../../redux/configuration/services/auth.service";
-import { EXPERTISE_OPTIONS, ExpertiseArea } from "../../../utils/types";
+import {
+  EXPERTISE_OPTIONS,
+  ExpertiseArea,
+  ConsultantTypes,
+} from "../../../utils/types";
 
 interface ConsultantRegistrationFormProps {
   isOpen: boolean;
   onClose: () => void;
+  existingConsultant?: ConsultantTypes;
 }
 
 type Step = 1 | 2 | 3;
@@ -29,18 +34,42 @@ const emptyForm = {
   calendlyLink: "",
 };
 
+const formFromConsultant = (c: ConsultantTypes): typeof emptyForm => ({
+  role: c.role,
+  institution: c.institution,
+  yearsOfExperience: String(c.yearsOfExperience ?? ""),
+  expertise: c.expertise,
+  bio: c.bio,
+  avatar: c.avatar,
+  linkedin: c.socialLinks?.linkedin ?? "",
+  twitter: c.socialLinks?.twitter ?? "",
+  instagram: c.socialLinks?.instagram ?? "",
+  website: c.socialLinks?.website ?? "",
+  calendlyLink: c.calendlyLink ?? "",
+});
+
 const ConsultantRegistrationForm: React.FC<ConsultantRegistrationFormProps> = ({
   isOpen,
   onClose,
+  existingConsultant,
 }) => {
   const user = useSelector(selectUser);
   const isLoggedIn = useSelector(selectIsLoggedIn);
+  const isEditMode = !!existingConsultant;
 
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState(
+    existingConsultant ? formFromConsultant(existingConsultant) : emptyForm,
+  );
+
+  useEffect(() => {
+    if (existingConsultant) {
+      setForm(formFromConsultant(existingConsultant));
+    }
+  }, [existingConsultant]);
 
   const set = (field: keyof typeof emptyForm, value: string) =>
     setForm((p) => ({ ...p, [field]: value }));
@@ -58,7 +87,9 @@ const ConsultantRegistrationForm: React.FC<ConsultantRegistrationFormProps> = ({
     setLoading(false);
     setSubmitted(false);
     setError(null);
-    setForm(emptyForm);
+    setForm(
+      existingConsultant ? formFromConsultant(existingConsultant) : emptyForm,
+    );
   };
 
   const handleClose = () => {
@@ -82,7 +113,7 @@ const ConsultantRegistrationForm: React.FC<ConsultantRegistrationFormProps> = ({
     setLoading(true);
     setError(null);
     try {
-      await authService.handleConsultantRegistration({
+      const payload = {
         role: form.role.trim(),
         institution: form.institution.trim(),
         yearsOfExperience: yearsNumber,
@@ -96,12 +127,19 @@ const ConsultantRegistrationForm: React.FC<ConsultantRegistrationFormProps> = ({
           website: form.website.trim() || undefined,
         },
         calendlyLink: form.calendlyLink.trim(),
-      });
+      };
+
+      if (isEditMode) {
+        await authService.handleUpdateConsultant(payload);
+      } else {
+        await authService.handleConsultantRegistration(payload);
+      }
       setSubmitted(true);
     } catch (e: any) {
-      console.error("Consultant registration failed:", e);
+      console.error("Consultant profile save failed:", e);
       setError(
-        e?.message ?? "Failed to submit your profile. Please try again.",
+        e?.message ??
+          `Failed to ${isEditMode ? "update" : "submit"} your profile. Please try again.`,
       );
     } finally {
       setLoading(false);
@@ -119,8 +157,7 @@ const ConsultantRegistrationForm: React.FC<ConsultantRegistrationFormProps> = ({
       >
         <div className="flex flex-col items-center text-center py-10">
           <p className="text-sm text-purple-950/60 font-medium leading-relaxed mb-6 max-w-xs">
-            You need to be signed in to register as a consultant, so your
-            profile can be linked to your account.
+            You need to be signed in to manage a consultant profile.
           </p>
           <button
             onClick={onClose}
@@ -137,21 +174,30 @@ const ConsultantRegistrationForm: React.FC<ConsultantRegistrationFormProps> = ({
     <FormPanel
       isOpen={isOpen}
       onClose={handleClose}
-      title={submitted ? "Profile Submitted" : "Become a Consultant"}
-      badge={submitted ? "Pending Review" : `Step ${step} of 3`}
+      title={
+        submitted
+          ? isEditMode
+            ? "Profile Updated"
+            : "Profile Submitted"
+          : isEditMode
+            ? "Edit Your Profile"
+            : "Become a Consultant"
+      }
+      badge={submitted ? "Saved" : `Step ${step} of 3`}
       badgeVariant="purple"
     >
       {submitted ? (
         <div className="flex flex-col items-center text-center py-6">
           <div className="w-16 h-16 rounded-full bg-purple-50 border-2 border-purple-100 flex items-center justify-center mb-5 text-3xl">
-            🤝
+            {isEditMode ? "✅" : "🤝"}
           </div>
           <h3 className="text-xl font-black text-purple-950 mb-2">
-            You're In the Directory!
+            {isEditMode ? "Changes Saved!" : "You're In the Directory!"}
           </h3>
           <p className="text-sm text-purple-950/50 font-medium leading-relaxed mb-8 max-w-xs">
-            Your profile is live. Verification badges are added by the iTrain
-            team after a quick review.
+            {isEditMode
+              ? "Your profile has been updated."
+              : "Your profile is live. Verification badges are added by the iTrain team after a quick review."}
           </p>
           <button
             onClick={handleClose}
@@ -181,7 +227,6 @@ const ConsultantRegistrationForm: React.FC<ConsultantRegistrationFormProps> = ({
                 Your Details
               </p>
 
-              {/* Read-only, pulled from account — not editable here */}
               <div className="bg-slate-50 border border-purple-950/5 rounded-2xl px-4 py-3.5 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-purple-700 text-white flex items-center justify-center text-sm font-black shrink-0">
                   {(user?.displayName || user?.email || "?")
@@ -190,10 +235,10 @@ const ConsultantRegistrationForm: React.FC<ConsultantRegistrationFormProps> = ({
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-black text-purple-950 truncate">
-                    {user?.displayName || "—"}
+                    {existingConsultant?.name || user?.displayName || "—"}
                   </p>
                   <p className="text-xs text-purple-950/40 font-medium truncate">
-                    {user?.email}
+                    {existingConsultant?.email || user?.email}
                   </p>
                 </div>
               </div>
@@ -428,7 +473,11 @@ const ConsultantRegistrationForm: React.FC<ConsultantRegistrationFormProps> = ({
                 disabled={!canSubmit || loading}
                 className="bg-purple-950 hover:bg-orange-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black px-7 py-3 rounded-xl text-sm tracking-wide transition-all duration-200"
               >
-                {loading ? "Submitting..." : "Submit Profile 🤝"}
+                {loading
+                  ? "Saving..."
+                  : isEditMode
+                    ? "Save Changes"
+                    : "Submit Profile 🤝"}
               </button>
             )}
           </div>
